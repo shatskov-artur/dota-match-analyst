@@ -21,7 +21,7 @@ const TeamSchema = z
   .object({
     team_name: z.string().optional(),
     team_id: z.number().optional(),
-    team_logo: z.string().optional(),
+    team_logo: z.union([z.string(), z.number()]).optional(), // Valve sends ugcid (number), not a URL
     complete: z.boolean().optional(),
   })
   .passthrough()
