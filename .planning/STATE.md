@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing phase 1 (plan 01 complete)
-last_updated: "2026-04-22T19:05:00Z"
+status: completed
+last_updated: "2026-04-22T19:10:45.327Z"
 progress:
   total_phases: 7
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 2
-  completed_plans: 1
-  percent: 50
+  completed_plans: 2
+  percent: 100
 ---
 
 # Project State
@@ -30,7 +30,7 @@ See: .planning/PROJECT.md
 
 | # | Phase | Status |
 |---|-------|--------|
-| 1 | Foundations | In progress — plan 01 complete, plan 02 pending |
+| 1 | Foundations | In progress — plans 01 and 02 complete, plans 03-04 pending |
 | 2 | Live Matches List | Not started |
 | 3 | Match Core | Not started |
 | 4 | Draft UX | Not started |
@@ -41,9 +41,9 @@ See: .planning/PROJECT.md
 ## Current Position
 
 - **Phase:** 1 (Foundations) — executing
-- **Plan:** Plan 01 complete (1/2), Plan 02 pending
-- **Status:** Plan 01-01 done — commits 198d659, 8d54c81, 86027b7
-- **Progress:** [█████░░░░░] 50%
+- **Plan:** Plans 01-02 complete (2/2 wave-1+2), Plans 03-04 pending
+- **Status:** Plan 01-02 done — commits c472389, 420be20, 112f737, daf68aa
+- **Progress:** [██████████] 100%
 
 ## Performance Metrics
 
@@ -63,6 +63,8 @@ See: .planning/PROJECT.md
 - D-02: @shared/* path alias in both server/tsconfig.json and client/tsconfig.json pointing to ../shared/*
 - D-03: Root package.json dev script uses concurrently to start both Vite and Hono
 - T-01-02: CORS origin locked to http://localhost:5173 in Hono server middleware
+- Named import { Redis } from 'ioredis' required for NodeNext module resolution — default import triggers TS2709
+- Upstash Redis-protocol endpoint: token embedded in URL as rediss://:TOKEN@HOST:PORT for ioredis TLS connection
 
 ### Todos
 
@@ -76,9 +78,9 @@ None.
 
 ## Session Continuity
 
-- Last session: 2026-04-22 — Executed Plan 01-01 (monorepo scaffold: root, shared/, server/, client/)
-- Resume file: `.planning/phases/01-foundations/01-02-PLAN.md`
-- Next action: run `/gsd-execute-phase 1` to execute Plan 01-02 (Redis cache + seed script).
+- Last session: 2026-04-22 — Executed Plan 01-02 (Redis cache module: env.ts + cache.ts)
+- Resume file: `.planning/phases/01-foundations/01-03-PLAN.md`
+- Next action: run `/gsd-execute-phase 1` to execute Plan 01-03 (shared primitives: heroMapper, buildingDecoder, hiddenProfile).
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
 - Research summary: `.planning/research/SUMMARY.md`
