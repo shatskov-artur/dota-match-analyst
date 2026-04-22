@@ -10,7 +10,7 @@ const mockRedisInstance = {
 // Mock ioredis before importing cache.
 // cache.ts uses `import { Redis } from 'ioredis'` so we export Redis as a named constructor.
 vi.mock('ioredis', () => {
-  const RedisMock = vi.fn(() => mockRedisInstance)
+  const RedisMock = vi.fn(function () { return mockRedisInstance })
   return { Redis: RedisMock, default: RedisMock }
 })
 
