@@ -5,8 +5,8 @@ import { z } from 'zod'
 
 const PlayerSchema = z
   .object({
-    account_id: z.number(), // 4294967295 = hidden profile (use hiddenProfile() guard)
-    hero_id: z.number(), // map with heroMapper()
+    account_id: z.number().optional(), // absent during draft pre-lock; 4294967295 = hidden profile (use hiddenProfile() guard)
+    hero_id: z.number().optional(), // absent during draft pre-lock; map with heroMapper()
     name: z.string().optional(),
     team: z.number().int().optional(), // 0=Radiant, 1=Dire, 2=Broadcaster, 4=Unassigned
     kills: z.number().optional(),
