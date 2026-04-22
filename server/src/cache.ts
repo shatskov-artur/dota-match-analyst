@@ -5,11 +5,11 @@ import { env } from './env.js'
 // Upstash Redis URL format: rediss://HOST:PORT
 // Construct the full connection URL by embedding the token as password:
 // rediss://:TOKEN@HOST:PORT
-const redisUrl = `rediss://:${env.UPSTASH_REDIS_TOKEN}@${new URL(env.UPSTASH_REDIS_URL).host}`
-
+// WR-01 fix: redisUrl construction is inside try block so malformed URL degrades gracefully.
 let redis: Redis | null = null
 
 try {
+  const redisUrl = `rediss://:${env.UPSTASH_REDIS_TOKEN}@${new URL(env.UPSTASH_REDIS_URL).host}`
   redis = new Redis(redisUrl, {
     tls: {},
     maxRetriesPerRequest: 1,
