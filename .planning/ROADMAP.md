@@ -38,7 +38,12 @@
   2. BFF can call Valve's `GetLiveLeagueGames`, parse the response through a zod schema with `.passthrough()`, and return a typed payload
   3. Any BFF fetch is wrapped by a `cached()` decorator backed by Redis with a per-data-type TTL, so repeated calls within TTL produce exactly one upstream request
   4. Shared primitives exist and are unit-tested: `heroMapper` (hero_id -> name/portrait), `buildingDecoder` (32-bit bitmask -> tower/rax state), `hiddenProfile` guard (account_id === 4294967295)
-**Plans:** TBD
+**Plans:** 4 plans
+Plans:
+- [x] 01-01-PLAN.md — Monorepo scaffold: client, server, shared directories with TypeScript and path aliases
+- [x] 01-02-PLAN.md — cached() decorator and env module with startup validation
+- [ ] 01-03-PLAN.md — Shared primitives (heroMapper, buildingDecoder, hiddenProfile) + bug fixes (WR-01, WR-02, WR-03)
+- [ ] 01-04-PLAN.md — Valve API route GET /api/live/games with zod schema and service layer
 **UI hint:** no
 
 ### Phase 2: Live Matches List
@@ -118,7 +123,7 @@
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundations | 1/2 | In progress | - |
+| 1. Foundations | 2/4 | In progress | - |
 | 2. Live Matches List | 0/? | Not started | - |
 | 3. Match Core | 0/? | Not started | - |
 | 4. Draft UX | 0/? | Not started | - |
