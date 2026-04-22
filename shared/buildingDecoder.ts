@@ -67,12 +67,22 @@ function mergeRax(towers: TowerDecoded, bs: number): TeamBuildings {
  * CRITICAL: towerState === 0 means ALL towers destroyed (NOT absent data).
  *           Only set unavailable:true when towerState is undefined.
  */
+function cloneTeam(t: TeamBuildings): TeamBuildings {
+  return {
+    top: { ...t.top },
+    mid: { ...t.mid },
+    bot: { ...t.bot },
+    ancientTop: t.ancientTop,
+    ancientBottom: t.ancientBottom,
+  }
+}
+
 export function buildingDecoder(
   towerState: number | undefined,
   barracksState: number | undefined,
 ): BuildingState {
   if (towerState === undefined) {
-    return { radiant: ALL_ALIVE_TEAM, dire: ALL_ALIVE_TEAM, unavailable: true }
+    return { radiant: cloneTeam(ALL_ALIVE_TEAM), dire: cloneTeam(ALL_ALIVE_TEAM), unavailable: true }
   }
 
   const radiantTower = towerState & 0xFFFF
