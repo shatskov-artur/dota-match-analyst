@@ -1,1 +1,6 @@
-# .planning/ is tracked in git (GSD workflow artifacts)
+node_modules/
+dist/
+.env
+*.local
+
+# GSD workflow artifacts are tracked — do not add .planning/ here
