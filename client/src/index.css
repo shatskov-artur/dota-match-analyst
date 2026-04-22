@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+@theme {
+  --color-radiant: #4ade80;
+  --color-dire: #ef4444;
+}
