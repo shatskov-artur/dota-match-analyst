@@ -8,7 +8,7 @@ const app = new Hono()
 
 app.use('*', cors({ origin: 'http://localhost:5173' }))
 
-app.get('/health', (c) => {
+app.get('/api/health', (c) => {
   return c.json({ status: 'ok', ts: Date.now() })
 })
 
