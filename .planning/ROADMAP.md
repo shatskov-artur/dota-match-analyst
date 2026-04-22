@@ -19,7 +19,7 @@
 
 ## Phases
 
-- [ ] **Phase 1: Foundations** - Repo, TS scaffolds, Redis cache, schemas, shared primitives (no UI)
+- [x] **Phase 1: Foundations** - Repo, TS scaffolds, Redis cache, schemas, shared primitives (no UI) ✓ 2026-04-23
 - [ ] **Phase 2: Live Matches List** - Home page with active tournaments and live matches auto-refreshing every 30s
 - [ ] **Phase 3: Match Core** - In-game match screen with score, gold diff, hero grid, towers/rax, K/D/A, series score, delay disclosure
 - [ ] **Phase 4: Draft UX** - Live picks/bans grid with 5s polling and whose-turn indicator
@@ -42,8 +42,8 @@
 Plans:
 - [x] 01-01-PLAN.md — Monorepo scaffold: client, server, shared directories with TypeScript and path aliases
 - [x] 01-02-PLAN.md — cached() decorator and env module with startup validation
-- [ ] 01-03-PLAN.md — Shared primitives (heroMapper, buildingDecoder, hiddenProfile) + bug fixes (WR-01, WR-02, WR-03)
-- [ ] 01-04-PLAN.md — Valve API route GET /api/live/games with zod schema and service layer
+- [x] 01-03-PLAN.md — Shared primitives (heroMapper, buildingDecoder, hiddenProfile) + bug fixes (WR-01, WR-02, WR-03)
+- [x] 01-04-PLAN.md — Valve API route GET /api/live/games with zod schema and service layer
 **UI hint:** no
 
 ### Phase 2: Live Matches List
@@ -123,7 +123,7 @@ Plans:
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundations | 2/4 | In progress | - |
+| 1. Foundations | 4/4 | Complete | 2026-04-23 |
 | 2. Live Matches List | 0/? | Not started | - |
 | 3. Match Core | 0/? | Not started | - |
 | 4. Draft UX | 0/? | Not started | - |
