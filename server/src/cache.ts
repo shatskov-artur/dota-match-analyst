@@ -22,7 +22,7 @@ try {
     console.error('[cache] Redis connection error:', err.message)
   })
 } catch (err) {
-  console.error('[cache] Failed to initialize Redis client — caching disabled:', err)
+  console.error('[cache] Failed to initialize Redis client — caching disabled:', err instanceof Error ? err.message : String(err))
   redis = null
 }
 
