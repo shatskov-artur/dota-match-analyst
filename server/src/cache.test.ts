@@ -1,13 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Mock ioredis before importing cache
+// Shared mock Redis instance — created once, referenced by both the factory and tests
+const mockRedisInstance = {
+  get: vi.fn(),
+  set: vi.fn(),
+  on: vi.fn(),
+}
+
+// Mock ioredis before importing cache.
+// cache.ts uses `import { Redis } from 'ioredis'` so we export Redis as a named constructor.
 vi.mock('ioredis', () => {
-  const mockRedis = {
-    get: vi.fn(),
-    set: vi.fn(),
-    on: vi.fn(),
-  }
-  return { default: vi.fn(() => mockRedis), __mockRedis: mockRedis }
+  const RedisMock = vi.fn(() => mockRedisInstance)
+  return { Redis: RedisMock, default: RedisMock }
 })
 
 // Mock env module
@@ -39,41 +43,25 @@ describe('TTL constants', () => {
 
 describe('cached()', () => {
   let mockRedis: { get: ReturnType<typeof vi.fn>; set: ReturnType<typeof vi.fn>; on: ReturnType<typeof vi.fn> }
+  let cachedFn: typeof import('./cache.js')['cached']
 
   beforeEach(async () => {
-    vi.resetModules()
+    // Reset all call history on the shared mock instance before each test
+    mockRedisInstance.get.mockReset()
+    mockRedisInstance.set.mockReset()
+    mockRedisInstance.on.mockReset()
 
-    // Re-apply mocks after module reset
-    vi.mock('ioredis', () => {
-      const mockRedis = {
-        get: vi.fn(),
-        set: vi.fn(),
-        on: vi.fn(),
-      }
-      return { default: vi.fn(() => mockRedis), __mockRedis: mockRedis }
-    })
+    mockRedis = mockRedisInstance
 
-    vi.mock('./env.js', () => ({
-      env: {
-        PORT: '3001',
-        UPSTASH_REDIS_URL: 'rediss://test.upstash.io:6380',
-        UPSTASH_REDIS_TOKEN: 'test-token',
-        VALVE_API_KEY: 'test-key',
-      },
-    }))
-
-    const ioredis = await import('ioredis')
-    // @ts-expect-error accessing mock internals
-    mockRedis = ioredis.__mockRedis
+    const cacheModule = await import('./cache.js')
+    cachedFn = cacheModule.cached
   })
 
   it('returns cached value on cache hit, fn() not called', async () => {
     mockRedis.get.mockResolvedValueOnce(JSON.stringify({ data: 'cached' }))
 
-    const { cached } = await import('./cache.js')
     const fn = vi.fn().mockResolvedValue({ data: 'fresh' })
-
-    const result = await cached('test-key', 30, fn)
+    const result = await cachedFn('test-key', 30, fn)
 
     expect(result).toEqual({ data: 'cached' })
     expect(fn).not.toHaveBeenCalled()
@@ -84,10 +72,8 @@ describe('cached()', () => {
     mockRedis.get.mockResolvedValueOnce(null)
     mockRedis.set.mockResolvedValueOnce('OK')
 
-    const { cached } = await import('./cache.js')
     const fn = vi.fn().mockResolvedValue({ data: 'fresh' })
-
-    const result = await cached('test-key', 30, fn)
+    const result = await cachedFn('test-key', 30, fn)
 
     expect(result).toEqual({ data: 'fresh' })
     expect(fn).toHaveBeenCalledOnce()
@@ -98,11 +84,10 @@ describe('cached()', () => {
     mockRedis.get.mockResolvedValue(null)
     mockRedis.set.mockResolvedValue('OK')
 
-    const { cached } = await import('./cache.js')
     const fn = vi.fn().mockResolvedValue({ data: 'fresh' })
 
-    await cached('test-key', 30, fn)
-    await cached('test-key', 30, fn)
+    await cachedFn('test-key', 30, fn)
+    await cachedFn('test-key', 30, fn)
 
     expect(fn).toHaveBeenCalledTimes(2)
   })
@@ -110,10 +95,9 @@ describe('cached()', () => {
   it('propagates fn() error without writing to Redis', async () => {
     mockRedis.get.mockResolvedValueOnce(null)
 
-    const { cached } = await import('./cache.js')
     const fn = vi.fn().mockRejectedValue(new Error('upstream error'))
 
-    await expect(cached('test-key', 30, fn)).rejects.toThrow('upstream error')
+    await expect(cachedFn('test-key', 30, fn)).rejects.toThrow('upstream error')
     expect(mockRedis.set).not.toHaveBeenCalled()
   })
 
@@ -121,10 +105,8 @@ describe('cached()', () => {
     mockRedis.get.mockRejectedValueOnce(new Error('Redis connection error'))
     mockRedis.set.mockResolvedValueOnce('OK')
 
-    const { cached } = await import('./cache.js')
     const fn = vi.fn().mockResolvedValue({ data: 'fresh' })
-
-    const result = await cached('test-key', 30, fn)
+    const result = await cachedFn('test-key', 30, fn)
 
     expect(result).toEqual({ data: 'fresh' })
     expect(fn).toHaveBeenCalledOnce()
