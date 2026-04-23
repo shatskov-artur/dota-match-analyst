@@ -3,7 +3,7 @@
 **Project:** Dota 2 Match Analyst
 **Version:** v1
 **Granularity:** standard
-**Last updated:** 2026-04-22
+**Last updated:** 2026-04-23
 
 ## Overview
 
@@ -55,7 +55,12 @@ Plans:
   2. User sees active tournaments as groupings or filters so they can browse matches by league (HOME-02)
   3. Home page re-fetches and visually updates the match list every 30 seconds with no user action required (HOME-03)
   4. User can click a live match row and arrive at a match route (placeholder UI acceptable — wired for Phase 3)
-**Plans:** TBD
+**Plans:** 4 plans
+Plans:
+- [ ] 02-01-PLAN.md — Wave 0: test stubs (gameState.test.ts, formatDuration.test.ts, useLiveGames.test.ts)
+- [ ] 02-02-PLAN.md — Wave 1 BFF: OpenDota service, LeagueSchema, BFF schemas, live.ts enrichment with league_name
+- [ ] 02-03-PLAN.md — Wave 2 client logic: gameState utils, formatDuration util, useLiveGames hook (turns tests GREEN)
+- [ ] 02-04-PLAN.md — Wave 2 client UI: components, pages, main.tsx + App.tsx routing wiring
 **UI hint:** yes
 
 ### Phase 3: Match Core
@@ -124,7 +129,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundations | 4/4 | Complete | 2026-04-23 |
-| 2. Live Matches List | 0/? | Not started | - |
+| 2. Live Matches List | 0/4 | Not started | - |
 | 3. Match Core | 0/? | Not started | - |
 | 4. Draft UX | 0/? | Not started | - |
 | 5. Hero & Player Intel | 0/? | Not started | - |
