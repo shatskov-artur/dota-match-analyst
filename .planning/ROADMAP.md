@@ -93,7 +93,7 @@ Plans:
 Plans:
 - [x] 04-01-PLAN.md — Wave 0: red-state test scaffolds (valve.test.ts scoreboard, draftOrder.test.ts CM 7.40 sequence, useDraftDetail.test.ts refetchInterval cadence)
 - [x] 04-02-PLAN.md — Wave 1 backend: extend LiveGameSchema with ScoreboardSchema (D-17), add TTL.DRAFT=4 (D-15), getLiveLeagueGamesFast() + GET /api/live/draft/:matchId route (D-16)
-- [ ] 04-03-PLAN.md — Wave 2 client logic: draftOrder.ts pure turn inference (D-08), useDraftDetail.ts hook with dynamic refetchInterval (D-12), stale-comment cleanup in useMatchDetail.ts (D-13) — turns Wave 0 tests GREEN
+- [x] 04-03-PLAN.md — Wave 2 client logic: draftOrder.ts pure turn inference (D-08), useDraftDetail.ts hook with dynamic refetchInterval (D-12), stale-comment cleanup in useMatchDetail.ts (D-13) — turns Wave 0 tests GREEN
 - [ ] 04-04-PLAN.md — Wave 3 client UI: DraftPortrait, DraftColumn, DraftTurnIndicator, DraftSection, MatchPage composition (D-03), includes human checkpoint for live-draft verification
 **UI hint:** yes
 
