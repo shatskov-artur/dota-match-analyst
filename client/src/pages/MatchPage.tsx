@@ -4,10 +4,13 @@ import { useMatchDetail } from '../hooks/useMatchDetail'
 import ScoreHeader from '../components/ScoreHeader'
 import HeroPlayerGrid from '../components/HeroPlayerGrid'
 import BuildingsSection from '../components/BuildingsSection'
+import DraftSection from '../components/DraftSection'
+import { useDraftDetail } from '../hooks/useDraftDetail'
 
 export default function MatchPage() {
   const { matchId } = useParams()
   const { match, radiantPlayers, direPlayers, buildings, isLoading } = useMatchDetail(matchId)
+  const draft = useDraftDetail(matchId)
 
   return (
     <div
@@ -51,6 +54,17 @@ export default function MatchPage() {
       {/* ScoreHeader — D-01 section order step 2 */}
       {match && (
         <ScoreHeader match={match} />
+      )}
+
+      {/* DraftSection — Phase 4 D-03 section order step 3; D-10 mount only when scoreboard present */}
+      {draft.scoreboard && (
+        <DraftSection
+          scoreboard={draft.scoreboard}
+          gameState={draft.gameState}
+          activeTeam={draft.activeTeam}
+          action={draft.action}
+          tentative={draft.tentative}
+        />
       )}
 
       {/* HeroPlayerGrid — D-01 section order step 3; D-05 merged widget */}
