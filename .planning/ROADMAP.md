@@ -10,7 +10,7 @@
 | # | Phase | Goal | REQ-IDs | Success Criteria |
 |---|-------|------|---------|------------------|
 | 1 | Foundations | Build the typed client-BFF-cache pipeline so any match data can flow end-to-end | — (infra) | 4 criteria |
-| 2 | Live Matches List | User opens the home page and sees what's playable right now | HOME-01, HOME-02, HOME-03 | 4 criteria |
+| 2 | Live Matches List | 4/4 | Complete    | 2026-04-24 |
 | 3 | Match Core | User opens a live match and sees the full in-game state at a glance | MATCH-01, MATCH-02, MATCH-03, MATCH-04, MATCH-05 | 5 criteria |
 | 4 | Draft UX | User watches the draft unfold in real time with clear turn indication | DRAFT-01, DRAFT-02 | 3 criteria |
 | 5 | Hero & Player Intel | User sees contextual stats layered onto drafted heroes and players | DRAFT-03, DRAFT-04, PLAYER-01, PLAYER-02 | 5 criteria |
@@ -20,7 +20,7 @@
 ## Phases
 
 - [x] **Phase 1: Foundations** - Repo, TS scaffolds, Redis cache, schemas, shared primitives (no UI) ✓ 2026-04-23
-- [ ] **Phase 2: Live Matches List** - Home page with active tournaments and live matches auto-refreshing every 30s
+- [x] **Phase 2: Live Matches List** - Home page with active tournaments and live matches auto-refreshing every 30s (completed 2026-04-24)
 - [ ] **Phase 3: Match Core** - In-game match screen with score, gold diff, hero grid, towers/rax, K/D/A, series score, delay disclosure
 - [ ] **Phase 4: Draft UX** - Live picks/bans grid with 5s polling and whose-turn indicator
 - [ ] **Phase 5: Hero & Player Intel** - Hero patch winrate, counterpick tooltip with "known to play" cross-reference, per-player hero stats, hidden-profile safety
@@ -55,12 +55,12 @@ Plans:
   2. User sees active tournaments as groupings or filters so they can browse matches by league (HOME-02)
   3. Home page re-fetches and visually updates the match list every 30 seconds with no user action required (HOME-03)
   4. User can click a live match row and arrive at a match route (placeholder UI acceptable — wired for Phase 3)
-**Plans:** 4 plans
+**Plans:** 4/4 plans complete
 Plans:
-- [ ] 02-01-PLAN.md — Wave 0: test stubs (gameState.test.ts, formatDuration.test.ts, useLiveGames.test.ts)
-- [ ] 02-02-PLAN.md — Wave 1 BFF: OpenDota service, LeagueSchema, BFF schemas, live.ts enrichment with league_name
-- [ ] 02-03-PLAN.md — Wave 2 client logic: gameState utils, formatDuration util, useLiveGames hook (turns tests GREEN)
-- [ ] 02-04-PLAN.md — Wave 2 client UI: components, pages, main.tsx + App.tsx routing wiring
+- [x] 02-01-PLAN.md — Wave 0: test stubs (gameState.test.ts, formatDuration.test.ts, useLiveGames.test.ts)
+- [x] 02-02-PLAN.md — Wave 1 BFF: OpenDota service, LeagueSchema, BFF schemas, live.ts enrichment with league_name
+- [x] 02-03-PLAN.md — Wave 2 client logic: gameState utils, formatDuration util, useLiveGames hook (turns tests GREEN)
+- [x] 02-04-PLAN.md — Wave 2 client UI: components, pages, main.tsx + App.tsx routing wiring
 **UI hint:** yes
 
 ### Phase 3: Match Core

@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: in_progress
-last_updated: "2026-04-23T01:30:00.000Z"
+status: ready_to_plan
+last_updated: "2026-04-23T19:02:06.176Z"
 progress:
   total_phases: 7
-  completed_phases: 1
-  total_plans: 4
+  completed_phases: 2
+  total_plans: 8
   completed_plans: 4
-  percent: 14
+  percent: 29
 ---
 
 # Project State
@@ -24,14 +24,14 @@ Last updated: 2026-04-22
 See: .planning/PROJECT.md
 
 **Core value:** You open a live match and instantly understand who's winning and why — from draft through final push.
-**Current focus:** Phase 1 — Foundations
+**Current focus:** Phase --phase — 2
 
 ## Phase Progress
 
 | # | Phase | Status |
 |---|-------|--------|
 | 1 | Foundations | Complete — all 4 plans done, verified 2026-04-23 |
-| 2 | Live Matches List | Not started |
+| 2 | Live Matches List | Planned — 4 plans ready, 2026-04-23 |
 | 3 | Match Core | Not started |
 | 4 | Draft UX | Not started |
 | 5 | Hero & Player Intel | Not started |
@@ -40,10 +40,13 @@ See: .planning/PROJECT.md
 
 ## Current Position
 
-- **Phase:** 1 (Foundations) — complete
-- **Plan:** All 4 plans complete
-- **Status:** Phase 1 verified and closed 2026-04-23
-- **Progress:** [█░░░░░░░░░] 14% (1/7 phases)
+Phase: --phase (2) — EXECUTING
+Plan: 1 of --name
+
+- **Phase:** 3
+- **Plan:** Not started
+- **Status:** Ready to plan
+- **Progress:** [█░░░░░░░░░] 14% (1/7 phases complete)
 
 ## Performance Metrics
 
@@ -70,7 +73,7 @@ See: .planning/PROJECT.md
 
 - Resolve research open question on Stratz 2026 access model before starting Phase 6.
 - Calibrate "known to play" threshold for counterpick tooltip before starting Phase 5 (suggested default: >=5 games AND >50% pickrate in last 3 months).
-- Confirm TanStack Query v5 dynamic `refetchInterval` signature before implementing live polling in Phase 2.
+- TanStack Query v5 `refetchInterval` confirmed: plain `30_000` for Phase 2, dynamic `(query) =>` form for Phase 4 draft polling. `onSuccess` removed — use `dataUpdatedAt`. ✓ resolved
 
 ### Blockers
 
@@ -78,8 +81,8 @@ None.
 
 ## Session Continuity
 
-- Last session: 2026-04-23 — Phase 1 complete (shared primitives, Valve API route, all tests passing)
-- Next action: `/gsd-discuss-phase 2` or `/gsd-plan-phase 2` (Live Matches List)
+- Last session: 2026-04-23 — Phase 2 planned (4 plans: Wave 0 TDD stubs, Wave 1 BFF enrichment, Wave 2 client UI)
+- Next action: `/gsd-execute-phase 2`
 - Code review issues to fix: `.planning/phases/01-foundations/01-REVIEW.md` (1 critical: Vite proxy rewrite, 3 warnings)
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`

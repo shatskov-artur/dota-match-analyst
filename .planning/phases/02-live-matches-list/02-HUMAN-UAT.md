@@ -1,5 +1,5 @@
 ---
-status: partial
+status: approved
 phase: 02-live-matches-list
 source: [02-VERIFICATION.md]
 started: 2026-04-24T01:42:00Z
