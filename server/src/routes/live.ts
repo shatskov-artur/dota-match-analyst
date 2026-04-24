@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { getLiveLeagueGames } from '../services/valveApi.js'
+import { getLiveLeagueGames, getLiveLeagueGamesFast } from '../services/valveApi.js'
 import { getLeagueName } from '../services/openDotaApi.js'
 
 const liveRoutes = new Hono()
@@ -36,6 +36,45 @@ liveRoutes.get('/games', async (c) => {
   }))
 
   return c.json({ games: enriched })
+})
+
+/**
+ * GET /api/live/draft/:matchId
+ * Returns draft state (game_state + scoreboard) for a single live match.
+ * Valve data cached TTL.DRAFT (4s) — 1 upstream call per 4s regardless of viewer count (D-16).
+ * 404 if the match is not currently in the live-games payload.
+ * 400 if matchId is not a finite number.
+ * Response shape: { match_id, game_state, scoreboard }.
+ *
+ * Rationale (D-16): thin pass-through, NO league_name enrichment (MatchPage pulls
+ * league_name via the separate useMatchDetail/live-games cache).
+ *
+ * SECURITY:
+ *  - T-04-I1 (Input validation): matchId path param coerced via Number() + Number.isFinite()
+ *    guard rejects non-numeric input before touching the cache or upstream.
+ *  - T-04-D1 (DoS): cached('live_games:draft', TTL.DRAFT=4) coalesces N viewers to 1 upstream
+ *    call per 4s. Client dynamic refetchInterval stops on game_state !== 2 (useDraftDetail).
+ *  - T-04-I2 (Info leak): error responses return a constant string — no stack traces, no
+ *    upstream error details, no Valve URL (contains API key).
+ */
+liveRoutes.get('/draft/:matchId', async (c) => {
+  const rawMatchId = c.req.param('matchId')
+  const parsedId = Number(rawMatchId)
+  if (!Number.isFinite(parsedId)) {
+    return c.json({ error: 'Invalid matchId' }, 400)
+  }
+
+  const data = await getLiveLeagueGamesFast()
+  const game = data.result.games?.find((g) => g.match_id === parsedId)
+  if (!game) {
+    return c.json({ error: 'Match not live' }, 404)
+  }
+
+  return c.json({
+    match_id: game.match_id,
+    game_state: game.game_state,
+    scoreboard: game.scoreboard,
+  })
 })
 
 export default liveRoutes
