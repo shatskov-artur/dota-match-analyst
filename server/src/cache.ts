@@ -32,6 +32,7 @@ try {
  */
 export const TTL = {
   LIVE_MATCH: 30,
+  DRAFT: 4,            // D-15 — 1s below the 5s client poll cadence → every client poll sees fresh upstream
   HERO_STATS: 21_600,  // 6 hours
   PLAYER_STATS: 900,   // 15 minutes
 } as const

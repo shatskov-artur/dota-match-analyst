@@ -32,6 +32,31 @@ const TeamSchema = z
   })
   .passthrough()
 
+// D-17: Live-draft scoreboard shape verified against real GetLiveLeagueGames payload (2026-04-24).
+// CRITICAL: picks/bans are nested under scoreboard.{radiant,dire} — NOT a flat top-level picks_bans array.
+// CRITICAL: .passthrough() on EVERY sub-schema — Valve adds fields silently each patch.
+// CRITICAL: All nested fields .optional() — absent in lobby / pre-draft states.
+const DraftItemSchema = z
+  .object({
+    hero_id: z.number().optional(), // optional per PF-8 — picks pre-lock may arrive without it
+  })
+  .passthrough()
+
+const TeamScoreboardSchema = z
+  .object({
+    picks: z.array(DraftItemSchema).optional(),
+    bans: z.array(DraftItemSchema).optional(),
+    // score, tower_state, barracks_state, heroes — all pass through silently (Phase 4 does not type them)
+  })
+  .passthrough()
+
+const ScoreboardSchema = z
+  .object({
+    radiant: TeamScoreboardSchema.optional(),
+    dire: TeamScoreboardSchema.optional(),
+  })
+  .passthrough()
+
 export const LiveGameSchema = z
   .object({
     match_id: z.number(),
@@ -50,6 +75,7 @@ export const LiveGameSchema = z
     dire_series_wins: z.number().optional(),
     series_type: z.number().optional(), // 0=BO1, 1=BO3, 2=BO5
     players: z.array(PlayerSchema).optional(),
+    scoreboard: ScoreboardSchema.optional(),
     radiant_team: TeamSchema.optional(),
     dire_team: TeamSchema.optional(),
   })
