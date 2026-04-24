@@ -89,7 +89,12 @@ Plans:
   1. During the draft phase, user sees all picks and bans per team rendered as hero portraits, with new selections appearing within ~5 seconds of happening live (DRAFT-01)
   2. User sees a clear indicator of which team is currently picking or banning at any moment (DRAFT-02)
   3. Polling cadence switches automatically to 5s while `game_state` indicates draft and back to 30s once the match is in-game
-**Plans:** TBD
+**Plans:** 4 plans
+Plans:
+- [x] 04-01-PLAN.md — Wave 0: red-state test scaffolds (valve.test.ts scoreboard, draftOrder.test.ts CM 7.40 sequence, useDraftDetail.test.ts refetchInterval cadence)
+- [x] 04-02-PLAN.md — Wave 1 backend: extend LiveGameSchema with ScoreboardSchema (D-17), add TTL.DRAFT=4 (D-15), getLiveLeagueGamesFast() + GET /api/live/draft/:matchId route (D-16)
+- [ ] 04-03-PLAN.md — Wave 2 client logic: draftOrder.ts pure turn inference (D-08), useDraftDetail.ts hook with dynamic refetchInterval (D-12), stale-comment cleanup in useMatchDetail.ts (D-13) — turns Wave 0 tests GREEN
+- [ ] 04-04-PLAN.md — Wave 3 client UI: DraftPortrait, DraftColumn, DraftTurnIndicator, DraftSection, MatchPage composition (D-03), includes human checkpoint for live-draft verification
 **UI hint:** yes
 
 ### Phase 5: Hero & Player Intel
@@ -136,7 +141,7 @@ Plans:
 | 1. Foundations | 4/4 | Complete | 2026-04-23 |
 | 2. Live Matches List | 4/4 | Complete | 2026-04-24 |
 | 3. Match Core | 4/4 | Complete | 2026-04-24 |
-| 4. Draft UX | 0/? | Not started | - |
+| 4. Draft UX | 0/4 | Planned | - |
 | 5. Hero & Player Intel | 0/? | Not started | - |
 | 6. Win Probability | 0/? | Not started | - |
 | 7. Harden & Deploy | 0/? | Not started | - |
