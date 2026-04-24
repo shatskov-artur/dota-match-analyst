@@ -38,6 +38,11 @@ export interface EnrichedGame {
   players?: PlayerDetail[]
   radiant_team?: { team_name?: string }
   dire_team?: { team_name?: string }
+  scoreboard?: {
+    radiant?: { score?: number; [key: string]: unknown }
+    dire?: { score?: number; [key: string]: unknown }
+    [key: string]: unknown
+  }
 }
 
 export interface LiveGamesResponse {

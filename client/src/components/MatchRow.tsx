@@ -1,5 +1,4 @@
 import { Link } from 'react-router'
-import clsx from 'clsx'
 import StatusTag from './StatusTag'
 import { getStatusLabel, getSeriesLabel } from '../utils/gameState'
 import { formatDuration } from '../utils/formatDuration'
@@ -12,7 +11,7 @@ interface MatchRowProps {
 export default function MatchRow({ game }: MatchRowProps) {
   const radiantName = game.radiant_team?.team_name ?? 'TBD'
   const direName = game.dire_team?.team_name ?? 'TBD'
-  const statusLabel = getStatusLabel(game.game_state)
+  const statusLabel = getStatusLabel(game.game_state, game.scoreboard)
   const seriesLabel = getSeriesLabel(game.series_type)
   const radiantWins = game.radiant_series_wins ?? 0
   const direWins = game.dire_series_wins ?? 0
@@ -20,29 +19,41 @@ export default function MatchRow({ game }: MatchRowProps) {
   return (
     <Link
       to={`/match/${game.match_id}`}
-      className={clsx(
-        'flex items-center gap-4 px-4 min-h-[44px]',
-        'border-b border-gray-800 hover:bg-gray-900 cursor-pointer block',
-      )}
+      className="group flex items-center gap-6 px-8 min-h-[52px] border-b border-[#1a1a1a] cursor-pointer block"
+      style={{ transition: 'background 160ms ease' }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLElement).style.background = '#111111'
+        ;(e.currentTarget as HTMLElement).style.borderLeftColor = '#b03030'
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLElement).style.background = 'transparent'
+        ;(e.currentTarget as HTMLElement).style.borderLeftColor = 'transparent'
+      }}
     >
-      {/* Team names — flex-1 takes remaining width */}
-      <span className="flex-1 text-white text-sm font-normal">
-        {radiantName}
-        <span className="text-gray-500"> vs </span>
-        {direName}
+      {/* Left ember accent bar on hover */}
+      <span
+        className="absolute left-0 w-[2px] h-full"
+        style={{ background: 'transparent', transition: 'background 160ms ease' }}
+      />
+
+      {/* Team names */}
+      <span className="flex-1 min-w-0 flex items-baseline gap-2.5 text-sm">
+        <span className="text-[#d8d8d8] font-medium truncate">{radiantName}</span>
+        <span className="text-[#303030] font-light shrink-0">vs</span>
+        <span className="text-[#d8d8d8] font-medium truncate">{direName}</span>
       </span>
 
-      {/* Right-side: series score, status tag, duration — pushed right with ml-auto */}
-      <span className="ml-auto flex items-center gap-3">
+      {/* Right meta cluster */}
+      <span className="shrink-0 flex items-center gap-5">
         {seriesLabel && (
-          <span className="text-gray-400 text-xs font-normal">
-            {radiantWins}-{direWins} {seriesLabel}
+          <span className="text-[#424242] text-[11px] tracking-[0.1em] tabular-nums">
+            {radiantWins}–{direWins}
+            <span className="ml-1.5 text-[#303030]">{seriesLabel}</span>
           </span>
         )}
         <StatusTag status={statusLabel} />
-        {/* D-04: duration absent during draft — guard !== undefined (not falsy, 0 is valid) */}
         {game.duration !== undefined && (
-          <span className="text-gray-400 text-xs font-normal">
+          <span className="text-[#383838] text-[11px] tabular-nums font-mono tracking-wide">
             {formatDuration(game.duration)}
           </span>
         )}

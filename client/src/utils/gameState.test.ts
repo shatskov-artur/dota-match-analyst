@@ -14,8 +14,14 @@ describe('getStatusLabel', () => {
   it('returns "Unknown" for unrecognised game_state (e.g. 99)', () => {
     expect(getStatusLabel(99)).toBe('Unknown')
   })
-  it('returns "Unknown" for undefined game_state', () => {
+  it('returns "Unknown" for undefined game_state without scoreboard', () => {
     expect(getStatusLabel(undefined)).toBe('Unknown')
+  })
+  it('returns "Live" for undefined game_state when scoreboard is present', () => {
+    expect(getStatusLabel(undefined, {})).toBe('Live')
+  })
+  it('returns "Unknown" for undefined game_state when scoreboard is null', () => {
+    expect(getStatusLabel(undefined, null)).toBe('Unknown')
   })
 })
 
