@@ -3,7 +3,7 @@
 **Project:** Dota 2 Match Analyst
 **Version:** v1
 **Granularity:** standard
-**Last updated:** 2026-04-23
+**Last updated:** 2026-04-24
 
 ## Overview
 
@@ -73,7 +73,12 @@ Plans:
   3. User sees tower and barracks status per lane for both sides, decoded from `building_state`, with a graceful placeholder when the field is absent (MATCH-03)
   4. User sees the current series score and a visible disclosure that live data is delayed by approximately two minutes (MATCH-04)
   5. User sees K/D/A and net worth for all ten players in the match screen (MATCH-05)
-**Plans:** TBD
+**Plans:** 4 plans
+Plans:
+- [ ] 03-01-PLAN.md — Wave 1: browser heroMapper (Vite JSON import), formatGoldDiff utility + tests, valve.ts PlayerSchema D-08 extension
+- [ ] 03-02-PLAN.md — Wave 2: useMatchDetail hook (cache-read, refetch on miss, polling stop, building decode)
+- [ ] 03-03-PLAN.md — Wave 3: SkeletonPlayerRow, PlayerRow, ScoreHeader components
+- [ ] 03-04-PLAN.md — Wave 4: HeroPlayerGrid, BuildingsSection, MatchPage assembly + App.tsx router swap (includes human checkpoint)
 **UI hint:** yes
 
 ### Phase 4: Draft UX
@@ -129,8 +134,8 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundations | 4/4 | Complete | 2026-04-23 |
-| 2. Live Matches List | 0/4 | Not started | - |
-| 3. Match Core | 0/? | Not started | - |
+| 2. Live Matches List | 4/4 | Complete | 2026-04-24 |
+| 3. Match Core | 0/4 | Not started | - |
 | 4. Draft UX | 0/? | Not started | - |
 | 5. Hero & Player Intel | 0/? | Not started | - |
 | 6. Win Probability | 0/? | Not started | - |
