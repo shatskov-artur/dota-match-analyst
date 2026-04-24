@@ -5,24 +5,28 @@ interface DraftColumnProps {
   team: 'radiant' | 'dire'
   picks: DraftItem[]
   bans: DraftItem[]
-  isActive: boolean   // true when activeTeam matches AND gameState === 2 (DraftSection handles this)
-  tentative: boolean  // D-08 — ambiguous first-pick inference → render dashed border + reduced alpha
+  isActive: boolean   // true when activeTeam matches AND gameState === 2
+  tentative: boolean  // D-08 — ambiguous first-pick → dashed border + reduced glow
+  activePickIndex?: number  // index of next-to-fill pick slot (-1 or default = no active slot)
+  activeBanIndex?: number   // index of next-to-fill ban slot  (-1 or default = no active slot)
 }
 
 /**
- * One team's draft column per D-01 + D-02:
- *   - Top: 5 pick slots (portraits, padded with empty placeholders)
- *   - Bottom: 7 ban slots (portraits with red X overlay, padded with empty placeholders)
- *   - Left-edge ember glow when isActive (D-06), dashed variant when tentative (D-08)
- *
- * Ember glow values copied verbatim from MatchRow.tsx hover pattern (lines 22-31) —
- * 04-PATTERNS.md §Ember glow on active element. Do NOT invent different colors or timings.
+ * One team's draft column per D-01 + D-02.
+ * Gap-05: forwards isActive and ordinal badge to each DraftPortrait.
+ *   - Picks ordinals: "P1"–"P5" (shown only on filled slots)
+ *   - Bans ordinals:  "B1"–"B7" (shown only on filled slots)
+ *   - Active slot: the slot at activePickIndex / activeBanIndex gets isActive=true
  */
-export default function DraftColumn({ team, picks, bans, isActive, tentative }: DraftColumnProps) {
-  const labelColor = team === 'radiant' ? '#4ade80' : '#ef4444'   // radiant / dire tokens
-  const labelText = team === 'radiant' ? 'Radiant' : 'Dire'
+export default function DraftColumn({
+  team, picks, bans, isActive, tentative,
+  activePickIndex = -1, activeBanIndex = -1,
+}: DraftColumnProps) {
+  const labelColor = team === 'radiant' ? '#4ade80' : '#ef4444'
+  const labelText  = team === 'radiant' ? 'Radiant' : 'Dire'
 
   // Ember glow: three states (inactive / active confident / active tentative).
+  // Values copied verbatim from MatchRow.tsx hover pattern per 04-PATTERNS.md §Ember glow.
   const borderLeft =
     isActive && !tentative ? '2px solid #b03030'
     : isActive && tentative ? '2px dashed #b03030'
@@ -37,16 +41,15 @@ export default function DraftColumn({ team, picks, bans, isActive, tentative }: 
 
   return (
     <div
-      className="flex-1 pl-3 py-2"
+      className="pl-3 py-2"
       style={{
         borderLeft,
         boxShadow,
         background,
-        // 160ms transition matches MatchRow hover (client/src/components/MatchRow.tsx line 23).
         transition: 'border 160ms ease, box-shadow 160ms ease, background 160ms ease',
       }}
     >
-      {/* Column group label — 10px uppercase, exact copy-paste of HeroPlayerGrid.tsx lines 64-65 */}
+      {/* Column group label */}
       <p
         className="text-[10px] uppercase tracking-[0.3em] font-bold mb-2"
         style={{ color: labelColor }}
@@ -54,17 +57,29 @@ export default function DraftColumn({ team, picks, bans, isActive, tentative }: 
         {labelText}
       </p>
 
-      {/* Picks row — always 5 slots per D-02 (CM 7.40 = 5 picks per team) */}
+      {/* Picks row — always 5 slots per D-02 */}
       <div className="flex items-center gap-1 mb-2">
         {Array.from({ length: 5 }).map((_, i) => (
-          <DraftPortrait key={`pick-${i}`} kind="pick" heroId={picks[i]?.hero_id} />
+          <DraftPortrait
+            key={`pick-${i}`}
+            kind="pick"
+            heroId={picks[i]?.hero_id}
+            isActive={i === activePickIndex}
+            ordinal={`P${i + 1}`}
+          />
         ))}
       </div>
 
-      {/* Bans row — always 7 slots per D-02 (CM 7.40 = 7 bans per team) */}
+      {/* Bans row — always 7 slots per D-02 */}
       <div className="flex items-center gap-1">
         {Array.from({ length: 7 }).map((_, i) => (
-          <DraftPortrait key={`ban-${i}`} kind="ban" heroId={bans[i]?.hero_id} />
+          <DraftPortrait
+            key={`ban-${i}`}
+            kind="ban"
+            heroId={bans[i]?.hero_id}
+            isActive={i === activeBanIndex}
+            ordinal={`B${i + 1}`}
+          />
         ))}
       </div>
     </div>
