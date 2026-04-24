@@ -13,7 +13,7 @@ import type { LiveGamesResponse } from './useLiveGames'
  *   3. refetchInterval: false when game_state === 6 (post-game) — stops quota drain.
  *   4. useEffect redirect: fires only after isFetched === true AND match still absent.
  *
- * CRITICAL (TQ v5): refetchInterval is a plain number — NOT a callback (Phase 4 upgrades to dynamic).
+ * CRITICAL (TQ v5): refetchInterval is a plain number. Draft-speed 5s polling lives in useDraftDetail (Phase 4 D-12/D-13).
  * CRITICAL (TQ v5): onSuccess removed — derive all state from query.data reactively.
  * CRITICAL: Do NOT set enabled: !!matchFromCache — that prevents refetch on cache miss (breaks D-15).
  */
