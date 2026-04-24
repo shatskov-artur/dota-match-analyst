@@ -45,61 +45,61 @@ export default function ScoreHeader({ match }: ScoreHeaderProps) {
         style={{ borderBottom: '1px solid #1a1a1a' }}
       >
         {/* Left: Radiant team name + kill score + series score */}
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-2">
           <span
-            className="text-sm font-bold uppercase tracking-[0.15em]"
+            className="text-xs font-bold uppercase tracking-[0.2em]"
             style={{ color: '#4ade80' }}
           >
             {match.radiant_team?.team_name ?? 'TBD'}
           </span>
           <span
-            className="text-[28px] font-bold tabular-nums font-mono leading-none"
-            style={{ color: '#d8d8d8' }}
+            className="text-[52px] font-bold tabular-nums font-mono leading-none"
+            style={{ color: '#ffffff' }}
           >
             {match.radiant_score ?? 0}
           </span>
           <span
-            className="text-[10px] tabular-nums tracking-[0.1em]"
-            style={{ color: '#303030' }}
+            className="text-[11px] tabular-nums tracking-[0.08em]"
+            style={{ color: '#666666' }}
           >
             {seriesScore}
           </span>
         </div>
 
         {/* Center: StatusTag + gold diff + delay disclosure */}
-        <div className="flex flex-col items-center gap-2">
+        <div className="flex flex-col items-center gap-3">
           <StatusTag status={status} />
           <span
-            className="text-sm tabular-nums font-mono font-bold"
+            className="text-base tabular-nums font-mono font-bold"
             style={{ color: goldDiff.color }}
           >
             {goldDiff.text}
           </span>
           <span
-            className="text-[10px] tracking-[0.15em] uppercase"
-            style={{ color: '#303030' }}
+            className="text-[10px] tracking-[0.12em] uppercase"
+            style={{ color: '#555555' }}
           >
             {delayLabel}
           </span>
         </div>
 
         {/* Right: Dire kill score + team name + series score (mirrored) */}
-        <div className="flex flex-col items-end gap-1">
+        <div className="flex flex-col items-end gap-2">
           <span
-            className="text-sm font-bold uppercase tracking-[0.15em]"
+            className="text-xs font-bold uppercase tracking-[0.2em]"
             style={{ color: '#ef4444' }}
           >
             {match.dire_team?.team_name ?? 'TBD'}
           </span>
           <span
-            className="text-[28px] font-bold tabular-nums font-mono leading-none"
-            style={{ color: '#d8d8d8' }}
+            className="text-[52px] font-bold tabular-nums font-mono leading-none"
+            style={{ color: '#ffffff' }}
           >
             {match.dire_score ?? 0}
           </span>
           <span
-            className="text-[10px] tabular-nums tracking-[0.1em]"
-            style={{ color: '#303030' }}
+            className="text-[11px] tabular-nums tracking-[0.08em]"
+            style={{ color: '#666666' }}
           >
             {seriesScore}
           </span>

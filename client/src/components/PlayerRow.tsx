@@ -65,52 +65,52 @@ export default function PlayerRow({ player, hasGpm, hasXpm, hasLhDn }: PlayerRow
 
       {/* Name column — flex-1, two lines: player name + hero name */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm leading-none truncate" style={{ color: '#d8d8d8' }}>
+        <p className="text-sm leading-none truncate" style={{ color: '#e8e8e8' }}>
           {isDraftSlot ? '—' : (player.name ?? '—')}
         </p>
         {heroInfo && !isDraftSlot && (
-          <p className="text-[10px] leading-none mt-0.5 truncate" style={{ color: '#303030' }}>
+          <p className="text-[10px] leading-none mt-0.5 truncate" style={{ color: '#666666' }}>
             {heroInfo.name}
           </p>
         )}
       </div>
 
       {/* LVL column — 28px */}
-      <span className="text-[12px] tabular-nums shrink-0 text-right" style={{ width: 28, color: '#585858' }}>
+      <span className="text-[12px] tabular-nums shrink-0 text-right" style={{ width: 28, color: '#888888' }}>
         {isDraftSlot ? '—' : (player.level ?? '—')}
       </span>
 
       {/* K/D/A column — 64px */}
       <span className="text-[12px] font-mono tabular-nums shrink-0" style={{ width: 64 }}>
-        <span style={{ color: '#d8d8d8' }}>{isDraftSlot ? '—' : (player.kills ?? '—')}</span>
-        <span style={{ color: '#303030' }}>/</span>
+        <span style={{ color: '#e8e8e8' }}>{isDraftSlot ? '—' : (player.kills ?? '—')}</span>
+        <span style={{ color: '#444444' }}>/</span>
         <span style={{ color: '#ef4444' }}>{isDraftSlot ? '—' : (player.death ?? '—')}</span>
-        <span style={{ color: '#303030' }}>/</span>
-        <span style={{ color: '#d8d8d8' }}>{isDraftSlot ? '—' : (player.assists ?? '—')}</span>
+        <span style={{ color: '#444444' }}>/</span>
+        <span style={{ color: '#e8e8e8' }}>{isDraftSlot ? '—' : (player.assists ?? '—')}</span>
       </span>
 
       {/* NW column — 56px */}
-      <span className="text-[12px] tabular-nums shrink-0 text-right" style={{ width: 56, color: '#d8d8d8' }}>
+      <span className="text-[12px] tabular-nums shrink-0 text-right" style={{ width: 56, color: '#e8e8e8' }}>
         {isDraftSlot ? '—' : (player.net_worth !== undefined ? player.net_worth.toLocaleString() : '—')}
       </span>
 
       {/* Optional GPM column — 40px */}
       {hasGpm && (
-        <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ width: 40, color: '#585858' }}>
+        <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ width: 40, color: '#888888' }}>
           {isDraftSlot ? '—' : (player.gpm ?? '—')}
         </span>
       )}
 
       {/* Optional XPM column — 40px */}
       {hasXpm && (
-        <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ width: 40, color: '#585858' }}>
+        <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ width: 40, color: '#888888' }}>
           {isDraftSlot ? '—' : (player.xpm ?? '—')}
         </span>
       )}
 
       {/* Optional LH/DN column — 48px */}
       {hasLhDn && (
-        <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ width: 48, color: '#585858' }}>
+        <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ width: 48, color: '#888888' }}>
           {isDraftSlot ? '—' : (player.lh !== undefined ? `${player.lh} / ${player.dn ?? 0}` : '—')}
         </span>
       )}

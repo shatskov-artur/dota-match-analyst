@@ -23,28 +23,28 @@ export default function MatchPage() {
         }}
       />
 
-      {/* Back nav — copy verbatim from MatchPlaceholder */}
+      {/* Back nav */}
       <Link
         to="/"
-        className="inline-flex items-center gap-2 mb-12 text-[11px] uppercase tracking-[0.25em]"
-        style={{ color: '#303030', transition: 'color 160ms ease' }}
-        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = '#b03030')}
-        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = '#303030')}
+        className="inline-flex items-center gap-2 mb-10 text-[11px] uppercase tracking-[0.25em]"
+        style={{ color: '#666666', transition: 'color 160ms ease' }}
+        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = '#e05050')}
+        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = '#666666')}
       >
         ← Back to matches
       </Link>
 
-      {/* Match title h1 — D-04 */}
+      {/* Match title h1 */}
       <h1
-        className="font-bold leading-none tracking-tight mb-10"
+        className="font-bold leading-none tracking-tight mb-8"
         style={{
-          fontSize: 'clamp(2rem, 6vw, 4.5rem)',
-          color: '#303030',
-          letterSpacing: '-0.03em',
+          fontSize: 'clamp(1.8rem, 5vw, 3.5rem)',
+          color: '#ffffff',
+          letterSpacing: '-0.02em',
         }}
       >
         {match?.radiant_team?.team_name ?? 'TBD'}
-        <span style={{ color: '#141414' }}> vs </span>
+        <span style={{ color: '#3a3a3a' }}> vs </span>
         {match?.dire_team?.team_name ?? 'TBD'}
       </h1>
 

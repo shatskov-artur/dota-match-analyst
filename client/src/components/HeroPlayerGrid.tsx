@@ -28,22 +28,22 @@ export default function HeroPlayerGrid({ radiantPlayers, direPlayers, isLoading 
       <div className="shrink-0" style={{ width: 48 }} />  {/* portrait spacer */}
       <div className="flex-1" />                            {/* name spacer */}
       <span className="text-[10px] uppercase tracking-[0.2em] shrink-0 text-right"
-            style={{ width: 28, color: '#303030' }}>LVL</span>
+            style={{ width: 28, color: '#555555' }}>LVL</span>
       <span className="text-[10px] uppercase tracking-[0.2em] shrink-0 text-right"
-            style={{ width: 64, color: '#303030' }}>K/D/A</span>
+            style={{ width: 64, color: '#555555' }}>K/D/A</span>
       <span className="text-[10px] uppercase tracking-[0.2em] shrink-0 text-right"
-            style={{ width: 56, color: '#303030' }}>NW</span>
+            style={{ width: 56, color: '#555555' }}>NW</span>
       {hasGpm && (
         <span className="text-[10px] uppercase tracking-[0.2em] shrink-0 text-right"
-              style={{ width: 40, color: '#303030' }}>GPM</span>
+              style={{ width: 40, color: '#555555' }}>GPM</span>
       )}
       {hasXpm && (
         <span className="text-[10px] uppercase tracking-[0.2em] shrink-0 text-right"
-              style={{ width: 40, color: '#303030' }}>XPM</span>
+              style={{ width: 40, color: '#555555' }}>XPM</span>
       )}
       {hasLhDn && (
         <span className="text-[10px] uppercase tracking-[0.2em] shrink-0 text-right"
-              style={{ width: 48, color: '#303030' }}>LH/DN</span>
+              style={{ width: 48, color: '#555555' }}>LH/DN</span>
       )}
     </div>
   )
