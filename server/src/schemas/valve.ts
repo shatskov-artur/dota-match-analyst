@@ -14,6 +14,12 @@ const PlayerSchema = z
     assists: z.number().optional(),
     net_worth: z.number().optional(),
     respawn_timer: z.number().optional(), // 0 when alive, >0 when dead
+    // D-08: optional extended stats — present in-game via .passthrough(), absent during draft
+    level: z.number().optional(),
+    gpm: z.number().optional(),
+    xpm: z.number().optional(),
+    lh: z.number().optional(),     // last hits
+    dn: z.number().optional(),     // denies
   })
   .passthrough()
 
