@@ -21,7 +21,7 @@
 
 - [x] **Phase 1: Foundations** - Repo, TS scaffolds, Redis cache, schemas, shared primitives (no UI) ✓ 2026-04-23
 - [x] **Phase 2: Live Matches List** - Home page with active tournaments and live matches auto-refreshing every 30s (completed 2026-04-24)
-- [ ] **Phase 3: Match Core** - In-game match screen with score, gold diff, hero grid, towers/rax, K/D/A, series score, delay disclosure
+- [x] **Phase 3: Match Core** - In-game match screen with score, gold diff, hero grid, towers/rax, K/D/A, series score, delay disclosure ✓ 2026-04-24
 - [ ] **Phase 4: Draft UX** - Live picks/bans grid with 5s polling and whose-turn indicator
 - [ ] **Phase 5: Hero & Player Intel** - Hero patch winrate, counterpick tooltip with "known to play" cross-reference, per-player hero stats, hidden-profile safety
 - [ ] **Phase 6: Win Probability** - Stratz win-probability bar gated to >5min game time, degrades silently on failure
@@ -75,10 +75,10 @@ Plans:
   5. User sees K/D/A and net worth for all ten players in the match screen (MATCH-05)
 **Plans:** 4 plans
 Plans:
-- [ ] 03-01-PLAN.md — Wave 1: browser heroMapper (Vite JSON import), formatGoldDiff utility + tests, valve.ts PlayerSchema D-08 extension
-- [ ] 03-02-PLAN.md — Wave 2: useMatchDetail hook (cache-read, refetch on miss, polling stop, building decode)
-- [ ] 03-03-PLAN.md — Wave 3: SkeletonPlayerRow, PlayerRow, ScoreHeader components
-- [ ] 03-04-PLAN.md — Wave 4: HeroPlayerGrid, BuildingsSection, MatchPage assembly + App.tsx router swap (includes human checkpoint)
+- [x] 03-01-PLAN.md — Wave 1: browser heroMapper (Vite JSON import), formatGoldDiff utility + tests, valve.ts PlayerSchema D-08 extension
+- [x] 03-02-PLAN.md — Wave 2: useMatchDetail hook (cache-read, refetch on miss, polling stop, building decode)
+- [x] 03-03-PLAN.md — Wave 3: SkeletonPlayerRow, PlayerRow, ScoreHeader components
+- [x] 03-04-PLAN.md — Wave 4: HeroPlayerGrid, BuildingsSection, MatchPage assembly + App.tsx router swap (includes human checkpoint)
 **UI hint:** yes
 
 ### Phase 4: Draft UX
@@ -135,7 +135,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. Foundations | 4/4 | Complete | 2026-04-23 |
 | 2. Live Matches List | 4/4 | Complete | 2026-04-24 |
-| 3. Match Core | 0/4 | Not started | - |
+| 3. Match Core | 4/4 | Complete | 2026-04-24 |
 | 4. Draft UX | 0/? | Not started | - |
 | 5. Hero & Player Intel | 0/? | Not started | - |
 | 6. Win Probability | 0/? | Not started | - |
