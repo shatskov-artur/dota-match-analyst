@@ -25,3 +25,15 @@ async function fetchLiveLeagueGames(): Promise<LiveLeagueGames> {
 export function getLiveLeagueGames(): Promise<LiveLeagueGames> {
   return cached('live_games', TTL.LIVE_MATCH, fetchLiveLeagueGames)
 }
+
+/**
+ * Returns live league games from Valve for the DRAFT fast lane (Phase 4 D-16).
+ * Result is cached for TTL.DRAFT (4s) — 1 upstream call per 4s regardless of client polling rate.
+ * CRITICAL: distinct cache key 'live_games:draft' does NOT share with the 30s 'live_games' key,
+ * so populating this lane does NOT evict the 30s cache serving HomePage.
+ * Shares the same upstream fetchLiveLeagueGames() — DRAFT adds a cache dimension, not a new upstream path.
+ * Per CLAUDE.md: cached() is the ONLY path to upstream. Never call fetchLiveLeagueGames directly.
+ */
+export function getLiveLeagueGamesFast(): Promise<LiveLeagueGames> {
+  return cached('live_games:draft', TTL.DRAFT, fetchLiveLeagueGames)
+}
