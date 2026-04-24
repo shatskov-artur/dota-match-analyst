@@ -22,7 +22,7 @@
 - [x] **Phase 1: Foundations** - Repo, TS scaffolds, Redis cache, schemas, shared primitives (no UI) ✓ 2026-04-23
 - [x] **Phase 2: Live Matches List** - Home page with active tournaments and live matches auto-refreshing every 30s (completed 2026-04-24)
 - [x] **Phase 3: Match Core** - In-game match screen with score, gold diff, hero grid, towers/rax, K/D/A, series score, delay disclosure ✓ 2026-04-24
-- [ ] **Phase 4: Draft UX** - Live picks/bans grid with 5s polling and whose-turn indicator
+- [x] **Phase 4: Draft UX** - Live picks/bans grid with 5s polling and whose-turn indicator ✓ 2026-04-25
 - [ ] **Phase 5: Hero & Player Intel** - Hero patch winrate, counterpick tooltip with "known to play" cross-reference, per-player hero stats, hidden-profile safety
 - [ ] **Phase 6: Win Probability** - Stratz win-probability bar gated to >5min game time, degrades silently on failure
 - [ ] **Phase 7: Harden & Deploy** - Rate-limit queues, error boundaries, 429 backoff, deploy to Vercel + Railway
