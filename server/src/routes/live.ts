@@ -64,17 +64,21 @@ liveRoutes.get('/draft/:matchId', async (c) => {
     return c.json({ error: 'Invalid matchId' }, 400)
   }
 
-  const data = await getLiveLeagueGamesFast()
-  const game = data.result.games?.find((g) => g.match_id === parsedId)
-  if (!game) {
-    return c.json({ error: 'Match not live' }, 404)
-  }
+  try {
+    const data = await getLiveLeagueGamesFast()
+    const game = data.result.games?.find((g) => g.match_id === parsedId)
+    if (!game) {
+      return c.json({ error: 'Match not live' }, 404)
+    }
 
-  return c.json({
-    match_id: game.match_id,
-    game_state: game.game_state,
-    scoreboard: game.scoreboard,
-  })
+    return c.json({
+      match_id: game.match_id,
+      game_state: game.game_state,
+      scoreboard: game.scoreboard,
+    })
+  } catch {
+    return c.json({ error: 'Upstream error' }, 502)
+  }
 })
 
 export default liveRoutes
