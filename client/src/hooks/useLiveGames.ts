@@ -2,6 +2,25 @@ import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { format } from 'date-fns'
 
+export interface PlayerDetail {
+  account_id?: number
+  hero_id?: number
+  name?: string
+  team?: number // 0=Radiant, 1=Dire, 2=Broadcaster, 4=Unassigned
+  kills?: number
+  death?: number
+  assists?: number
+  net_worth?: number
+  respawn_timer?: number // 0 when alive, >0 when dead
+  // D-08: optional extended stats — present in-game via .passthrough(), absent during draft
+  level?: number
+  gpm?: number
+  xpm?: number
+  lh?: number
+  dn?: number
+  [key: string]: unknown // .passthrough() — Valve adds fields silently each patch
+}
+
 export interface EnrichedGame {
   match_id: number
   league_id: number
@@ -11,6 +30,12 @@ export interface EnrichedGame {
   series_type?: number
   radiant_series_wins?: number
   dire_series_wins?: number
+  radiant_score?: number
+  dire_score?: number
+  tower_state?: number
+  barracks_state?: number
+  stream_delay_s?: number
+  players?: PlayerDetail[]
   radiant_team?: { team_name?: string }
   dire_team?: { team_name?: string }
 }
