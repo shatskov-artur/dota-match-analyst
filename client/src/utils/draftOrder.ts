@@ -112,3 +112,72 @@ export function inferFirstPickFromHistory(scoreboard: {
   if (matchesDFirst && !matchesRFirst) return 1
   return null // both match OR neither matches — ambiguous
 }
+
+// ---------------------------------------------------------------------------
+// buildDraftTimeline — reconstruct the global CM 7.40 pick/ban order from
+// Valve scoreboard data. Exported for DraftTimeline.tsx consumption.
+// ---------------------------------------------------------------------------
+
+export interface DraftTimelineSlot {
+  /** 0-based global step in the CM 7.40 sequence (0 = first ban, 23 = last pick). */
+  step: number
+  /** 0 = Radiant, 1 = Dire */
+  team: 0 | 1
+  action: 'pick' | 'ban'
+  /** hero_id from Valve scoreboard. undefined when slot not yet filled. */
+  heroId: number | undefined
+  /** true when this slot is the NEXT to be filled (the "active" cursor). */
+  isActive: boolean
+}
+
+/**
+ * Reconstruct an ordered list of 24 draft slots in global CM 7.40 sequence.
+ *
+ * Returns null when firstPickTeam is null (ambiguous — caller should fall
+ * back to a per-team layout). When non-null, the returned array always has
+ * exactly 24 entries regardless of how many steps have been completed.
+ *
+ * Mapping: slot.heroId is read from the Nth occurrence of (team, action) in the
+ * sequence — i.e. the per-team array index is derived by counting prior entries.
+ *
+ * Pure, no side effects, no React imports.
+ */
+export function buildDraftTimeline(
+  scoreboard: {
+    radiant?: { picks?: Array<{ hero_id?: number }>; bans?: Array<{ hero_id?: number }> }
+    dire?:    { picks?: Array<{ hero_id?: number }>; bans?: Array<{ hero_id?: number }> }
+  },
+  firstPickTeam: 0 | 1 | null,
+): DraftTimelineSlot[] | null {
+  if (firstPickTeam === null) return null
+
+  const seq = firstPickTeam === 0 ? CM_740_RADIANT_FIRST : CM_740_DIRE_FIRST
+  const rPicks = scoreboard.radiant?.picks ?? []
+  const rBans  = scoreboard.radiant?.bans  ?? []
+  const dPicks = scoreboard.dire?.picks    ?? []
+  const dBans  = scoreboard.dire?.bans     ?? []
+
+  const totalCompleted = rPicks.length + rBans.length + dPicks.length + dBans.length
+
+  // Per-(team, action) index counters for array lookup.
+  const idx: Record<string, number> = { '0:pick': 0, '1:pick': 0, '0:ban': 0, '1:ban': 0 }
+
+  return seq.map(([team, action], i) => {
+    const key = `${team}:${action}`
+    const pos = idx[key]
+    idx[key]++
+
+    const arr =
+      team === 0
+        ? action === 'pick' ? rPicks : rBans
+        : action === 'pick' ? dPicks : dBans
+
+    return {
+      step: i,
+      team,
+      action,
+      heroId: arr[pos]?.hero_id,
+      isActive: i === totalCompleted,
+    }
+  })
+}
