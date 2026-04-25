@@ -1,5 +1,7 @@
 import DraftPortrait from './DraftPortrait'
 import type { DraftItem } from '../hooks/useDraftDetail'
+import type { HeroStatsEntry } from '../hooks/useHeroStats'
+import type { PlayerIntel } from '../hooks/useMatchIntel'
 
 interface DraftColumnProps {
   team: 'radiant' | 'dire'
@@ -9,6 +11,8 @@ interface DraftColumnProps {
   tentative: boolean  // D-08 — ambiguous first-pick → dashed border + reduced glow
   activePickIndex?: number  // index of next-to-fill pick slot (-1 or default = no active slot)
   activeBanIndex?: number   // index of next-to-fill ban slot  (-1 or default = no active slot)
+  heroStatsMap?: Record<number, HeroStatsEntry>   // optional — undefined while loading
+  playerIntelMap?: Record<number, PlayerIntel>    // optional — undefined while loading or non-draft
 }
 
 /**
@@ -17,10 +21,14 @@ interface DraftColumnProps {
  *   - Picks ordinals: "P1"–"P5" (shown only on filled slots)
  *   - Bans ordinals:  "B1"–"B7" (shown only on filled slots)
  *   - Active slot: the slot at activePickIndex / activeBanIndex gets isActive=true
+ *
+ * Phase 5 (Pitfall 6): heroStatsMap and playerIntelMap forwarded to pick DraftPortrait instances.
+ * Ban DraftPortrait: no heroStats or playerIntel (per D-02 — badge on picks only, tooltip on picks only).
  */
 export default function DraftColumn({
   team, picks, bans, isActive, tentative,
   activePickIndex = -1, activeBanIndex = -1,
+  heroStatsMap, playerIntelMap,
 }: DraftColumnProps) {
   const labelColor = team === 'radiant' ? '#4ade80' : '#ef4444'
   const labelText  = team === 'radiant' ? 'Radiant' : 'Dire'
@@ -66,11 +74,14 @@ export default function DraftColumn({
             heroId={picks[i]?.hero_id}
             isActive={i === activePickIndex}
             ordinal={`P${i + 1}`}
+            heroStats={picks[i]?.hero_id !== undefined ? heroStatsMap?.[picks[i].hero_id!] : undefined}
+            playerIntel={picks[i]?.hero_id !== undefined ? playerIntelMap?.[picks[i].hero_id!] : undefined}
           />
         ))}
       </div>
 
       {/* Bans row — always 7 slots per D-02 */}
+      {/* Ban slots do NOT receive heroStats or playerIntel (D-02 — badge on picks only) */}
       <div className="flex items-center gap-1">
         {Array.from({ length: 7 }).map((_, i) => (
           <DraftPortrait
