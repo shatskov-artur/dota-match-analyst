@@ -1,5 +1,7 @@
+import { z } from 'zod'
 import { cached, TTL } from '../cache.js'
-import { LeagueSchema } from '../schemas/openDota.js'
+import { LeagueSchema, HeroStatsSchema, PlayerHeroSchema, HeroMatchupSchema } from '../schemas/openDota.js'
+import type { HeroStatsMap } from '../schemas/openDota.js'
 
 const OPENDOTA_BASE = 'https://api.opendota.com/api'
 
@@ -38,4 +40,119 @@ async function fetchLeagueName(leagueId: number): Promise<string | null> {
  */
 export function getLeagueName(leagueId: number): Promise<string | null> {
   return cached(`league:${leagueId}`, TTL.HERO_STATS, () => fetchLeagueName(leagueId))
+}
+
+// ─── Hero Stats ─────────────────────────────────────────────────────────────
+
+/**
+ * Pure transform helper — exported for unit testing (Wave 0 openDotaApi.test.ts).
+ * Converts raw heroStats array → HeroStatsMap keyed by hero id.
+ * Uses `h.id ?? h.hero_id` defensively (assumption A1: field may be `id` or `hero_id`).
+ * GUARD: skips entries where pro_pick === 0 (Pitfall 7 — division-by-zero protection).
+ */
+export function buildHeroStatsMap(raw: z.infer<typeof HeroStatsSchema>[]): HeroStatsMap {
+  const map: HeroStatsMap = {}
+  for (const h of raw) {
+    const heroId = h.id ?? h.hero_id
+    if (heroId === undefined) continue
+    if (!h.pro_pick || h.pro_pick === 0) continue  // Pitfall 7: skip zero-pick heroes
+    map[heroId] = {
+      win_rate: (h.pro_win ?? 0) / h.pro_pick,
+      pick_rate: h.pro_pick,
+    }
+  }
+  return map
+}
+
+async function fetchHeroStats(): Promise<HeroStatsMap | null> {
+  let res: Response
+  try {
+    res = await fetch(`${OPENDOTA_BASE}/heroStats`)
+  } catch (err) {
+    console.error('[openDotaApi] Network error fetching heroStats:', (err as Error).message)
+    return null
+  }
+  if (!res.ok) {
+    console.error(`[openDotaApi] heroStats fetch error: ${res.status} ${res.statusText}`)
+    return null
+  }
+  const raw: unknown = await res.json()
+  const parsed = z.array(HeroStatsSchema).safeParse(raw)
+  if (!parsed.success) {
+    console.error('[openDotaApi] HeroStatsSchema parse failure')
+    return null
+  }
+  return buildHeroStatsMap(parsed.data)
+}
+
+/**
+ * Returns hero patch stats map cached 6h server-side.
+ * Cache key: 'hero:stats' (D-13 — single global key, not per-hero).
+ * Returns null when OpenDota is unreachable — badge strips will be hidden (D-03).
+ */
+export function getHeroStats(): Promise<HeroStatsMap | null> {
+  return cached('hero:stats', TTL.HERO_STATS, fetchHeroStats)
+}
+
+// ─── Player Heroes ───────────────────────────────────────────────────────────
+
+async function fetchPlayerHeroes(accountId: number): Promise<z.infer<typeof PlayerHeroSchema>[] | null> {
+  let res: Response
+  try {
+    res = await fetch(`${OPENDOTA_BASE}/players/${accountId}/heroes`)
+  } catch (err) {
+    console.error(`[openDotaApi] Network error fetching player heroes ${accountId}:`, (err as Error).message)
+    return null
+  }
+  if (!res.ok) {
+    console.error(`[openDotaApi] Player heroes fetch error: ${res.status} ${res.statusText}`)
+    return null
+  }
+  const raw: unknown = await res.json()
+  const parsed = z.array(PlayerHeroSchema).safeParse(raw)
+  if (!parsed.success) {
+    console.error(`[openDotaApi] PlayerHeroSchema parse failure for account ${accountId}`)
+    return null
+  }
+  return parsed.data
+}
+
+/**
+ * Returns player hero stats array cached 15min per accountId.
+ * Cache key: 'player:heroes:{accountId}' (D-13).
+ * SECURITY: never called for hidden profiles (account_id=4294967295) — caller guards via hiddenProfile().
+ */
+export function getPlayerHeroes(accountId: number): Promise<z.infer<typeof PlayerHeroSchema>[] | null> {
+  return cached(`player:heroes:${accountId}`, TTL.PLAYER_STATS, () => fetchPlayerHeroes(accountId))
+}
+
+// ─── Hero Matchups ───────────────────────────────────────────────────────────
+
+async function fetchHeroMatchups(heroId: number): Promise<z.infer<typeof HeroMatchupSchema>[] | null> {
+  let res: Response
+  try {
+    res = await fetch(`${OPENDOTA_BASE}/heroes/${heroId}/matchups`)
+  } catch (err) {
+    console.error(`[openDotaApi] Network error fetching matchups for hero ${heroId}:`, (err as Error).message)
+    return null
+  }
+  if (!res.ok) {
+    console.error(`[openDotaApi] Hero matchups fetch error: ${res.status} ${res.statusText}`)
+    return null
+  }
+  const raw: unknown = await res.json()
+  const parsed = z.array(HeroMatchupSchema).safeParse(raw)
+  if (!parsed.success) {
+    console.error(`[openDotaApi] HeroMatchupSchema parse failure for hero ${heroId}`)
+    return null
+  }
+  return parsed.data
+}
+
+/**
+ * Returns hero matchup array cached 6h per heroId.
+ * Cache key: 'hero:matchups:{heroId}' (D-13).
+ */
+export function getHeroMatchups(heroId: number): Promise<z.infer<typeof HeroMatchupSchema>[] | null> {
+  return cached(`hero:matchups:${heroId}`, TTL.HERO_STATS, () => fetchHeroMatchups(heroId))
 }
