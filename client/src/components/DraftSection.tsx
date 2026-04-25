@@ -3,6 +3,8 @@ import DraftColumn from './DraftColumn'
 import DraftTimeline from './DraftTimeline'
 import DraftTurnIndicator from './DraftTurnIndicator'
 import type { Scoreboard } from '../hooks/useDraftDetail'
+import type { HeroStatsEntry } from '../hooks/useHeroStats'
+import type { PlayerIntel } from '../hooks/useMatchIntel'
 
 interface DraftSectionProps {
   scoreboard: Scoreboard             // caller already verified presence (D-10)
@@ -10,6 +12,8 @@ interface DraftSectionProps {
   activeTeam: 'radiant' | 'dire' | null
   action: 'pick' | 'ban' | null
   tentative: boolean
+  heroStatsMap?: Record<number, HeroStatsEntry>   // DRAFT-03 — pass to both render paths
+  playerIntelMap?: Record<number, PlayerIntel>    // DRAFT-04 — pass to both render paths
 }
 
 /**
@@ -21,10 +25,15 @@ interface DraftSectionProps {
  *  - Column path (fallback): when firstPickTeam is ambiguous (draft not yet started
  *    or symmetric step), renders two DraftColumns stacked vertically (gap-05 fallback).
  *
+ * Phase 5 (Pitfall 6): heroStatsMap and playerIntelMap forwarded to BOTH rendering paths —
+ * DraftTimeline (primary) AND both DraftColumn instances (fallback). Badge strips and tooltips
+ * must appear regardless of which path is active.
+ *
  * Draft timer and bonus clock are NOT available from Valve WebAPI — planned for Phase 6.
  */
 export default function DraftSection({
   scoreboard, gameState, activeTeam, action, tentative,
+  heroStatsMap, playerIntelMap,
 }: DraftSectionProps) {
   const radiantPicks = scoreboard.radiant?.picks ?? []
   const radiantBans  = scoreboard.radiant?.bans  ?? []
@@ -50,9 +59,15 @@ export default function DraftSection({
 
       {timeline ? (
         /* Primary: global CM 7.40 order timeline (gap-06) */
-        <DraftTimeline slots={timeline} gameState={gameState} />
+        <DraftTimeline
+          slots={timeline}
+          gameState={gameState}
+          heroStatsMap={heroStatsMap}
+          playerIntelMap={playerIntelMap}
+        />
       ) : (
         /* Fallback: per-team stacked columns when firstPickTeam is ambiguous */
+        /* CRITICAL (Pitfall 6): heroStatsMap and playerIntelMap forwarded to BOTH DraftColumn instances */
         <div className="flex flex-col gap-3">
           <DraftColumn
             team="radiant"
@@ -60,6 +75,10 @@ export default function DraftSection({
             bans={radiantBans}
             isActive={activeTeam === 'radiant' && isDraft}
             tentative={tentative && activeTeam === 'radiant'}
+            activePickIndex={isDraft && activeTeam === 'radiant' && action === 'pick' ? radiantPicks.length : -1}
+            activeBanIndex={isDraft && activeTeam === 'radiant' && action === 'ban' ? radiantBans.length : -1}
+            heroStatsMap={heroStatsMap}
+            playerIntelMap={playerIntelMap}
           />
           <DraftColumn
             team="dire"
@@ -67,6 +86,10 @@ export default function DraftSection({
             bans={direBans}
             isActive={activeTeam === 'dire' && isDraft}
             tentative={tentative && activeTeam === 'dire'}
+            activePickIndex={isDraft && activeTeam === 'dire' && action === 'pick' ? direPicks.length : -1}
+            activeBanIndex={isDraft && activeTeam === 'dire' && action === 'ban' ? direBans.length : -1}
+            heroStatsMap={heroStatsMap}
+            playerIntelMap={playerIntelMap}
           />
         </div>
       )}

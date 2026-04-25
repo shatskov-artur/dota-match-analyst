@@ -6,11 +6,21 @@ import HeroPlayerGrid from '../components/HeroPlayerGrid'
 import BuildingsSection from '../components/BuildingsSection'
 import DraftSection from '../components/DraftSection'
 import { useDraftDetail } from '../hooks/useDraftDetail'
+import { useHeroStats } from '../hooks/useHeroStats'
+import { useMatchIntel } from '../hooks/useMatchIntel'
 
 export default function MatchPage() {
   const { matchId } = useParams()
   const { match, radiantPlayers, direPlayers, buildings, isLoading } = useMatchDetail(matchId)
   const draft = useDraftDetail(matchId)
+  const heroStatsMap = useHeroStats()
+  const intel = useMatchIntel(matchId)
+
+  // Build playerIntelMap: heroId → PlayerIntel for quick lookup by portrait slots (DraftPortrait looks up by heroId)
+  // IMPORTANT: indexed by heroId (not accountId) — DraftPortrait receives heroId from the slot
+  const playerIntelMap = intel.data
+    ? Object.fromEntries(intel.data.players.map(p => [p.heroId, p]))
+    : undefined
 
   return (
     <div
@@ -57,6 +67,7 @@ export default function MatchPage() {
       )}
 
       {/* DraftSection — Phase 4 D-03 section order step 3; D-10 mount only when scoreboard present */}
+      {/* Phase 5: heroStatsMap and playerIntelMap passed for badge strips (DRAFT-03) and tooltips (DRAFT-04) */}
       {draft.scoreboard && (
         <DraftSection
           scoreboard={draft.scoreboard}
@@ -64,6 +75,8 @@ export default function MatchPage() {
           activeTeam={draft.activeTeam}
           action={draft.action}
           tentative={draft.tentative}
+          heroStatsMap={heroStatsMap}
+          playerIntelMap={playerIntelMap}
         />
       )}
 
