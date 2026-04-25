@@ -1,4 +1,4 @@
-import { useLayoutEffect, useState } from 'react'
+import { useLayoutEffect, useRef, useState } from 'react'
 import { heroMapper } from '../utils/heroMapper'
 // CRITICAL: import from '../utils/heroMapper' — NOT '@shared/heroMapper' (Vite bundler compat)
 import type { PlayerIntel } from '../hooks/useMatchIntel'
@@ -6,7 +6,7 @@ import type { PlayerIntel } from '../hooks/useMatchIntel'
 interface IntelTooltipProps {
   playerIntel: PlayerIntel
   heroName: string        // localized hero name (from heroMapper on the played hero)
-  anchorRef: React.RefObject<HTMLDivElement>
+  anchorRef: React.RefObject<HTMLDivElement | null>
   isLoading?: boolean     // true while useMatchIntel data is in flight
 }
 
