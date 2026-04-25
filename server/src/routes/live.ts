@@ -1,6 +1,9 @@
 import { Hono } from 'hono'
 import { getLiveLeagueGames, getLiveLeagueGamesFast } from '../services/valveApi.js'
-import { getLeagueName } from '../services/openDotaApi.js'
+import { getLeagueName, getPlayerHeroes, getHeroMatchups } from '../services/openDotaApi.js'
+import { rankCounters, applyKnownToPlay } from '../services/intel.js'
+import { hiddenProfile } from '../../../shared/hiddenProfile.js'
+import { cached, TTL } from '../cache.js'
 
 const liveRoutes = new Hono()
 
@@ -14,7 +17,13 @@ const liveRoutes = new Hono()
  * SECURITY: T-02-01 — OpenDota response validated via LeagueSchema.safeParse() in openDotaApi.ts.
  */
 liveRoutes.get('/games', async (c) => {
-  const data = await getLiveLeagueGames()
+  let data: Awaited<ReturnType<typeof getLiveLeagueGames>>
+  try {
+    data = await getLiveLeagueGames()
+  } catch (err) {
+    console.error('[live] getLiveLeagueGames failed:', (err as Error).message)
+    return c.json({ error: 'upstream_unavailable' }, 503)
+  }
   const games = data.result.games ?? []
 
   // De-duplicate league IDs before fetching to minimise upstream calls
@@ -76,6 +85,179 @@ liveRoutes.get('/draft/:matchId', async (c) => {
       game_state: game.game_state,
       scoreboard: game.scoreboard,
     })
+  } catch {
+    return c.json({ error: 'Upstream error' }, 502)
+  }
+})
+
+/**
+ * GET /api/live/intel/:matchId
+ * Returns combined intel for a live match: per-player hero stats + per-pick counterpicks
+ * with "known to play" flags pre-computed server-side (D-09).
+ *
+ * URL derivation: liveRoutes mounted at /api/live → liveRoutes.get('/intel/:matchId') → /api/live/intel/:matchId
+ *
+ * Two-level caching:
+ *  1. Outer: cached('intel:{matchId}', TTL.PLAYER_STATS=15min) — N viewers = 1 call per 15min
+ *  2. Inner: getPlayerHeroes(accountId) cached per-player at TTL.PLAYER_STATS
+ *            getHeroMatchups(heroId) cached per-hero at TTL.HERO_STATS (6h)
+ *
+ * Response shape: {
+ *   players: Array<{
+ *     accountId: number,
+ *     heroId: number,
+ *     playerName: string,
+ *     games: number | null,       // null = hidden profile
+ *     winRate: number | null,     // null = hidden profile
+ *     counters: Array<{
+ *       heroId: number,
+ *       knownPlayers: string[]    // opposing player names who meet D-09 threshold
+ *     }>
+ *   }>
+ * }
+ *
+ * SECURITY:
+ *  - T-5-01: matchId validated via Number.isFinite() — 400 on non-numeric input.
+ *  - T-5-02: outer try/catch returns opaque 502 — no upstream details.
+ *  - T-5-03: all OpenDota responses parsed via .safeParse() in service layer.
+ *  - T-5-04: cache key is intel:{matchId} — not per-user.
+ */
+liveRoutes.get('/intel/:matchId', async (c) => {
+  const rawMatchId = c.req.param('matchId')
+  const parsedId = Number(rawMatchId)
+  if (!Number.isFinite(parsedId)) {
+    return c.json({ error: 'Invalid matchId' }, 400)
+  }
+
+  try {
+    // Read live game from fast cache (TTL.DRAFT = 4s) — no new Valve API call
+    const data = await getLiveLeagueGamesFast()
+    const game = data.result.games?.find((g) => g.match_id === parsedId)
+    if (!game) return c.json({ error: 'Match not live' }, 404)
+
+    // Outer cache: entire intel payload keyed by match_id (not per-user — T-5-04)
+    const payload = await cached(`intel:${parsedId}`, TTL.PLAYER_STATS, async () => {
+      // Extract picks from both teams (Pitfall 5: use scoreboard, not picks_bans)
+      const radiantPicks = game.scoreboard?.radiant?.picks ?? []
+      const direPicks = game.scoreboard?.dire?.picks ?? []
+      const allPicks = [...radiantPicks, ...direPicks]
+
+      // Unique hero IDs across all picks (for matchup fetching)
+      const uniqueHeroIds = [...new Set(
+        allPicks.map(p => p.hero_id).filter((id): id is number => id !== undefined)
+      )]
+
+      // Players list from Valve payload — team 0 = Radiant, team 1 = Dire
+      const players = (game.players ?? []).filter(
+        p => p.team === 0 || p.team === 1
+      )
+
+      // Batch fetch: all hero matchups + all player full hero histories concurrently
+      const [matchupResults, playerResults] = await Promise.all([
+        // Hero matchups (6h cached per hero) — one per unique picked hero
+        Promise.allSettled(
+          uniqueHeroIds.map(heroId => getHeroMatchups(heroId))
+        ),
+        // Player hero histories (15min cached per account) — hidden profiles short-circuited
+        // Store FULL hero list (not just current pick) for "known to play" cross-reference (D-09)
+        Promise.allSettled(
+          players.map(async (p) => {
+            const accountId = p.account_id ?? 0
+            const heroId = p.hero_id ?? 0
+            if (!accountId || hiddenProfile(accountId)) {
+              return {
+                accountId,
+                heroId,
+                playerName: p.name ?? '',
+                stats: null,
+                fullHeroList: [] as Array<{ hero_id?: string | number; games?: number; win?: number }>,
+              }
+            }
+            const heroes = await getPlayerHeroes(accountId)
+            const heroEntry = heroes?.find(h => Number(h.hero_id) === heroId) ?? null
+            return {
+              accountId,
+              heroId,
+              playerName: p.name ?? '',
+              stats: heroEntry
+                ? { games: heroEntry.games ?? 0, win: heroEntry.win ?? 0 }
+                : null,
+              fullHeroList: heroes ?? [],  // full history for "known to play" cross-reference (D-09)
+            }
+          })
+        ),
+      ])
+
+      // Build matchup lookup: heroId → ranked counters
+      const matchupByHero = new Map<number, ReturnType<typeof rankCounters>>()
+      uniqueHeroIds.forEach((heroId, idx) => {
+        const result = matchupResults[idx]
+        if (result.status === 'fulfilled' && result.value) {
+          matchupByHero.set(heroId, rankCounters(result.value))
+        }
+      })
+
+      // Build player lookup: accountId → { stats, fullHeroList, playerName }
+      type PlayerEntry = {
+        accountId: number
+        heroId: number
+        playerName: string
+        stats: { games: number; win: number } | null
+        fullHeroList: Array<{ hero_id?: string | number; games?: number; win?: number }>
+      }
+      const playerEntryMap = new Map<number, PlayerEntry>()
+      for (const r of playerResults) {
+        if (r.status === 'fulfilled') {
+          playerEntryMap.set(r.value.accountId, r.value)
+        }
+      }
+
+      // Compute per-pick output — match players to their picks via hero_id
+      const output = players.map((p) => {
+        const accountId = p.account_id ?? 0
+        const heroId = p.hero_id ?? 0
+        const teamId = p.team ?? 0  // 0=Radiant, 1=Dire
+        const entry = playerEntryMap.get(accountId)
+        const counters = matchupByHero.get(heroId) ?? []
+
+        // D-09: for each counter hero, find opposing players who are "known to play" it
+        const opposingTeamId = teamId === 0 ? 1 : 0
+        const opposingPlayers = players.filter(op => op.team === opposingTeamId)
+
+        const countersWithFlags = counters.map(counter => {
+          const knownPlayers: string[] = []
+          for (const op of opposingPlayers) {
+            const opAccountId = op.account_id ?? 0
+            const opEntry = playerEntryMap.get(opAccountId)
+            if (!opEntry) continue
+            // Use full hero history to find the counter hero in the opposing player's history
+            const opHeroEntry = opEntry.fullHeroList.find(
+              h => Number(h.hero_id) === counter.heroId
+            )
+            // D-09 threshold: games >= 10 AND win/games > 0.5 (applyKnownToPlay enforces this)
+            if (opHeroEntry && applyKnownToPlay(opHeroEntry)) {
+              knownPlayers.push(op.name ?? `Player ${opAccountId}`)
+            }
+          }
+          return { heroId: counter.heroId, knownPlayers }
+        })
+
+        return {
+          accountId,
+          heroId,
+          playerName: entry?.playerName ?? p.name ?? '',
+          games: entry?.stats?.games ?? null,
+          winRate: entry?.stats
+            ? (entry.stats.games > 0 ? entry.stats.win / entry.stats.games : 0)
+            : null,
+          counters: countersWithFlags,
+        }
+      })
+
+      return { players: output }
+    })
+
+    return c.json(payload)
   } catch {
     return c.json({ error: 'Upstream error' }, 502)
   }
