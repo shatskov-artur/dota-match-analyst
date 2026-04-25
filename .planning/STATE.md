@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-last_updated: "2026-04-24T20:50:00.000Z"
+status: Phase 5 planned (6 plans, 3 waves), ready to run
+last_updated: "2026-04-25T17:38:50.400Z"
 progress:
   total_phases: 7
   completed_phases: 4
-  total_plans: 22
-  completed_plans: 22
-  percent: 57
+  total_plans: 24
+  completed_plans: 20
+  percent: 83
 ---
 
 # Project State
@@ -17,14 +17,14 @@ progress:
 ## Current Status
 
 Phase: Ready to execute
-Last updated: 2026-04-24
+Last updated: 2026-04-25
 
 ## Project Reference
 
 See: .planning/PROJECT.md
 
 **Core value:** You open a live match and instantly understand who's winning and why — from draft through final push.
-**Current focus:** Phase 4 — Draft UX
+**Current focus:** Phase 5 — Hero & Player Intel
 
 ## Phase Progress
 
@@ -34,18 +34,15 @@ See: .planning/PROJECT.md
 | 2 | Live Matches List | Complete — all 4 plans done, verified 2026-04-24 |
 | 3 | Match Core | Complete — all 4 plans done, verified 2026-04-24 |
 | 4 | Draft UX | Complete — all 6 plans done, verified 2026-04-25 |
-| 5 | Hero & Player Intel | Not started |
+| 5 | Hero & Player Intel | Executing — Wave 0 in progress |
 | 6 | Win Probability | Not started |
 | 7 | Harden & Deploy | Not started |
 
 ## Current Position
 
-Phase: 4 (Draft UX) — EXECUTING
-Plan: 4 of 4 (Wave 3 — 04-04)
-
-- **Phase:** 5 (Hero & Player Intel) — Ready to plan
-- **Status:** Phase 4 complete, Phase 5 next
-- **Progress:** [████░░░░░░] 57% (4/7 phases complete)
+- **Phase:** 5 (Hero & Player Intel) — Executing Wave 0 → Plan 01 complete
+- **Status:** Phase 5 executing — Plan 01/06 done (Wave 0 stubs)
+- **Progress:** [████░░░░░░] 57% (4/7 phases complete, 20/24 plans done)
 
 ## Performance Metrics
 
@@ -75,7 +72,7 @@ Plan: 4 of 4 (Wave 3 — 04-04)
 ### Todos
 
 - Resolve research open question on Stratz 2026 access model before starting Phase 6.
-- Calibrate "known to play" threshold for counterpick tooltip before starting Phase 5 (suggested default: >=5 games AND >50% pickrate in last 3 months).
+- "Known to play" threshold resolved: games >= 10 AND win/games > 0.5 (server-side, D-09).
 - Phase 4 refetchInterval: use dynamic `(query) => ...` callback form for 5s draft polling (TQ v5 supports this for Phase 4+).
 
 ### Blockers
@@ -84,9 +81,9 @@ None.
 
 ## Session Continuity
 
-- Last session: 2026-04-24 — Phase 3 executed and verified (match screen live)
-- Next action: `/gsd-discuss-phase 4` then `/gsd-plan-phase 4` then `/gsd-execute-phase 4`
+- Last session: 2026-04-25 — Phase 5 Plan 01 complete (Wave 0 RED-state test stubs)
+- Next action: Execute Plan 05-02 (BFF services: getHeroStats, getPlayerHeroes, getHeroMatchups, intel.ts)
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
 
-**Planned Phase:** 4 (Draft UX) — 4 plans — 2026-04-24T20:09:06.188Z
+**Executing Phase:** 5 (Hero & Player Intel) — Plan 01/06 complete — 2026-04-25T19:38:00.000Z

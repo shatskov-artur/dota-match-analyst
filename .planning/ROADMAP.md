@@ -3,7 +3,7 @@
 **Project:** Dota 2 Match Analyst
 **Version:** v1
 **Granularity:** standard
-**Last updated:** 2026-04-24
+**Last updated:** 2026-04-25
 
 ## Overview
 
@@ -107,7 +107,14 @@ Plans:
   3. User sees per-player stats inline on each drafted hero: total games on that hero and win rate for that player (PLAYER-01)
   4. When a player has a hidden Steam profile (account_id = 4294967295), their row shows the Valve-provided name with no OpenDota stats and the UI does not crash or error (PLAYER-02)
   5. Counterpick and player stat lookups are batched and server-cached per match so a page of ten players produces at most one OpenDota call per player per TTL across all viewers
-**Plans:** TBD
+**Plans:** 6 plans
+Plans:
+- [x] 05-01-PLAN.md — Wave 0: test stubs RED state (winrateColor.test.ts, openDotaApi.test.ts extension, intel.test.ts, useMatchIntel.test.ts)
+- [ ] 05-02-PLAN.md — Wave 1 BFF schemas + services (HeroStatsSchema, PlayerHeroSchema, HeroMatchupSchema, getHeroStats, getPlayerHeroes, getHeroMatchups, intel.ts pure helpers)
+- [ ] 05-03-PLAN.md — Wave 1 BFF routes (GET /api/heroes/stats + GET /api/live/intel/:matchId — Promise.allSettled aggregator, cached by match_id)
+- [ ] 05-04-PLAN.md — Wave 2 client utils + hooks (winrateColor.ts, useHeroStats.ts, useMatchIntel.ts — turns client tests GREEN)
+- [ ] 05-05-PLAN.md — Wave 2 client components (IntelTooltip.tsx new, DraftPortrait.tsx extended with badge strip + tooltip trigger)
+- [ ] 05-06-PLAN.md — Wave 2 client wiring (DraftTimeline, DraftColumn, DraftSection, MatchPage prop threading + human checkpoint)
 **UI hint:** yes
 
 ### Phase 6: Win Probability
@@ -142,7 +149,7 @@ Plans:
 | 2. Live Matches List | 4/4 | Complete | 2026-04-24 |
 | 3. Match Core | 4/4 | Complete | 2026-04-24 |
 | 4. Draft UX | 0/4 | Planned | - |
-| 5. Hero & Player Intel | 0/? | Not started | - |
+| 5. Hero & Player Intel | 1/6 | Executing | - |
 | 6. Win Probability | 0/? | Not started | - |
 | 7. Harden & Deploy | 0/? | Not started | - |
 
