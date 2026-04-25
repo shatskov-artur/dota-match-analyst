@@ -27,13 +27,17 @@
 
 - [ ] **DRAFT-01**: User can see all picks and bans per team with hero portraits, updating live every 5 seconds during draft phase
 - [ ] **DRAFT-02**: User can see which team is currently picking or banning
-- [ ] **DRAFT-03**: User can see the current patch winrate and pro pickrate next to each drafted hero
-- [ ] **DRAFT-04**: User can hover a drafted hero to see its top counterpicks AND whether any opposing team players are "known to play" those counters (based on their OpenDota hero history)
+- [x] **DRAFT-03
+**: User can see the current patch winrate and pro pickrate next to each drafted hero
+- [x] **DRAFT-04
+**: User can hover a drafted hero to see its top counterpicks AND whether any opposing team players are "known to play" those counters (based on their OpenDota hero history)
 
 ### PLAYER — Contextual Stats
 
-- [ ] **PLAYER-01**: User can see each player's stats on their currently-drafted hero: total games played on this hero and win rate
-- [ ] **PLAYER-02**: Hidden-profile players (Steam account_id = 4294967295) show the player name from Valve but no OpenDota stats, without crashing the UI
+- [x] **PLAYER-01
+**: User can see each player's stats on their currently-drafted hero: total games played on this hero and win rate
+- [x] **PLAYER-02
+**: Hidden-profile players (Steam account_id = 4294967295) show the player name from Valve but no OpenDota stats, without crashing the UI
 
 ---
 

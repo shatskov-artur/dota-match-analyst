@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Phase 5 planned (6 plans, 3 waves), ready to run
-last_updated: "2026-04-25T17:38:50.400Z"
+status: executing
+last_updated: "2026-04-25T17:47:11.183Z"
 progress:
   total_phases: 7
   completed_phases: 4
@@ -34,15 +34,15 @@ See: .planning/PROJECT.md
 | 2 | Live Matches List | Complete — all 4 plans done, verified 2026-04-24 |
 | 3 | Match Core | Complete — all 4 plans done, verified 2026-04-24 |
 | 4 | Draft UX | Complete — all 6 plans done, verified 2026-04-25 |
-| 5 | Hero & Player Intel | Executing — Wave 0 in progress |
+| 5 | Hero & Player Intel | Executing — Wave 1 in progress (Plan 02/06 done) |
 | 6 | Win Probability | Not started |
 | 7 | Harden & Deploy | Not started |
 
 ## Current Position
 
-- **Phase:** 5 (Hero & Player Intel) — Executing Wave 0 → Plan 01 complete
-- **Status:** Phase 5 executing — Plan 01/06 done (Wave 0 stubs)
-- **Progress:** [████░░░░░░] 57% (4/7 phases complete, 20/24 plans done)
+- **Phase:** 5 (Hero & Player Intel) — Executing Wave 1 → Plan 02 complete
+- **Status:** Phase 5 executing — Plan 02/06 done (BFF data layer: schemas, service functions, intel helpers)
+- **Progress:** [████████░░] 83%
 
 ## Performance Metrics
 
@@ -68,6 +68,7 @@ See: .planning/PROJECT.md
 - Phase 3: useMatchDetail reads ['live-games'] cache key shared with useLiveGames — no duplicate fetch
 - Phase 3: buildingDecoder called with tower_state (NOT building_state) — field name matters
 - Phase 3: color palette upgraded — white headings (#ffffff), 52px kill scores, secondary text ≥ #555555
+- Rule 3 fix: server/tsconfig.json rootDir changed from ./src to .. to allow shared/hiddenProfile.ts import
 
 ### Todos
 
@@ -81,9 +82,9 @@ None.
 
 ## Session Continuity
 
-- Last session: 2026-04-25 — Phase 5 Plan 01 complete (Wave 0 RED-state test stubs)
-- Next action: Execute Plan 05-02 (BFF services: getHeroStats, getPlayerHeroes, getHeroMatchups, intel.ts)
+- Last session: 2026-04-25 — Phase 5 Plan 02 complete (BFF data layer: schemas, service functions, intel helpers)
+- Next action: Execute Plan 05-03 (BFF routes: GET /api/heroes/stats + GET /api/live/intel/:matchId)
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
 
-**Executing Phase:** 5 (Hero & Player Intel) — Plan 01/06 complete — 2026-04-25T19:38:00.000Z
+**Executing Phase:** 5 (Hero & Player Intel) — Plan 02/06 complete — 2026-04-25T19:46:00.000Z
