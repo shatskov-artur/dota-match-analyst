@@ -3,6 +3,7 @@ import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { env } from './env.js'
 import liveRoutes from './routes/live.js'
+import heroRoutes from './routes/heroes.js'
 
 const app = new Hono()
 
@@ -13,6 +14,7 @@ app.get('/api/health', (c) => {
 })
 
 app.route('/api/live', liveRoutes)
+app.route('/api', heroRoutes)
 
 const port = Number(env.PORT)
 
