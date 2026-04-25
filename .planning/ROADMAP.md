@@ -113,7 +113,7 @@ Plans:
 - [ ] 05-02-PLAN.md — Wave 1 BFF schemas + services (HeroStatsSchema, PlayerHeroSchema, HeroMatchupSchema, getHeroStats, getPlayerHeroes, getHeroMatchups, intel.ts pure helpers)
 - [ ] 05-03-PLAN.md — Wave 1 BFF routes (GET /api/heroes/stats + GET /api/live/intel/:matchId — Promise.allSettled aggregator, cached by match_id)
 - [ ] 05-04-PLAN.md — Wave 2 client utils + hooks (winrateColor.ts, useHeroStats.ts, useMatchIntel.ts — turns client tests GREEN)
-- [ ] 05-05-PLAN.md — Wave 2 client components (IntelTooltip.tsx new, DraftPortrait.tsx extended with badge strip + tooltip trigger)
+- [x] 05-05-PLAN.md — Wave 2 client components (IntelTooltip.tsx new, DraftPortrait.tsx extended with badge strip + tooltip trigger)
 - [ ] 05-06-PLAN.md — Wave 2 client wiring (DraftTimeline, DraftColumn, DraftSection, MatchPage prop threading + human checkpoint)
 **UI hint:** yes
 
@@ -149,7 +149,7 @@ Plans:
 | 2. Live Matches List | 4/4 | Complete | 2026-04-24 |
 | 3. Match Core | 4/4 | Complete | 2026-04-24 |
 | 4. Draft UX | 0/4 | Planned | - |
-| 5. Hero & Player Intel | 1/6 | Executing | - |
+| 5. Hero & Player Intel | 5/6 | Executing | - |
 | 6. Win Probability | 0/? | Not started | - |
 | 7. Harden & Deploy | 0/? | Not started | - |
 

@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-04-25T17:57:01.611Z"
+last_updated: "2026-04-25T18:02:58.577Z"
 progress:
   total_phases: 7
   completed_phases: 4
   total_plans: 24
-  completed_plans: 22
-  percent: 92
+  completed_plans: 23
+  percent: 96
 ---
 
 # Project State
@@ -34,15 +34,15 @@ See: .planning/PROJECT.md
 | 2 | Live Matches List | Complete — all 4 plans done, verified 2026-04-24 |
 | 3 | Match Core | Complete — all 4 plans done, verified 2026-04-24 |
 | 4 | Draft UX | Complete — all 6 plans done, verified 2026-04-25 |
-| 5 | Hero & Player Intel | Executing — Plan 04/06 done (client hooks complete) |
+| 5 | Hero & Player Intel | Executing — Plan 05/06 done (IntelTooltip + DraftPortrait badge) |
 | 6 | Win Probability | Not started |
 | 7 | Harden & Deploy | Not started |
 
 ## Current Position
 
-- **Phase:** 5 (Hero & Player Intel) — Executing Wave 2 → Plan 04 complete
-- **Status:** Phase 5 executing — Plan 04/06 done (client hooks: winrateColor + useHeroStats + useMatchIntel)
-- **Progress:** [█████████░] 92%
+- **Phase:** 5 (Hero & Player Intel) — Executing Wave 2 → Plan 05 complete
+- **Status:** Phase 5 executing — Plan 05/06 done (IntelTooltip component + DraftPortrait badge strip)
+- **Progress:** [█████████░] 96%
 
 ## Performance Metrics
 
@@ -73,6 +73,9 @@ See: .planning/PROJECT.md
 - intel route outer cache key intel:{matchId} (not per-user) — T-5-04 DoS mitigation
 - useHeroStats uses staleTime: Infinity + refetchInterval: false — patch data never polls (T-5-04 DoS mitigation)
 - computeIntelInterval mirrors computeDraftInterval pattern exactly — game_state 2 = 5000ms, else false
+- pick_rate display in badge strip: raw pro_pick count shown as '{N}P' suffix (not percentage) — BFF returns raw count, normalization requires total pro games
+- React 19 useRef returns RefObject<T | null> — IntelTooltip anchorRef prop must be typed RefObject<HTMLDivElement | null>
+- DraftPortrait outer wrapper has no overflow-hidden — only inner portrait div clips; allows IntelTooltip (absolute) to escape clip boundary
 
 ### Todos
 
@@ -86,9 +89,9 @@ None.
 
 ## Session Continuity
 
-- Last session: 2026-04-25 — Phase 5 Plan 04 complete (client hooks: winrateColor + useHeroStats + useMatchIntel)
-- Next action: Execute Plan 05-05 (DraftPortrait badge strip + IntelTooltip component)
+- Last session: 2026-04-25 — Phase 5 Plan 05 complete (IntelTooltip + DraftPortrait badge strip + tooltip trigger)
+- Next action: Execute Plan 05-06 (Wire — thread heroStats/playerIntel props through DraftSection → DraftTimeline → DraftPortrait)
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
 
-**Executing Phase:** 5 (Hero & Player Intel) — Plan 04/06 complete — 2026-04-25T17:58:00.000Z
+**Executing Phase:** 5 (Hero & Player Intel) — Plan 05/06 complete — 2026-04-25T17:58:41Z
