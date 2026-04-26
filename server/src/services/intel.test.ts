@@ -13,6 +13,7 @@ vi.mock('../env.js', () => ({
     UPSTASH_REDIS_URL: 'rediss://test.upstash.io:6380',
     UPSTASH_REDIS_TOKEN: 'test-token',
     VALVE_API_KEY: 'test-key',
+    STRATZ_TOKEN: 'test-stratz-token',  // ADD: required for Phase 6 env validation
   },
 }))
 
@@ -95,5 +96,46 @@ describe('hidden-profile skip (PLAYER-02 — account_id = 4294967295 returns nul
     const mockFetch = vi.fn().mockResolvedValue([{ hero_id: 1, games: 20, win: 12 }])
     const result = await buildPlayerIntelEntry(12345, 1, [], mockFetch)
     expect(mockFetch).toHaveBeenCalledWith(12345)
+  })
+})
+
+describe('rankCountersStratz (MATCH-06 — Stratz nested advantage transform)', () => {
+  it('returns top-3 counter heroes sorted by winRateHeroId1 ascending', async () => {
+    const { rankCountersStratz } = await import('./intel.js')
+    const advantage = [
+      { heroId: 10, vs: [{ winRateHeroId1: 0.40 }] },  // worst matchup: heroId1 wins only 40%
+      { heroId: 20, vs: [{ winRateHeroId1: 0.45 }] },
+      { heroId: 30, vs: [{ winRateHeroId1: 0.42 }] },
+      { heroId: 40, vs: [{ winRateHeroId1: 0.48 }] },  // 4th — excluded by top-3 slice
+    ]
+    const result = rankCountersStratz(advantage)
+    expect(result).toHaveLength(3)
+    expect(result[0].heroId).toBe(10)  // lowest winRateHeroId1 = hardest counter
+    expect(result[1].heroId).toBe(30)
+    expect(result[2].heroId).toBe(20)
+  })
+
+  it('filters out entries where heroId is 0 or missing', async () => {
+    const { rankCountersStratz } = await import('./intel.js')
+    const advantage = [
+      { heroId: 0, vs: [{ winRateHeroId1: 0.30 }] },    // invalid — heroId 0 excluded
+      { heroId: undefined, vs: [{ winRateHeroId1: 0.32 }] },  // invalid — no heroId
+      { heroId: 15, vs: [{ winRateHeroId1: 0.44 }] },   // valid
+    ]
+    const result = rankCountersStratz(advantage)
+    expect(result).toHaveLength(1)
+    expect(result[0].heroId).toBe(15)
+  })
+
+  it('returns empty array when advantage is empty', async () => {
+    const { rankCountersStratz } = await import('./intel.js')
+    expect(rankCountersStratz([])).toEqual([])
+  })
+
+  it('disadvantageScore equals 1 - winRateHeroId1', async () => {
+    const { rankCountersStratz } = await import('./intel.js')
+    const advantage = [{ heroId: 7, vs: [{ winRateHeroId1: 0.40 }] }]
+    const result = rankCountersStratz(advantage)
+    expect(result[0].disadvantageScore).toBeCloseTo(0.60)
   })
 })
