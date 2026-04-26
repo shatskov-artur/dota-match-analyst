@@ -30,11 +30,12 @@ describe('computeGoldWinProb', () => {
     expect(result).toBeLessThan(0.515)
   })
 
-  it('radiant +10,000 gold → clamped to 0.95', async () => {
+  it('radiant +10,000 gold → sigmoid(2.7035) ≈ 0.937 (below clamp ceiling)', async () => {
     const { computeGoldWinProb } = await import('./winProbHeuristic.js')
     const result = computeGoldWinProb(10000)
-    // sigmoid(0.0335 + 0.000267*10000) = sigmoid(2.7035) ≈ 0.937 → clamped to 0.95
-    expect(result).toBe(0.95)
+    // sigmoid(0.0335 + 0.000267*10000) = sigmoid(2.7035) ≈ 0.9372 — within [0.05, 0.95], not clamped
+    expect(result).toBeGreaterThan(0.93)
+    expect(result).toBeLessThan(0.945)
   })
 
   it('dire +10,000 gold (diff=-10000) → ≈ 0.067 (not clamped to 0.05)', async () => {
