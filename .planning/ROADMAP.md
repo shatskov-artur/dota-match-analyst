@@ -3,7 +3,7 @@
 **Project:** Dota 2 Match Analyst
 **Version:** v1
 **Granularity:** standard
-**Last updated:** 2026-04-25
+**Last updated:** 2026-04-26
 
 ## Overview
 
@@ -126,7 +126,13 @@ Plans:
   2. Before the 5-minute threshold, the win-probability bar is hidden with no error state
   3. When Stratz is down, rate-limited, or returns null, the bar is hidden silently and the rest of the match screen continues to function (MATCH-06)
   4. Stratz responses are cached server-side by `match_id` only, so N simultaneous viewers of the same match produce at most one Stratz call per TTL
-**Plans:** TBD
+**Plans:** 5 plans
+Plans:
+- [ ] 06-01-PLAN.md — Wave 0: RED-state test stubs (useWinProbability.test.ts cadence contract, stratzApi.test.ts null-return, intel.test.ts rankCountersStratz)
+- [ ] 06-02-PLAN.md — Wave 1: Server infra (STRATZ_TOKEN in env.ts, TTL.WIN_PROB in cache.ts, schemas/stratz.ts, stratzApi.ts service, rankCountersStratz in intel.ts)
+- [ ] 06-03-PLAN.md — Wave 2: BFF routes (GET /api/live/winprob/:matchId, update intel aggregator to use getHeroMatchupsStratz + rankCountersStratz, remove OpenDota matchup functions)
+- [ ] 06-04-PLAN.md — Wave 3: Client hook + component (useWinProbability.ts, WinProbBar.tsx — turns Wave 0 client tests GREEN)
+- [ ] 06-05-PLAN.md — Wave 4: MatchPage wiring (insert WinProbBar after ScoreHeader, wire useWinProbability) + human checkpoint
 **UI hint:** yes
 
 ### Phase 7: Harden & Deploy
@@ -150,7 +156,7 @@ Plans:
 | 3. Match Core | 4/4 | Complete | 2026-04-24 |
 | 4. Draft UX | 0/4 | Planned | - |
 | 5. Hero & Player Intel | 5/6 | Executing | - |
-| 6. Win Probability | 0/? | Not started | - |
+| 6. Win Probability | 0/5 | Planned | - |
 | 7. Harden & Deploy | 0/? | Not started | - |
 
 ## Coverage Validation
