@@ -39,17 +39,6 @@ export const PlayerHeroSchema = z.object({
 
 export type PlayerHero = z.infer<typeof PlayerHeroSchema>
 
-// GET /api/heroes/{heroId}/matchups — array of hero vs. hero matchup objects.
-// CRITICAL: field may be `hero_id` (current) or `hero_id2` (older API version — assumption A3).
-export const HeroMatchupSchema = z.object({
-  hero_id: z.number().optional(),     // counter hero ID — current field name
-  hero_id2: z.number().optional(),    // defensive fallback for older API version
-  games_played: z.number().optional(),
-  wins: z.number().optional(),
-}).passthrough()
-
-export type HeroMatchup = z.infer<typeof HeroMatchupSchema>
-
 // Transformed shapes (server-computed, not raw API responses)
 export interface HeroStatsEntry {
   win_rate: number
@@ -57,11 +46,6 @@ export interface HeroStatsEntry {
 }
 
 export type HeroStatsMap = Record<number, HeroStatsEntry>
-
-export interface CounterHeroEntry {
-  heroId: number
-  disadvantageScore: number
-}
 
 export interface PlayerHeroEntry {
   hero_id: number

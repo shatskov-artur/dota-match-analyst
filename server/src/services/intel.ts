@@ -1,4 +1,10 @@
-import type { HeroMatchup } from '../schemas/openDota.js'
+// HeroMatchup inline type — schema removed from openDota.ts in Phase 6 (plan 03)
+type HeroMatchup = {
+  hero_id?: number
+  hero_id2?: number
+  games_played?: number
+  wins?: number
+}
 import type { StratzHeroDryadEntry } from '../schemas/stratz.js'
 import { hiddenProfile } from '../../../shared/hiddenProfile.js'
 

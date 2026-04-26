@@ -1,6 +1,6 @@
 import { z } from 'zod'
 import { cached, TTL } from '../cache.js'
-import { LeagueSchema, HeroStatsSchema, PlayerHeroSchema, HeroMatchupSchema } from '../schemas/openDota.js'
+import { LeagueSchema, HeroStatsSchema, PlayerHeroSchema } from '../schemas/openDota.js'
 import type { HeroStatsMap } from '../schemas/openDota.js'
 
 const OPENDOTA_BASE = 'https://api.opendota.com/api'
@@ -126,33 +126,3 @@ export function getPlayerHeroes(accountId: number): Promise<z.infer<typeof Playe
   return cached(`player:heroes:${accountId}`, TTL.PLAYER_STATS, () => fetchPlayerHeroes(accountId))
 }
 
-// ─── Hero Matchups ───────────────────────────────────────────────────────────
-
-async function fetchHeroMatchups(heroId: number): Promise<z.infer<typeof HeroMatchupSchema>[] | null> {
-  let res: Response
-  try {
-    res = await fetch(`${OPENDOTA_BASE}/heroes/${heroId}/matchups`)
-  } catch (err) {
-    console.error(`[openDotaApi] Network error fetching matchups for hero ${heroId}:`, (err as Error).message)
-    return null
-  }
-  if (!res.ok) {
-    console.error(`[openDotaApi] Hero matchups fetch error: ${res.status} ${res.statusText}`)
-    return null
-  }
-  const raw: unknown = await res.json()
-  const parsed = z.array(HeroMatchupSchema).safeParse(raw)
-  if (!parsed.success) {
-    console.error(`[openDotaApi] HeroMatchupSchema parse failure for hero ${heroId}`)
-    return null
-  }
-  return parsed.data
-}
-
-/**
- * Returns hero matchup array cached 6h per heroId.
- * Cache key: 'hero:matchups:{heroId}' (D-13).
- */
-export function getHeroMatchups(heroId: number): Promise<z.infer<typeof HeroMatchupSchema>[] | null> {
-  return cached(`hero:matchups:${heroId}`, TTL.HERO_STATS, () => fetchHeroMatchups(heroId))
-}
