@@ -6,6 +6,7 @@ import { getWinProbability, getHeroMatchupsStratz } from '../services/stratzApi.
 import type { StratzHeroDryadEntry } from '../schemas/stratz.js'
 import { hiddenProfile } from '../../../shared/hiddenProfile.js'
 import { cached, TTL } from '../cache.js'
+import { extractScoreboardInputs, computeGoldWinProb, computeEstWinProb } from '../services/winProbHeuristic.js'
 
 const liveRoutes = new Hono()
 
@@ -267,14 +268,14 @@ liveRoutes.get('/intel/:matchId', async (c) => {
 
 /**
  * GET /api/live/winprob/:matchId
- * Returns Stratz win probability for a live match, plus game state context.
+ * Returns win probability for a live match from Stratz (optional) and heuristic sources.
  * Response includes gameState and duration so the client hook can compute refetchInterval
  * without a separate useMatchDetail read.
  *
  * SECURITY:
  *  - T-6-03: matchId path param validated via Number.isFinite() → 400 on non-numeric.
  *  - T-6-04: Stratz errors are caught by getWinProbability (returns null) — no Stratz details forwarded.
- *  - T-6-02: radiantWinProb is null when Stratz unavailable — client silently hides bar (D-13).
+ *  - T-6-07: heuristic computed before return; outer catch returns opaque 502 — no new info exposed.
  */
 liveRoutes.get('/winprob/:matchId', async (c) => {
   const rawMatchId = c.req.param('matchId')
@@ -288,10 +289,23 @@ liveRoutes.get('/winprob/:matchId', async (c) => {
       getLiveLeagueGamesFast(),
     ])
     const game = data.result.games?.find((g) => g.match_id === parsedId)
+    const sbRadiant = (game?.scoreboard?.radiant as Record<string, unknown> | undefined)
+    const hasPlayers = Array.isArray(sbRadiant?.players) && (sbRadiant?.players as unknown[]).length > 0
+    const sbDuration = typeof (game?.scoreboard as Record<string, unknown> | undefined)?.duration === 'number'
+      ? (game?.scoreboard as Record<string, unknown>).duration as number
+      : null
+
+    // Heuristic inputs — always computable from Valve data; returns zeros when game absent
+    const inputs = extractScoreboardInputs(game as Record<string, unknown> | undefined)
+    const gold = computeGoldWinProb(inputs.goldDiff)
+    const estimate = computeEstWinProb(inputs)
+
     return c.json({
-      radiantWinProb: winProb,
-      gameState: game?.game_state ?? null,
-      duration: game?.duration ?? null,
+      stratz: winProb,                                      // null when Stratz doesn't track match
+      gold,                                                  // always a number ∈ [0.05, 0.95]
+      estimate,                                              // always a number ∈ [0.05, 0.95]
+      gameState: game?.game_state ?? (hasPlayers ? 5 : null),
+      duration: game?.duration ?? sbDuration,
     })
   } catch {
     return c.json({ error: 'Upstream error' }, 502)
