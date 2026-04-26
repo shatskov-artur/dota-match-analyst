@@ -5,6 +5,7 @@ describe('env module', () => {
     UPSTASH_REDIS_URL: 'rediss://test.upstash.io:6380',
     UPSTASH_REDIS_TOKEN: 'test-token',
     VALVE_API_KEY: 'test-valve-key',
+    STRATZ_TOKEN: 'test-stratz-token',  // D-01: required since Phase 6
   }
 
   beforeEach(() => {
@@ -13,16 +14,18 @@ describe('env module', () => {
   })
 
   afterEach(() => {
-    // Restore env after each test
+    // Restore env after each test (includes STRATZ_TOKEN — added Phase 6)
     for (const key of Object.keys(REQUIRED_VARS)) {
       delete process.env[key]
     }
     delete process.env.PORT
+    delete process.env.STRATZ_TOKEN
   })
 
   it('throws with clear message when UPSTASH_REDIS_URL is missing', async () => {
     process.env.UPSTASH_REDIS_TOKEN = REQUIRED_VARS.UPSTASH_REDIS_TOKEN
     process.env.VALVE_API_KEY = REQUIRED_VARS.VALVE_API_KEY
+    process.env.STRATZ_TOKEN = REQUIRED_VARS.STRATZ_TOKEN
     // UPSTASH_REDIS_URL not set
 
     await expect(import('./env.js')).rejects.toThrow('UPSTASH_REDIS_URL')
@@ -31,6 +34,7 @@ describe('env module', () => {
   it('throws with clear message when VALVE_API_KEY is missing', async () => {
     process.env.UPSTASH_REDIS_URL = REQUIRED_VARS.UPSTASH_REDIS_URL
     process.env.UPSTASH_REDIS_TOKEN = REQUIRED_VARS.UPSTASH_REDIS_TOKEN
+    process.env.STRATZ_TOKEN = REQUIRED_VARS.STRATZ_TOKEN
     // VALVE_API_KEY not set
 
     await expect(import('./env.js')).rejects.toThrow('VALVE_API_KEY')
@@ -40,18 +44,21 @@ describe('env module', () => {
     process.env.UPSTASH_REDIS_URL = REQUIRED_VARS.UPSTASH_REDIS_URL
     process.env.UPSTASH_REDIS_TOKEN = REQUIRED_VARS.UPSTASH_REDIS_TOKEN
     process.env.VALVE_API_KEY = REQUIRED_VARS.VALVE_API_KEY
+    process.env.STRATZ_TOKEN = REQUIRED_VARS.STRATZ_TOKEN
 
     const { env } = await import('./env.js')
 
     expect(env.UPSTASH_REDIS_URL).toBe(REQUIRED_VARS.UPSTASH_REDIS_URL)
     expect(env.UPSTASH_REDIS_TOKEN).toBe(REQUIRED_VARS.UPSTASH_REDIS_TOKEN)
     expect(env.VALVE_API_KEY).toBe(REQUIRED_VARS.VALVE_API_KEY)
+    expect(env.STRATZ_TOKEN).toBe(REQUIRED_VARS.STRATZ_TOKEN)
   })
 
   it('defaults PORT to "3001" when PORT is not set', async () => {
     process.env.UPSTASH_REDIS_URL = REQUIRED_VARS.UPSTASH_REDIS_URL
     process.env.UPSTASH_REDIS_TOKEN = REQUIRED_VARS.UPSTASH_REDIS_TOKEN
     process.env.VALVE_API_KEY = REQUIRED_VARS.VALVE_API_KEY
+    process.env.STRATZ_TOKEN = REQUIRED_VARS.STRATZ_TOKEN
     delete process.env.PORT
 
     const { env } = await import('./env.js')
@@ -63,6 +70,7 @@ describe('env module', () => {
     process.env.UPSTASH_REDIS_URL = REQUIRED_VARS.UPSTASH_REDIS_URL
     process.env.UPSTASH_REDIS_TOKEN = REQUIRED_VARS.UPSTASH_REDIS_TOKEN
     process.env.VALVE_API_KEY = REQUIRED_VARS.VALVE_API_KEY
+    process.env.STRATZ_TOKEN = REQUIRED_VARS.STRATZ_TOKEN
     process.env.PORT = '4000'
 
     const { env } = await import('./env.js')

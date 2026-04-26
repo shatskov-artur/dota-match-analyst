@@ -1,4 +1,5 @@
 import type { HeroMatchup } from '../schemas/openDota.js'
+import type { StratzHeroDryadEntry } from '../schemas/stratz.js'
 import { hiddenProfile } from '../../../shared/hiddenProfile.js'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -91,4 +92,32 @@ export async function buildPlayerIntelEntry(
       win: entry.win ?? 0,
     },
   }
+}
+
+// ─── Stratz counterpick transform (Phase 6 — replaces rankCounters for pro-bracket data) ──
+
+/**
+ * Transforms Stratz heroVsHeroMatchup advantage array into ranked CounterHeroResult[].
+ * Input: advantage array from StratzMatchupResponseSchema (nested HeroDryadType structure).
+ * Each entry: { heroId: opponentHeroId, vs: [{ winRateHeroId1, ... }] }
+ * winRateHeroId1 < 0.5 means our hero (heroId1) loses more — these are the hard counters.
+ * Sort ascending (lowest winRateHeroId1 first) → top 3 are worst matchups.
+ *
+ * NOTE (Finding 3): vs[] may have multiple entries (one per bracket). We use winRateHeroId1
+ * from the first vs entry that has it, or fall back to 0.5 (neutral) if absent.
+ */
+export function rankCountersStratz(advantage: StratzHeroDryadEntry[]): CounterHeroResult[] {
+  return advantage
+    .flatMap(entry => {
+      const heroId = entry.heroId ?? 0
+      const vsEntry = (entry.vs ?? [])[0]  // first vs entry (per-bracket grouping)
+      return [{
+        heroId,
+        winRateHeroId1: vsEntry?.winRateHeroId1 ?? 0.5,
+      }]
+    })
+    .filter(e => e.heroId !== 0)
+    .sort((a, b) => a.winRateHeroId1 - b.winRateHeroId1)
+    .slice(0, 3)
+    .map(e => ({ heroId: e.heroId, disadvantageScore: 1 - e.winRateHeroId1 }))
 }
