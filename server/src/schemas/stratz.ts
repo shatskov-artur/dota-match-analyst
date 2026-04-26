@@ -18,7 +18,7 @@ export const StratzWinProbResponseSchema = z.object({
     live: z.object({
       match: z.object({
         liveWinRateValues: z.array(StratzWinRateDetailSchema).optional(),
-      }).passthrough().optional(),
+      }).passthrough().optional().nullable(),
     }).passthrough().optional(),
   }).passthrough().optional(),
 }).passthrough()
