@@ -4,6 +4,10 @@ import type { StratzHeroDryadEntry } from '../schemas/stratz.js'
 import { env } from '../env.js'
 
 const STRATZ_BASE = 'https://api.stratz.com/graphql'
+const STRATZ_HEADERS = {
+  'Content-Type': 'application/json',
+  'User-Agent': 'STRATZ_API',
+}
 
 // ─── Win Probability ──────────────────────────────────────────────────────────
 
@@ -19,7 +23,7 @@ async function fetchWinProbability(matchId: number): Promise<number | null> {
     res = await fetch(STRATZ_BASE, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        ...STRATZ_HEADERS,
         'Authorization': `Bearer ${env.STRATZ_TOKEN}`,
       },
       body: JSON.stringify({
@@ -82,7 +86,7 @@ async function fetchHeroMatchupsStratz(heroId: number): Promise<StratzHeroDryadE
     res = await fetch(STRATZ_BASE, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
+        ...STRATZ_HEADERS,
         'Authorization': `Bearer ${env.STRATZ_TOKEN}`,
       },
       body: JSON.stringify({
