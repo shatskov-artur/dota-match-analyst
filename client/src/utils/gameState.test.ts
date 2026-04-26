@@ -17,8 +17,14 @@ describe('getStatusLabel', () => {
   it('returns "Unknown" for undefined game_state without scoreboard', () => {
     expect(getStatusLabel(undefined)).toBe('Unknown')
   })
-  it('returns "Live" for undefined game_state when scoreboard is present', () => {
-    expect(getStatusLabel(undefined, {})).toBe('Live')
+  it('returns "Draft" for undefined game_state when scoreboard has picks but no players', () => {
+    expect(getStatusLabel(undefined, { radiant: { picks: [{ hero_id: 1 }] } })).toBe('Draft')
+  })
+  it('returns "Draft" for undefined game_state when scoreboard is an empty object', () => {
+    expect(getStatusLabel(undefined, {})).toBe('Draft')
+  })
+  it('returns "Live" for undefined game_state when scoreboard has radiant players', () => {
+    expect(getStatusLabel(undefined, { radiant: { players: [{ hero_id: 1 }] } })).toBe('Live')
   })
   it('returns "Unknown" for undefined game_state when scoreboard is null', () => {
     expect(getStatusLabel(undefined, null)).toBe('Unknown')

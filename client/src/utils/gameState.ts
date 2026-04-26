@@ -2,8 +2,11 @@
  * Maps Valve game_state integer to display label.
  * Per D-02: 2=Draft, 5=Live, 6=Post-game.
  *
- * Valve omits game_state from the response once a match transitions to in-game (state 5).
- * When game_state is absent but a scoreboard object is present, the match is in-game → 'Live'.
+ * Valve sometimes omits game_state. When absent, distinguish phase by scoreboard content:
+ * - scoreboard.radiant.players[] present → in-game → 'Live'
+ * - scoreboard present but no players (only picks/bans) → draft → 'Draft'
+ * The old `scoreboard != null → 'Live'` fallback was too broad: scoreboard exists during
+ * draft too (with picks/bans), causing draft matches to be labelled 'Live' incorrectly.
  */
 export function getStatusLabel(
   gameState: number | undefined,
@@ -12,7 +15,12 @@ export function getStatusLabel(
   if (gameState === 2) return 'Draft'
   if (gameState === 5) return 'Live'
   if (gameState === 6) return 'Post-game'
-  if (scoreboard != null) return 'Live'
+  if (scoreboard != null) {
+    const sb = scoreboard as Record<string, unknown>
+    const radiant = sb.radiant as Record<string, unknown> | undefined
+    const hasPlayers = Array.isArray(radiant?.players) && (radiant.players as unknown[]).length > 0
+    return hasPlayers ? 'Live' : 'Draft'
+  }
   return 'Unknown'
 }
 
