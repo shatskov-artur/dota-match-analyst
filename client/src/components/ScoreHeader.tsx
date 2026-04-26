@@ -1,6 +1,7 @@
 import { getStatusLabel, getSeriesLabel } from '../utils/gameState'
 import StatusTag from './StatusTag'
 import { formatGoldDiff } from '../utils/formatGoldDiff'
+import { formatDuration } from '../utils/formatDuration'
 
 interface ScoreHeaderProps {
   match: {
@@ -8,12 +9,14 @@ interface ScoreHeaderProps {
     radiant_score?: number
     dire_score?: number
     stream_delay_s?: number
+    duration?: number
     series_type?: number
     radiant_series_wins?: number
     dire_series_wins?: number
     radiant_team?: { team_name?: string }
     dire_team?: { team_name?: string }
     players?: Array<{ team?: number; net_worth?: number }>
+    scoreboard?: object | null
   }
 }
 
@@ -35,7 +38,8 @@ export default function ScoreHeader({ match }: ScoreHeaderProps) {
   const direWins = match.dire_series_wins ?? 0
   const seriesScore = `${radiantWins}–${direWins}${seriesLabel ? ` · ${seriesLabel}` : ''}`
 
-  const status = getStatusLabel(match.game_state)
+  const status = getStatusLabel(match.game_state, match.scoreboard)
+  const gameTime = (match.duration ?? 0) > 0 ? formatDuration(match.duration!) : null
 
   return (
     <div>
@@ -66,9 +70,17 @@ export default function ScoreHeader({ match }: ScoreHeaderProps) {
           </span>
         </div>
 
-        {/* Center: StatusTag + gold diff + delay disclosure */}
+        {/* Center: StatusTag + game time + gold diff + delay disclosure */}
         <div className="flex flex-col items-center gap-3">
           <StatusTag status={status} />
+          {gameTime && (
+            <span
+              className="text-sm tabular-nums font-mono"
+              style={{ color: '#888888' }}
+            >
+              {gameTime}
+            </span>
+          )}
           <span
             className="text-base tabular-nums font-mono font-bold"
             style={{ color: goldDiff.color }}
