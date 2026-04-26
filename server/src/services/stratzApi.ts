@@ -27,14 +27,14 @@ async function fetchWinProbability(matchId: number): Promise<number | null> {
         'Authorization': `Bearer ${env.STRATZ_TOKEN}`,
       },
       body: JSON.stringify({
-        query: `query WinProb($matchId: Long!) {
+        query: `query WinProb($id: Long!) {
           live {
-            match(matchId: $matchId) {
+            match(id: $id) {
               liveWinRateValues { time winRate }
             }
           }
         }`,
-        variables: { matchId },
+        variables: { id: matchId },
       }),
     })
   } catch (err) {
