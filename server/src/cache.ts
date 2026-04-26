@@ -35,6 +35,7 @@ export const TTL = {
   DRAFT: 4,            // D-15 — 1s below the 5s client poll cadence → every client poll sees fresh upstream
   HERO_STATS: 21_600,  // 6 hours
   PLAYER_STATS: 900,   // 15 minutes
+  WIN_PROB: 60,        // D-07: 2× the 30s client poll cadence → 1 Stratz call/min per match
 } as const
 
 /**
