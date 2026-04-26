@@ -8,6 +8,8 @@ import DraftSection from '../components/DraftSection'
 import { useDraftDetail } from '../hooks/useDraftDetail'
 import { useHeroStats } from '../hooks/useHeroStats'
 import { useMatchIntel } from '../hooks/useMatchIntel'
+import WinProbBar from '../components/WinProbBar'
+import { useWinProbability } from '../hooks/useWinProbability'
 
 export default function MatchPage() {
   const { matchId } = useParams()
@@ -15,6 +17,7 @@ export default function MatchPage() {
   const draft = useDraftDetail(matchId)
   const heroStatsMap = useHeroStats()
   const intel = useMatchIntel(matchId)
+  const winProb = useWinProbability(matchId)
 
   // Build playerIntelMap: heroId → PlayerIntel for quick lookup by portrait slots (DraftPortrait looks up by heroId)
   // IMPORTANT: indexed by heroId (not accountId) — DraftPortrait receives heroId from the slot
@@ -65,6 +68,13 @@ export default function MatchPage() {
       {match && (
         <ScoreHeader match={match} />
       )}
+
+      {/* Phase 6 D-04: Win probability bar — self-hides when Stratz unavailable, before 5 min, or non-game state */}
+      <WinProbBar
+        radiantWinProb={winProb.data?.radiantWinProb ?? null}
+        gameDuration={match?.duration}
+        gameState={match?.game_state}
+      />
 
       {/* DraftSection — Phase 4 D-03 section order step 3; D-10 mount only when scoreboard present */}
       {/* Phase 5: heroStatsMap and playerIntelMap passed for badge strips (DRAFT-03) and tooltips (DRAFT-04) */}
