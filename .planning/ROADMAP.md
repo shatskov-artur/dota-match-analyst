@@ -24,7 +24,7 @@
 - [x] **Phase 3: Match Core** - In-game match screen with score, gold diff, hero grid, towers/rax, K/D/A, series score, delay disclosure ✓ 2026-04-24
 - [x] **Phase 4: Draft UX** - Live picks/bans grid with 5s polling and whose-turn indicator ✓ 2026-04-25
 - [ ] **Phase 5: Hero & Player Intel** - Hero patch winrate, counterpick tooltip with "known to play" cross-reference, per-player hero stats, hidden-profile safety
-- [ ] **Phase 6: Win Probability** - Stratz win-probability bar gated to >5min game time, degrades silently on failure
+- [x] **Phase 6: Win Probability** - Stratz win-probability bar gated to >5min game time, degrades silently on failure ✓ 2026-04-26
 - [ ] **Phase 7: Harden & Deploy** - Rate-limit queues, error boundaries, 429 backoff, deploy to Vercel + Railway
 
 ## Phase Details
@@ -128,11 +128,11 @@ Plans:
   4. Stratz responses are cached server-side by `match_id` only, so N simultaneous viewers of the same match produce at most one Stratz call per TTL
 **Plans:** 5 plans
 Plans:
-- [ ] 06-01-PLAN.md — Wave 0: RED-state test stubs (useWinProbability.test.ts cadence contract, stratzApi.test.ts null-return, intel.test.ts rankCountersStratz)
-- [ ] 06-02-PLAN.md — Wave 1: Server infra (STRATZ_TOKEN in env.ts, TTL.WIN_PROB in cache.ts, schemas/stratz.ts, stratzApi.ts service, rankCountersStratz in intel.ts)
-- [ ] 06-03-PLAN.md — Wave 2: BFF routes (GET /api/live/winprob/:matchId, update intel aggregator to use getHeroMatchupsStratz + rankCountersStratz, remove OpenDota matchup functions)
-- [ ] 06-04-PLAN.md — Wave 3: Client hook + component (useWinProbability.ts, WinProbBar.tsx — turns Wave 0 client tests GREEN)
-- [ ] 06-05-PLAN.md — Wave 4: MatchPage wiring (insert WinProbBar after ScoreHeader, wire useWinProbability) + human checkpoint
+- [x] 06-01-PLAN.md — Wave 0: RED-state test stubs (useWinProbability.test.ts cadence contract, stratzApi.test.ts null-return, intel.test.ts rankCountersStratz)
+- [x] 06-02-PLAN.md — Wave 1: Server infra (STRATZ_TOKEN in env.ts, TTL.WIN_PROB in cache.ts, schemas/stratz.ts, stratzApi.ts service, rankCountersStratz in intel.ts)
+- [x] 06-03-PLAN.md — Wave 2: BFF routes (GET /api/live/winprob/:matchId, update intel aggregator to use getHeroMatchupsStratz + rankCountersStratz, remove OpenDota matchup functions)
+- [x] 06-04-PLAN.md — Wave 3: Client hook + component (useWinProbability.ts, WinProbBar.tsx — turns Wave 0 client tests GREEN)
+- [x] 06-05-PLAN.md — Wave 4: MatchPage wiring (insert WinProbBar after ScoreHeader, wire useWinProbability) + human checkpoint
 **UI hint:** yes
 
 ### Phase 7: Harden & Deploy
@@ -154,9 +154,9 @@ Plans:
 | 1. Foundations | 4/4 | Complete | 2026-04-23 |
 | 2. Live Matches List | 4/4 | Complete | 2026-04-24 |
 | 3. Match Core | 4/4 | Complete | 2026-04-24 |
-| 4. Draft UX | 0/4 | Planned | - |
-| 5. Hero & Player Intel | 5/6 | Executing | - |
-| 6. Win Probability | 0/5 | Planned | - |
+| 4. Draft UX | 6/6 | Complete | 2026-04-25 |
+| 5. Hero & Player Intel | 6/6 | Complete | 2026-04-25 |
+| 6. Win Probability | 5/5 | Complete | 2026-04-26 |
 | 7. Harden & Deploy | 0/? | Not started | - |
 
 ## Coverage Validation

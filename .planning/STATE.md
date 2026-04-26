@@ -3,28 +3,28 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-04-25T18:02:58.577Z"
+last_updated: "2026-04-26T19:25:00.000Z"
 progress:
   total_phases: 7
-  completed_phases: 4
-  total_plans: 24
-  completed_plans: 23
-  percent: 96
+  completed_phases: 6
+  total_plans: 29
+  completed_plans: 29
+  percent: 99
 ---
 
 # Project State
 
 ## Current Status
 
-Phase: Ready to execute
-Last updated: 2026-04-25
+Phase: Phase 6 complete — ready for Phase 7
+Last updated: 2026-04-26
 
 ## Project Reference
 
 See: .planning/PROJECT.md
 
 **Core value:** You open a live match and instantly understand who's winning and why — from draft through final push.
-**Current focus:** Phase 5 — Hero & Player Intel
+**Current focus:** Phase 7 — Harden & Deploy
 
 ## Phase Progress
 
@@ -34,20 +34,20 @@ See: .planning/PROJECT.md
 | 2 | Live Matches List | Complete — all 4 plans done, verified 2026-04-24 |
 | 3 | Match Core | Complete — all 4 plans done, verified 2026-04-24 |
 | 4 | Draft UX | Complete — all 6 plans done, verified 2026-04-25 |
-| 5 | Hero & Player Intel | Executing — Plan 05/06 done (IntelTooltip + DraftPortrait badge) |
-| 6 | Win Probability | Not started |
+| 5 | Hero & Player Intel | Complete — all 6 plans done, verified 2026-04-25 |
+| 6 | Win Probability | Complete — all 5 plans done, verified 2026-04-26 |
 | 7 | Harden & Deploy | Not started |
 
 ## Current Position
 
-- **Phase:** 5 (Hero & Player Intel) — Executing Wave 2 → Plan 05 complete
-- **Status:** Phase 5 executing — Plan 05/06 done (IntelTooltip component + DraftPortrait badge strip)
-- **Progress:** [█████████░] 96%
+- **Phase:** 6 complete → Phase 7 next
+- **Status:** Phase 6 done — WinProbBar wired, status label fixed, game time displayed
+- **Progress:** [██████████] 99%
 
 ## Performance Metrics
 
-- Phases complete: 3/7
-- v1 requirements delivered: MATCH-01–05, HOME-01–03, infra
+- Phases complete: 6/7
+- v1 requirements delivered: MATCH-01–06, HOME-01–03, DRAFT-01–04, PLAYER-01–02, infra
 - Requirement coverage in roadmap: 15/15 (100%)
 
 ## Accumulated Context
@@ -76,10 +76,14 @@ See: .planning/PROJECT.md
 - pick_rate display in badge strip: raw pro_pick count shown as '{N}P' suffix (not percentage) — BFF returns raw count, normalization requires total pro games
 - React 19 useRef returns RefObject<T | null> — IntelTooltip anchorRef prop must be typed RefObject<HTMLDivElement | null>
 - DraftPortrait outer wrapper has no overflow-hidden — only inner portrait div clips; allows IntelTooltip (absolute) to escape clip boundary
+- Phase 6: Valve omits game_state for draft AND in-game phases — distinguish by scoreboard.radiant.players[] presence
+- Phase 6: getStatusLabel scoreboard fallback `scoreboard != null → 'Live'` was too broad; replaced with players-array check
+- Phase 6: ScoreHeader now shows formatDuration(match.duration) as game clock between StatusTag and gold diff
+- Phase 6: WinProbBar self-gates: gameState===5 AND duration>300 AND radiantWinProb!==null — no wrapper needed in MatchPage
+- Phase 6: Stratz live.match returns null for matches it doesn't track — expected, bar silently hides
 
 ### Todos
 
-- Resolve research open question on Stratz 2026 access model before starting Phase 6.
 - "Known to play" threshold resolved: games >= 10 AND win/games > 0.5 (server-side, D-09).
 - Phase 4 refetchInterval: use dynamic `(query) => ...` callback form for 5s draft polling (TQ v5 supports this for Phase 4+).
 
@@ -89,9 +93,9 @@ None.
 
 ## Session Continuity
 
-- Last session: 2026-04-25 — Phase 5 Plan 05 complete (IntelTooltip + DraftPortrait badge strip + tooltip trigger)
-- Next action: Execute Plan 05-06 (Wire — thread heroStats/playerIntel props through DraftSection → DraftTimeline → DraftPortrait)
+- Last session: 2026-04-26 — Phase 6 complete (WinProbBar + status label fix + game clock)
+- Next action: Plan and execute Phase 7 (Harden & Deploy)
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
 
-**Executing Phase:** 5 (Hero & Player Intel) — Plan 05/06 complete — 2026-04-25T17:58:41Z
+**Completed Phase:** 6 (Win Probability) — all 5 plans done — 2026-04-26
