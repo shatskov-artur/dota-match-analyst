@@ -1,7 +1,9 @@
 import { Hono } from 'hono'
 import { getLiveLeagueGames, getLiveLeagueGamesFast } from '../services/valveApi.js'
-import { getLeagueName, getPlayerHeroes, getHeroMatchups } from '../services/openDotaApi.js'
-import { rankCounters, applyKnownToPlay } from '../services/intel.js'
+import { getLeagueName, getPlayerHeroes } from '../services/openDotaApi.js'
+import { applyKnownToPlay, rankCountersStratz } from '../services/intel.js'
+import { getWinProbability, getHeroMatchupsStratz } from '../services/stratzApi.js'
+import type { StratzHeroDryadEntry } from '../schemas/stratz.js'
 import { hiddenProfile } from '../../../shared/hiddenProfile.js'
 import { cached, TTL } from '../cache.js'
 
@@ -100,7 +102,7 @@ liveRoutes.get('/draft/:matchId', async (c) => {
  * Two-level caching:
  *  1. Outer: cached('intel:{matchId}', TTL.PLAYER_STATS=15min) — N viewers = 1 call per 15min
  *  2. Inner: getPlayerHeroes(accountId) cached per-player at TTL.PLAYER_STATS
- *            getHeroMatchups(heroId) cached per-hero at TTL.HERO_STATS (6h)
+ *            getHeroMatchupsStratz(heroId) cached per-hero at TTL.HERO_STATS (6h)
  *
  * Response shape: {
  *   players: Array<{
@@ -156,7 +158,7 @@ liveRoutes.get('/intel/:matchId', async (c) => {
       const [matchupResults, playerResults] = await Promise.all([
         // Hero matchups (6h cached per hero) — one per unique picked hero
         Promise.allSettled(
-          uniqueHeroIds.map(heroId => getHeroMatchups(heroId))
+          uniqueHeroIds.map(heroId => getHeroMatchupsStratz(heroId))
         ),
         // Player hero histories (15min cached per account) — hidden profiles short-circuited
         // Store FULL hero list (not just current pick) for "known to play" cross-reference (D-09)
@@ -189,11 +191,11 @@ liveRoutes.get('/intel/:matchId', async (c) => {
       ])
 
       // Build matchup lookup: heroId → ranked counters
-      const matchupByHero = new Map<number, ReturnType<typeof rankCounters>>()
+      const matchupByHero = new Map<number, ReturnType<typeof rankCountersStratz>>()
       uniqueHeroIds.forEach((heroId, idx) => {
         const result = matchupResults[idx]
         if (result.status === 'fulfilled' && result.value) {
-          matchupByHero.set(heroId, rankCounters(result.value))
+          matchupByHero.set(heroId, rankCountersStratz(result.value as StratzHeroDryadEntry[]))
         }
       })
 
@@ -258,6 +260,39 @@ liveRoutes.get('/intel/:matchId', async (c) => {
     })
 
     return c.json(payload)
+  } catch {
+    return c.json({ error: 'Upstream error' }, 502)
+  }
+})
+
+/**
+ * GET /api/live/winprob/:matchId
+ * Returns Stratz win probability for a live match, plus game state context.
+ * Response includes gameState and duration so the client hook can compute refetchInterval
+ * without a separate useMatchDetail read.
+ *
+ * SECURITY:
+ *  - T-6-03: matchId path param validated via Number.isFinite() → 400 on non-numeric.
+ *  - T-6-04: Stratz errors are caught by getWinProbability (returns null) — no Stratz details forwarded.
+ *  - T-6-02: radiantWinProb is null when Stratz unavailable — client silently hides bar (D-13).
+ */
+liveRoutes.get('/winprob/:matchId', async (c) => {
+  const rawMatchId = c.req.param('matchId')
+  const parsedId = Number(rawMatchId)
+  if (!Number.isFinite(parsedId)) {
+    return c.json({ error: 'Invalid matchId' }, 400)
+  }
+  try {
+    const [winProb, data] = await Promise.all([
+      getWinProbability(parsedId),
+      getLiveLeagueGamesFast(),
+    ])
+    const game = data.result.games?.find((g) => g.match_id === parsedId)
+    return c.json({
+      radiantWinProb: winProb,
+      gameState: game?.game_state ?? null,
+      duration: game?.duration ?? null,
+    })
   } catch {
     return c.json({ error: 'Upstream error' }, 502)
   }
