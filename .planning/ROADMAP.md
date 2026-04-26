@@ -10,22 +10,30 @@
 | # | Phase | Goal | REQ-IDs | Success Criteria |
 |---|-------|------|---------|------------------|
 | 1 | Foundations | Build the typed client-BFF-cache pipeline so any match data can flow end-to-end | — (infra) | 4 criteria |
-| 2 | Live Matches List | 4/4 | Complete    | 2026-04-24 |
-| 3 | Match Core | User opens a live match and sees the full in-game state at a glance | MATCH-01, MATCH-02, MATCH-03, MATCH-04, MATCH-05 | 5 criteria |
-| 4 | Draft UX | User watches the draft unfold in real time with clear turn indication | DRAFT-01, DRAFT-02 | 3 criteria |
-| 5 | Hero & Player Intel | User sees contextual stats layered onto drafted heroes and players | DRAFT-03, DRAFT-04, PLAYER-01, PLAYER-02 | 5 criteria |
+| 2 | Live Matches List | User lands on home and sees every live pro match, auto-refreshing | HOME-01–03 | 4 criteria |
+| 3 | Match Core | User opens a live match and sees the full in-game state at a glance | MATCH-01–05 | 5 criteria |
+| 4 | Draft UX | User watches the draft unfold in real time with clear turn indication | DRAFT-01–02 | 3 criteria |
+| 5 | Hero & Player Intel | User sees contextual stats layered onto drafted heroes and players | DRAFT-03–04, PLAYER-01–02 | 5 criteria |
 | 6 | Win Probability | User sees a Stratz-powered win-probability bar that degrades gracefully | MATCH-06 | 4 criteria |
-| 7 | Harden & Deploy | Small group can hit a public URL and the app stays up under rate limits | — (hardening) | 4 criteria |
+| 7 | In-Game Item Intel | User sees all heroes ranked by net worth with their 6 item slots | TBD | 4 criteria |
+| 8 | Ability Cooldowns | User sees which ultimates are on cooldown, sorted by time remaining | TBD | 4 criteria |
+| 9 | Roshan Tracker | User sees Roshan kill count and exact loot for next kill | TBD | 4 criteria |
+| 10 | Historical Graphs | User sees gold and XP lead charts over the full game duration | TBD | 5 criteria |
+| 11 | Harden & Deploy | Small group can hit a public URL and the app stays up under rate limits | — (hardening) | 4 criteria |
 
 ## Phases
 
 - [x] **Phase 1: Foundations** - Repo, TS scaffolds, Redis cache, schemas, shared primitives (no UI) ✓ 2026-04-23
-- [x] **Phase 2: Live Matches List** - Home page with active tournaments and live matches auto-refreshing every 30s (completed 2026-04-24)
+- [x] **Phase 2: Live Matches List** - Home page with active tournaments and live matches auto-refreshing every 30s ✓ 2026-04-24
 - [x] **Phase 3: Match Core** - In-game match screen with score, gold diff, hero grid, towers/rax, K/D/A, series score, delay disclosure ✓ 2026-04-24
 - [x] **Phase 4: Draft UX** - Live picks/bans grid with 5s polling and whose-turn indicator ✓ 2026-04-25
 - [ ] **Phase 5: Hero & Player Intel** - Hero patch winrate, counterpick tooltip with "known to play" cross-reference, per-player hero stats, hidden-profile safety
 - [x] **Phase 6: Win Probability** - Stratz win-probability bar gated to >5min game time, degrades silently on failure ✓ 2026-04-26
-- [ ] **Phase 7: Harden & Deploy** - Rate-limit queues, error boundaries, 429 backoff, deploy to Vercel + Railway
+- [ ] **Phase 7: In-Game Item Intel** - Heroes sorted by net worth with 6 item slots each, item icons from Valve CDN
+- [ ] **Phase 8: Ability Cooldowns** - Ultimates on cooldown block, sorted ascending by time remaining
+- [ ] **Phase 9: Roshan Tracker** - Kill counter (Redis), loot prediction by kill number, respawn countdown
+- [ ] **Phase 10: Historical Graphs** - Gold diff and XP diff line charts accumulated server-side in Redis every 30s
+- [ ] **Phase 11: Harden & Deploy** - Rate-limit queues, error boundaries, 429 backoff, deploy to Vercel + Railway
 
 ## Phase Details
 
@@ -118,26 +126,124 @@ Plans:
 **UI hint:** yes
 
 ### Phase 6: Win Probability
-**Goal:** A user watching a mid-to-late-game match sees a Stratz-powered win-probability bar that quietly disappears rather than breaks when Stratz is unreachable or the game is too young.
+**Goal:** A user watching a mid-to-late-game match sees a win-probability bar for any live match — powered by Stratz where available, falling back to a heuristic estimate otherwise.
 **Depends on:** Phase 3
 **Requirements:** MATCH-06
+
+**API reality (verified 2026-04-26):**
+- Stratz `live.match.liveWinRateValues` returns `null` for all matches except select major tournaments (TI, DPC Majors). Regional leagues and qualifiers are never tracked.
+- Current implementation silently hides the bar when Stratz returns null — this means the bar never shows for most matches.
+
+**Chosen approach: Stratz primary + heuristic fallback**
+- When Stratz returns a value → use it, label source as "Stratz"
+- When Stratz returns null → compute estimate from current game state, label as "Est."
+- Heuristic formula: `P(Radiant) = sigmoid(w1·goldDiff + w2·killDiff + w3·towerAdv + w4·barracksAdv)` — coefficients calibrated from OpenDota historical data or published Dota 2 ML research
+- Net worth difference is the strongest single predictor (~0.7 correlation with win outcome)
+- Tower/barracks advantage adds signal in mid-to-late game
+- Duration used as normalization factor (gold lead matters more early, less in 60+ min games)
+
+**Alternatives considered (2026-04-26):**
+- OpenDota `/api/scenarios/` — historical win rates by game state, but not real-time; too slow for 30s polling
+- Pre-trained XGBoost server-side — most accurate independent option, but requires training pipeline and model hosting; deferred
+- Stratz-only — already shipped; too narrow (covers <5% of visible matches)
+
+**VERIFY during implementation:** calibrate heuristic coefficients against real match outcomes; confirm goldDiff range typical for pro matches; check if barracks state is reliably present in-game (not just post-game)
+
 **Success criteria** (what must be TRUE):
-  1. User sees a Radiant-vs-Dire win-probability bar on the match screen once in-game time exceeds 5 minutes (MATCH-06)
-  2. Before the 5-minute threshold, the win-probability bar is hidden with no error state
-  3. When Stratz is down, rate-limited, or returns null, the bar is hidden silently and the rest of the match screen continues to function (MATCH-06)
-  4. Stratz responses are cached server-side by `match_id` only, so N simultaneous viewers of the same match produce at most one Stratz call per TTL
-**Plans:** 5 plans
+  1. User sees a win-probability bar for every in-game match past 5 minutes, regardless of whether Stratz tracks it (MATCH-06)
+  2. Bar shows "Stratz" label when powered by Stratz live data, "Est." label when using heuristic
+  3. Before the 5-minute threshold, the bar is hidden with no error state
+  4. Stratz and heuristic responses are cached server-side by `match_id` only
+**Plans:** 7 plans
 Plans:
 - [x] 06-01-PLAN.md — Wave 0: RED-state test stubs (useWinProbability.test.ts cadence contract, stratzApi.test.ts null-return, intel.test.ts rankCountersStratz)
 - [x] 06-02-PLAN.md — Wave 1: Server infra (STRATZ_TOKEN in env.ts, TTL.WIN_PROB in cache.ts, schemas/stratz.ts, stratzApi.ts service, rankCountersStratz in intel.ts)
 - [x] 06-03-PLAN.md — Wave 2: BFF routes (GET /api/live/winprob/:matchId, update intel aggregator to use getHeroMatchupsStratz + rankCountersStratz, remove OpenDota matchup functions)
 - [x] 06-04-PLAN.md — Wave 3: Client hook + component (useWinProbability.ts, WinProbBar.tsx — turns Wave 0 client tests GREEN)
 - [x] 06-05-PLAN.md — Wave 4: MatchPage wiring (insert WinProbBar after ScoreHeader, wire useWinProbability) + human checkpoint
+- [ ] 06-06-PLAN.md — Gap closure Wave 1 (TDD): heuristic winProbHeuristic.ts (computeGoldWinProb, computeEstWinProb, extractScoreboardInputs) + extend /winprob/:matchId BFF to return { stratz, gold, estimate }
+- [ ] 06-07-PLAN.md — Gap closure Wave 2: update WinProbResponse interface, redesign WinProbBar as three-bar panel (Stratz/Gold/Est.), update MatchPage prop passing
 **UI hint:** yes
 
-### Phase 7: Harden & Deploy
+### Phase 7: In-Game Item Intel
+**Goal:** A user watching a live match sees all ten heroes ranked by net worth with their current items displayed as icons, so they can instantly read who is strongest and what power spikes are coming.
+**Depends on:** Phase 3
+**Requirements:** TBD
+**API reality (verified 2026-04-26):**
+- `item0`–`item5` (integer item IDs) are present on every player in `scoreboard.{radiant,dire}.players[]`
+- Item IDs must be mapped to names/icons via a static JSON (source: OpenDota `/constants/items` endpoint or bundled file)
+- Icon URL pattern: `https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/items/{item_name}.png`
+- `net_worth` field is present and reliable for sort order
+- **VERIFY during implementation:** confirm item ID → name mapping is stable across patches; check neutral item slot (item5 vs separate field); check backpack slots availability in live API
+**Success criteria** (what must be TRUE):
+  1. User sees all 10 heroes sorted descending by net worth in a dedicated block
+  2. Each hero row shows 6 item icon slots (empty slot rendered as placeholder)
+  3. Items update on the same 30s polling cycle as the match screen
+  4. Missing or unknown item IDs render as empty slot, not an error
+**Plans:** TBD
+**UI hint:** yes
+
+### Phase 8: Ability Cooldowns
+**Goal:** A user sees which ultimates are currently on cooldown across all ten heroes, ordered by shortest remaining cooldown first.
+**Depends on:** Phase 7
+**Requirements:** TBD
+**API reality (verified 2026-04-26):**
+- Valve live API exposes per-player: `ultimate_state` (0=unavailable, 1=ready, 2=on cooldown, 3=charging) and `ultimate_cooldown` (seconds remaining)
+- Regular ability cooldowns are NOT in the live API — `abilities[]` only carries `{ability_id, ability_level}`, no cooldown state
+- **VERIFY during implementation:** re-confirm `ultimate_state`/`ultimate_cooldown` field names and value meanings against a real in-game payload; check if `abilities[]` has gained cooldown fields in newer patches
+**Success criteria** (what must be TRUE):
+  1. A dedicated "Cooldowns" block lists only heroes with `ultimate_state !== 1` (not ready)
+  2. Entries sorted ascending by `ultimate_cooldown` (shortest first)
+  3. Each entry shows hero portrait + ultimate icon + countdown in seconds
+  4. Block is empty (hidden) when all ultimates are ready
+**Plans:** TBD
+**UI hint:** yes
+
+### Phase 9: Roshan Tracker
+**Goal:** A user always knows which Roshan kill is next and exactly what loot the killing team will receive, without having to count manually.
+**Depends on:** Phase 3
+**Requirements:** TBD
+**API reality (verified 2026-04-26):**
+- `scoreboard.roshan_respawn_timer` = seconds until Roshan respawns (0 = alive, >0 = dead)
+- Valve does NOT expose a Roshan kill counter — it must be inferred server-side by detecting transitions `timer: 0 → >0`
+- Kill counter must be stored in Redis per `match_id` and reset when a new match begins
+- Loot by kill number (patch 7.41 — **VERIFY at implementation time, changes each major patch**):
+  - Kill 1: Aegis of the Immortal
+  - Kill 2: Aegis + Cheese
+  - Kill 3: Aegis + Cheese + Aghanim's Shard
+  - Kill 4+: Aegis + Cheese + Aghanim's Blessing
+- **VERIFY during implementation:** loot table for current patch; whether `roshan_respawn_timer` is always 0 when alive or can be absent; timer reset timing (Valve sends 0 before or after actual spawn?)
+**Success criteria** (what must be TRUE):
+  1. Roshan kill counter persists across page refreshes (stored in Redis per match)
+  2. User sees "Roshan #N" with the exact loot icons for that kill number
+  3. When Roshan is dead, a respawn countdown is shown (reuses `roshan_respawn_timer`)
+  4. Counter resets correctly when a new match begins (match_id change)
+**Plans:** TBD
+**UI hint:** yes
+
+### Phase 10: Historical Graphs
+**Goal:** A user sees how the gold lead and XP lead have evolved over the course of the game as line charts, giving context to whether the current lead is growing, shrinking, or stable.
+**Depends on:** Phase 3
+**Requirements:** TBD
+**API reality (verified 2026-04-26):**
+- Valve live API returns only a **current snapshot** — no historical data per request
+- History must be accumulated server-side: a background job or poll stores `{timestamp, goldDiff, xpDiff}` in Redis as a time-series list per `match_id` every 30s
+- XP diff: Valve does NOT expose per-team total XP directly — must sum `xp_per_min * duration / 60` per player, or use net_worth as proxy; **VERIFY whether per-player XP total is available in the payload**
+- Gold diff: already computed from `net_worth` sums (Radiant − Dire)
+- Data retention: clear match series from Redis after `game_state === 6` + grace period
+- **VERIFY during implementation:** per-player XP field availability; whether `scoreboard.radiant.xp` (team total) exists as a top-level scoreboard field
+**Success criteria** (what must be TRUE):
+  1. Gold diff line chart shows the full history from game start to current time
+  2. XP diff line chart shown alongside or below gold chart
+  3. Charts update every 30s with new data points appended
+  4. No data persists in Redis after match ends (TTL or explicit cleanup)
+  5. Charts render a loading/empty state gracefully for the first 30s before history accumulates
+**Plans:** TBD
+**UI hint:** yes
+
+### Phase 11: Harden & Deploy
 **Goal:** The owner and a small group of friends can hit a public URL and use the tool for a full day of tournament viewing without crashes, quota exhaustion, or manual restarts.
-**Depends on:** Phase 2, Phase 3, Phase 4, Phase 5, Phase 6
+**Depends on:** Phase 2, Phase 3, Phase 4, Phase 5, Phase 6, Phase 7, Phase 8, Phase 9, Phase 10
 **Requirements:** None (hardening phase — protects every REQ-ID under real conditions)
 **Success criteria** (what must be TRUE):
   1. Every route-level component is wrapped in an error boundary so one failing widget (e.g. counterpick tooltip) does not blank the match screen
@@ -157,7 +263,11 @@ Plans:
 | 4. Draft UX | 6/6 | Complete | 2026-04-25 |
 | 5. Hero & Player Intel | 6/6 | Complete | 2026-04-25 |
 | 6. Win Probability | 5/5 | Complete | 2026-04-26 |
-| 7. Harden & Deploy | 0/? | Not started | - |
+| 7. In-Game Item Intel | 0/? | Not started | - |
+| 8. Ability Cooldowns | 0/? | Not started | - |
+| 9. Roshan Tracker | 0/? | Not started | - |
+| 10. Historical Graphs | 0/? | Not started | - |
+| 11. Harden & Deploy | 0/? | Not started | - |
 
 ## Coverage Validation
 
