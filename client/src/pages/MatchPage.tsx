@@ -69,9 +69,11 @@ export default function MatchPage() {
         <ScoreHeader match={match} />
       )}
 
-      {/* Phase 6 D-04: Win probability bar — self-hides when Stratz unavailable, before 5 min, or non-game state */}
+      {/* Phase 6 gap closure: three-bar win probability panel — Gold and Est. always visible past 5 min */}
       <WinProbBar
-        radiantWinProb={winProb.data?.radiantWinProb ?? null}
+        stratz={winProb.data?.stratz ?? null}
+        gold={winProb.data?.gold ?? 0.5}
+        estimate={winProb.data?.estimate ?? 0.5}
         gameDuration={match?.duration}
         gameState={match?.game_state}
       />
