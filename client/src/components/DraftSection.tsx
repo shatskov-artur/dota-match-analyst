@@ -44,7 +44,9 @@ export default function DraftSection({
     radiantPicks.length + direPicks.length + radiantBans.length + direBans.length
 
   const firstPickTeam = inferFirstPickFromHistory(scoreboard)
-  const timeline = buildDraftTimeline(scoreboard, firstPickTeam)
+  // Fall back to Radiant-first (0) when ambiguous — all tracked tournaments are CM,
+  // team labels on each slot remain correct regardless of which team actually went first.
+  const timeline = buildDraftTimeline(scoreboard, firstPickTeam ?? 0)
   const isDraft = gameState === 2
 
   return (

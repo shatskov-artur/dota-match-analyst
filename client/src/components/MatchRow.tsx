@@ -19,21 +19,19 @@ export default function MatchRow({ game }: MatchRowProps) {
   return (
     <Link
       to={`/match/${game.match_id}`}
-      className="group flex items-center gap-6 px-8 min-h-[52px] border-b border-[#1a1a1a] cursor-pointer block"
+      className="relative group flex items-center gap-6 px-8 min-h-[52px] border-b border-[#1a1a1a] cursor-pointer block"
       style={{ transition: 'background 160ms ease' }}
       onMouseEnter={e => {
         (e.currentTarget as HTMLElement).style.background = '#111111'
-        ;(e.currentTarget as HTMLElement).style.borderLeftColor = '#b03030'
       }}
       onMouseLeave={e => {
         (e.currentTarget as HTMLElement).style.background = 'transparent'
-        ;(e.currentTarget as HTMLElement).style.borderLeftColor = 'transparent'
       }}
     >
-      {/* Left ember accent bar on hover */}
+      {/* Left ember accent bar on hover — group-hover drives color, relative parent constrains position */}
       <span
-        className="absolute left-0 w-[2px] h-full"
-        style={{ background: 'transparent', transition: 'background 160ms ease' }}
+        className="absolute left-0 top-0 w-[2px] h-full group-hover:bg-[#b03030]"
+        style={{ transition: 'background 160ms ease' }}
       />
 
       {/* Team names */}

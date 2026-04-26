@@ -34,6 +34,7 @@ export interface EnrichedGame {
   dire_score?: number
   tower_state?: number
   barracks_state?: number
+  roshan_respawn_timer?: number
   stream_delay_s?: number
   players?: PlayerDetail[]
   radiant_team?: { team_name?: string }
@@ -62,11 +63,11 @@ async function fetchLiveGames(): Promise<LiveGamesResponse> {
  */
 export function groupByLeague(
   games: EnrichedGame[],
-): Array<{ leagueName: string; matches: EnrichedGame[] }> {
-  const map = new Map<number, { leagueName: string; matches: EnrichedGame[] }>()
+): Array<{ leagueId: number; leagueName: string; matches: EnrichedGame[] }> {
+  const map = new Map<number, { leagueId: number; leagueName: string; matches: EnrichedGame[] }>()
   for (const game of games) {
     if (!map.has(game.league_id)) {
-      map.set(game.league_id, { leagueName: game.league_name, matches: [] })
+      map.set(game.league_id, { leagueId: game.league_id, leagueName: game.league_name, matches: [] })
     }
     map.get(game.league_id)!.matches.push(game)
   }

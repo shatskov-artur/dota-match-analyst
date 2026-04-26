@@ -111,7 +111,7 @@ export default function PlayerRow({ player, hasGpm, hasXpm, hasLhDn }: PlayerRow
       {/* Optional LH/DN column — 48px */}
       {hasLhDn && (
         <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ width: 48, color: '#888888' }}>
-          {isDraftSlot ? '—' : (player.lh !== undefined ? `${player.lh} / ${player.dn ?? 0}` : '—')}
+          {isDraftSlot ? '—' : (player.lh !== undefined ? `${player.lh} / ${player.dn ?? '—'}` : '—')}
         </span>
       )}
     </div>

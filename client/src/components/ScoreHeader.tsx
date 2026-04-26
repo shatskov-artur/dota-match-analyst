@@ -10,6 +10,7 @@ interface ScoreHeaderProps {
     dire_score?: number
     stream_delay_s?: number
     duration?: number
+    roshan_respawn_timer?: number
     series_type?: number
     radiant_series_wins?: number
     dire_series_wins?: number
@@ -40,6 +41,7 @@ export default function ScoreHeader({ match }: ScoreHeaderProps) {
 
   const status = getStatusLabel(match.game_state, match.scoreboard)
   const gameTime = (match.duration ?? 0) > 0 ? formatDuration(match.duration!) : null
+  const roshanTimer = (match.roshan_respawn_timer ?? 0) > 0 ? formatDuration(match.roshan_respawn_timer!) : null
 
   return (
     <div>
@@ -79,6 +81,14 @@ export default function ScoreHeader({ match }: ScoreHeaderProps) {
               style={{ color: '#888888' }}
             >
               {gameTime}
+            </span>
+          )}
+          {roshanTimer && (
+            <span
+              className="text-xs tabular-nums font-mono px-2 py-0.5 rounded"
+              style={{ color: '#f97316', background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.2)' }}
+            >
+              Roshan {roshanTimer}
             </span>
           )}
           <span

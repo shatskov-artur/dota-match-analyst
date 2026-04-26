@@ -2,9 +2,11 @@ import { useQuery, type Query } from '@tanstack/react-query'
 
 // BFF response shape for GET /api/live/winprob/:matchId
 export interface WinProbResponse {
-  radiantWinProb: number | null   // null = Stratz unavailable (D-13)
-  gameState: number | null        // from Valve payload — for refetchInterval callback
-  duration: number | null         // from Valve payload (NOT game_time) — for refetchInterval callback
+  stratz: number | null    // Stratz live model — null when Stratz doesn't track this match
+  gold: number             // gold-only sigmoid — always finite ∈ [0.05, 0.95]
+  estimate: number         // multi-feature sigmoid — always finite ∈ [0.05, 0.95]
+  gameState: number | null // from Valve payload — for refetchInterval callback
+  duration: number | null  // from Valve payload (NOT game_time) — for refetchInterval callback
 }
 
 /**

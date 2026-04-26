@@ -45,9 +45,9 @@ export default function HomePage() {
         {/* Match list: accordion sections per league */}
         {!isLoading && !isError && grouped.length > 0 && (
           <div>
-            {grouped.map(({ leagueName, matches }) => (
+            {grouped.map(({ leagueId, leagueName, matches }) => (
               <LeagueAccordion
-                key={leagueName}
+                key={leagueId}
                 leagueName={leagueName}
                 matches={matches}
               />

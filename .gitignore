@@ -2,5 +2,6 @@ node_modules/
 dist/
 .env
 *.local
+.claude
 
 # GSD workflow artifacts are tracked — do not add .planning/ here

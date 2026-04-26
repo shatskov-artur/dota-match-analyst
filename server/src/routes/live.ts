@@ -42,10 +42,60 @@ liveRoutes.get('/games', async (c) => {
   )
   const nameMap = Object.fromEntries(nameEntries)
 
-  const enriched = games.map((g) => ({
-    ...g,
-    league_name: nameMap[g.league_id] ?? `League #${g.league_id}`,
-  }))
+  const enriched = games.map((g) => {
+    // Valve puts combat stats in scoreboard.{radiant,dire}.players[], NOT in top-level players[].
+    // Top-level players[] only carries: account_id, hero_id, name, team.
+    // Merge scoreboard stats into top-level players so downstream components read one array.
+    const sbRadiant = (g.scoreboard?.radiant as Record<string, unknown> | undefined)
+    const sbDire = (g.scoreboard?.dire as Record<string, unknown> | undefined)
+
+    // Valve omits game_state and duration at top level (observed 2026-04-26 — field moved to scoreboard).
+    // Infer game_state: scoreboard.radiant.players[] present → in-game (5); else draft (2).
+    const hasInGamePlayers = Array.isArray(sbRadiant?.players) && (sbRadiant?.players as unknown[]).length > 0
+    const derivedGameState = g.game_state ?? (hasInGamePlayers ? 5 : 2)
+    // Derive duration from scoreboard.duration when absent at top level.
+    const sb = g.scoreboard as Record<string, unknown> | undefined
+    const sbDuration = typeof sb?.duration === 'number' ? sb.duration as number : undefined
+    const sbRoshanTimer = typeof sb?.roshan_respawn_timer === 'number' ? sb.roshan_respawn_timer as number : undefined
+    const sbPlayers = [
+      ...((sbRadiant?.players as unknown[]) ?? []),
+      ...((sbDire?.players as unknown[]) ?? []),
+    ] as Array<Record<string, unknown>>
+
+    const statsByAccountId = new Map<number, Record<string, unknown>>()
+    for (const sp of sbPlayers) {
+      if (typeof sp.account_id === 'number') {
+        statsByAccountId.set(sp.account_id, sp)
+      }
+    }
+
+    const players = (g.players ?? []).map((p) => {
+      const stats = p.account_id !== undefined ? statsByAccountId.get(p.account_id) : undefined
+      if (!stats) return p
+      return {
+        ...p,
+        kills: stats.kills ?? p.kills,
+        death: stats.death ?? p.death,
+        assists: stats.assists ?? p.assists,
+        net_worth: stats.net_worth ?? p.net_worth,
+        level: stats.level ?? p.level,
+        respawn_timer: stats.respawn_timer ?? p.respawn_timer,
+        gpm: stats.gold_per_min ?? p.gpm,
+        xpm: stats.xp_per_min ?? p.xpm,
+        lh: stats.last_hits ?? p.lh,
+        dn: stats.denies ?? p.dn,
+      }
+    })
+
+    return {
+      ...g,
+      game_state: derivedGameState,
+      duration: g.duration ?? sbDuration,
+      roshan_respawn_timer: sbRoshanTimer,
+      players,
+      league_name: nameMap[g.league_id] ?? `League #${g.league_id}`,
+    }
+  })
 
   return c.json({ games: enriched })
 })

@@ -30,7 +30,11 @@ export function useMatchDetail(matchId: string | undefined) {
   // enabled is unset (defaults to true) so a cache miss triggers an immediate fetch (D-15).
   const query = useQuery<LiveGamesResponse>({
     queryKey: ['live-games'],
-    queryFn: () => fetch('/api/live/games').then((r) => r.json()),
+    queryFn: async () => {
+      const r = await fetch('/api/live/games')
+      if (!r.ok) throw new Error(`BFF error: ${r.status}`)
+      return r.json()
+    },
     // D-12: plain 30s interval. D-14: stop polling when post-game (game_state === 6).
     refetchInterval: matchFromCache?.game_state === 6 ? false : 30_000,
     staleTime: 25_000, // matches useLiveGames — avoids redundant refetch on back-navigation
@@ -41,10 +45,10 @@ export function useMatchDetail(matchId: string | undefined) {
   // D-15: redirect to home if match absent after fetch completes.
   // isFetched guard prevents premature redirect before the network call settles.
   useEffect(() => {
-    if (!query.isLoading && query.isFetched && !match) {
+    if (!query.isFetching && query.isSuccess && !match) {
       navigate('/')
     }
-  }, [query.isLoading, query.isFetched, match, navigate])
+  }, [query.isFetching, query.isSuccess, match, navigate])
 
   // Filter strictly to team === 0 (Radiant) and team === 1 (Dire).
   // Exclude team === 2 (Broadcaster) and team === 4 (Unassigned).

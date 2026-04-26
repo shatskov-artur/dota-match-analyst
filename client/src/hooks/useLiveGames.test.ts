@@ -19,6 +19,7 @@ describe('groupByLeague', () => {
     ]
     const result = groupByLeague(games)
     expect(result).toHaveLength(1)
+    expect(result[0].leagueId).toBe(100)
     expect(result[0].leagueName).toBe('ESL Pro League')
     expect(result[0].matches).toHaveLength(1)
     expect(result[0].matches[0].match_id).toBe(1)

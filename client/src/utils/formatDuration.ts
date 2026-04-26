@@ -7,7 +7,8 @@
  * Examples: 0 → "0:00", 65 → "1:05", 754 → "12:34", 3600 → "60:00"
  */
 export function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
+  const total = Math.floor(seconds)
+  const m = Math.floor(total / 60)
+  const s = total % 60
   return `${m}:${String(s).padStart(2, '0')}`
 }

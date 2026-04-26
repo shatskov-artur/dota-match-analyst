@@ -15,18 +15,11 @@ interface HeroPlayerGridProps {
   isLoading: boolean
 }
 
-export default function HeroPlayerGrid({ radiantPlayers, direPlayers, isLoading }: HeroPlayerGridProps) {
-  const allPlayers = [...radiantPlayers, ...direPlayers]
-  // Type assertion needed because level/gpm/xpm/lh/dn come via .passthrough() not always in static type
-  const hasGpm = allPlayers.some((p) => (p as any).gpm !== undefined)
-  const hasXpm = allPlayers.some((p) => (p as any).xpm !== undefined)
-  const hasLhDn = allPlayers.some((p) => (p as any).lh !== undefined)
-
-  // Column headers: fixed widths must align with PlayerRow column widths
-  const ColHeaders = () => (
+function ColHeaders({ hasGpm, hasXpm, hasLhDn }: { hasGpm: boolean; hasXpm: boolean; hasLhDn: boolean }) {
+  return (
     <div className="flex items-center gap-4 px-0 mb-1">
-      <div className="shrink-0" style={{ width: 48 }} />  {/* portrait spacer */}
-      <div className="flex-1" />                            {/* name spacer */}
+      <div className="shrink-0" style={{ width: 48 }} />
+      <div className="flex-1" />
       <span className="text-[10px] uppercase tracking-[0.2em] shrink-0 text-right"
             style={{ width: 28, color: '#555555' }}>LVL</span>
       <span className="text-[10px] uppercase tracking-[0.2em] shrink-0 text-right"
@@ -47,6 +40,13 @@ export default function HeroPlayerGrid({ radiantPlayers, direPlayers, isLoading 
       )}
     </div>
   )
+}
+
+export default function HeroPlayerGrid({ radiantPlayers, direPlayers, isLoading }: HeroPlayerGridProps) {
+  const allPlayers = [...radiantPlayers, ...direPlayers]
+  const hasGpm = allPlayers.some((p) => p.gpm !== undefined)
+  const hasXpm = allPlayers.some((p) => p.xpm !== undefined)
+  const hasLhDn = allPlayers.some((p) => p.lh !== undefined)
 
   if (isLoading) {
     return (
@@ -63,16 +63,17 @@ export default function HeroPlayerGrid({ radiantPlayers, direPlayers, isLoading 
       {/* Radiant group */}
       <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-2"
          style={{ color: '#4ade80' }}>Radiant</p>
-      <ColHeaders />
-      {radiantPlayers.map((p, i) => (
-        <PlayerRow key={i} player={p} hasGpm={hasGpm} hasXpm={hasXpm} hasLhDn={hasLhDn} />
+      <ColHeaders hasGpm={hasGpm} hasXpm={hasXpm} hasLhDn={hasLhDn} />
+      {radiantPlayers.map((p) => (
+        <PlayerRow key={p.account_id ?? p.hero_id ?? p.name} player={p} hasGpm={hasGpm} hasXpm={hasXpm} hasLhDn={hasLhDn} />
       ))}
 
       {/* Dire group */}
       <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-2 mt-8"
          style={{ color: '#ef4444' }}>Dire</p>
-      {direPlayers.map((p, i) => (
-        <PlayerRow key={i} player={p} hasGpm={hasGpm} hasXpm={hasXpm} hasLhDn={hasLhDn} />
+      <ColHeaders hasGpm={hasGpm} hasXpm={hasXpm} hasLhDn={hasLhDn} />
+      {direPlayers.map((p) => (
+        <PlayerRow key={p.account_id ?? p.hero_id ?? p.name} player={p} hasGpm={hasGpm} hasXpm={hasXpm} hasLhDn={hasLhDn} />
       ))}
     </div>
   )

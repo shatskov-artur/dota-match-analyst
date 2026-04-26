@@ -65,8 +65,8 @@ export default function DraftColumn({
         {labelText}
       </p>
 
-      {/* Picks row — always 5 slots per D-02 */}
-      <div className="flex items-center gap-1 mb-2">
+      {/* Picks + bans on one horizontal line */}
+      <div className="flex items-center gap-1">
         {Array.from({ length: 5 }).map((_, i) => (
           <DraftPortrait
             key={`pick-${i}`}
@@ -78,11 +78,7 @@ export default function DraftColumn({
             playerIntel={picks[i]?.hero_id !== undefined ? playerIntelMap?.[picks[i].hero_id!] : undefined}
           />
         ))}
-      </div>
-
-      {/* Bans row — always 7 slots per D-02 */}
-      {/* Ban slots do NOT receive heroStats or playerIntel (D-02 — badge on picks only) */}
-      <div className="flex items-center gap-1">
+        <div style={{ width: 1, height: 40, background: '#222', margin: '0 4px', flexShrink: 0 }} />
         {Array.from({ length: 7 }).map((_, i) => (
           <DraftPortrait
             key={`ban-${i}`}
