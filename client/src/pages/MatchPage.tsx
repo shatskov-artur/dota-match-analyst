@@ -12,6 +12,7 @@ import { useMatchIntel } from '../hooks/useMatchIntel'
 import WinProbBar from '../components/WinProbBar'
 import { useWinProbability } from '../hooks/useWinProbability'
 import ItemsBlock from '../components/ItemsBlock'
+import CooldownsBlock from '../components/CooldownsBlock'
 
 export default function MatchPage() {
   const { matchId } = useParams()
@@ -94,15 +95,28 @@ export default function MatchPage() {
         />
       )}
 
-      {/* HeroPlayerGrid + ItemsBlock side by side — D-01 section order step 3 */}
-      <div className="mt-12 flex gap-12 items-stretch">
-        <HeroPlayerGrid
-          radiantPlayers={radiantPlayers}
-          direPlayers={direPlayers}
-          isLoading={isLoading}
-        />
-        {match?.game_state === 5 && radiantPlayers.length > 0 && (
-          <div className="w-fit flex flex-col">
+      {/* Pre-game / loading skeleton — show HeroPlayerGrid alone when two-column gate is closed */}
+      {!(match?.game_state === 5 && radiantPlayers.length > 0 && !buildings.unavailable) && (
+        <div className="mt-12">
+          <HeroPlayerGrid
+            radiantPlayers={radiantPlayers}
+            direPlayers={direPlayers}
+            isLoading={isLoading}
+          />
+        </div>
+      )}
+
+      {/* Two-column layout (D-01): left = HeroPlayerGrid + ItemsBlock; right = DotaMapView + CooldownsBlock.
+          Renders only when in-game with scoreboard players present and buildings available. */}
+      {match?.game_state === 5 && radiantPlayers.length > 0 && !buildings.unavailable && (
+        <div className="mt-12 flex gap-4 items-stretch">
+          {/* Left column */}
+          <div className="flex flex-col flex-1 gap-8">
+            <HeroPlayerGrid
+              radiantPlayers={radiantPlayers}
+              direPlayers={direPlayers}
+              isLoading={isLoading}
+            />
             <ItemsBlock
               players={[
                 ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
@@ -110,13 +124,43 @@ export default function MatchPage() {
               ].sort((a, b) => ((b.net_worth as number | undefined) ?? 0) - ((a.net_worth as number | undefined) ?? 0))}
             />
           </div>
-        )}
-      </div>
 
-      {/* Map + buildings — hidden during draft (unavailable) */}
+          {/* Right column — fixed 320px to match DotaMapView width */}
+          <div className="flex flex-col gap-8" style={{ width: 320 }}>
+            <DotaMapView
+              buildings={buildings}
+              heroPositions={[
+                ...radiantPlayers
+                  .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
+                  .map(p => ({
+                    hero_id: p.hero_id as number,
+                    team: 'radiant' as const,
+                    position_x: p.position_x as number,
+                    position_y: p.position_y as number,
+                  })),
+                ...direPlayers
+                  .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
+                  .map(p => ({
+                    hero_id: p.hero_id as number,
+                    team: 'dire' as const,
+                    position_x: p.position_x as number,
+                    position_y: p.position_y as number,
+                  })),
+              ]}
+            />
+            <CooldownsBlock
+              players={[
+                ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
+                ...direPlayers.map(p => ({ ...p, team: 'dire' as const })),
+              ]}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* BuildingsSection — full-width row below the two-column block (UI-SPEC) */}
       {!buildings.unavailable && (
-        <div className="mt-12 flex gap-8 items-start">
-          <DotaMapView buildings={buildings} />
+        <div className="mt-12">
           <BuildingsSection buildings={buildings} />
         </div>
       )}
