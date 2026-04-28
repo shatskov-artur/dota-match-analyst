@@ -62,20 +62,17 @@ export default function CooldownsBlock({ players }: CooldownsBlockProps) {
 
   const elapsedSeconds = (now - referenceRef.current) / 1000
 
+  // Strict filter: only state===2 with remaining > 0 — the unambiguous "ult on cooldown" case.
+  // Other states (0=unavail, 1=ready, 3=charging or other Valve semantics) are not surfaced —
+  // tournament-watch UX wants to see ONLY "who needs how long until their ult is back".
   const active = players
     .map(p => {
-      if (p.ultimate_state == null) return null
-      // state===2 cooldown decrements; states 0 (unavail) and 3 (charging) are not time-driven.
+      if (p.ultimate_state !== 2) return null
       const baseCd = p.ultimate_cooldown ?? 0
-      const remaining = p.ultimate_state === 2 ? Math.max(0, baseCd - elapsedSeconds) : baseCd
+      const remaining = Math.max(0, baseCd - elapsedSeconds)
       return { ...p, _remaining: remaining }
     })
-    .filter((p): p is CooldownPlayer & { _remaining: number } => {
-      if (!p) return false
-      if (p.ultimate_state === 1) return false // ready — never shown
-      if (p.ultimate_state === 2 && p._remaining <= 0) return false // expired client-side
-      return true
-    })
+    .filter((p): p is CooldownPlayer & { _remaining: number } => p != null && p._remaining > 0)
     .sort((a, b) => a._remaining - b._remaining)
 
   if (active.length === 0) return null
@@ -120,12 +117,9 @@ export default function CooldownsBlock({ players }: CooldownsBlockProps) {
               <UltSlot heroId={p.hero_id} />
 
               <div style={{ fontSize: 14, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: '#e8e8e8' }}>
-                {p.ultimate_state === 0 ? '—' : Math.max(0, Math.round(p._remaining))}
-                {p.ultimate_state !== 0 && <span style={{ fontSize: 12, color: '#555555' }}>s</span>}
+                {Math.max(0, Math.round(p._remaining))}
+                <span style={{ fontSize: 12, color: '#555555' }}>s</span>
               </div>
-
-              {p.ultimate_state === 3 && <span style={{ fontSize: 10, color: '#555555' }}>charging</span>}
-              {p.ultimate_state === 0 && <span style={{ fontSize: 10, color: '#555555' }}>unavail</span>}
             </div>
           )
         })}

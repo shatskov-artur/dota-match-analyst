@@ -56,17 +56,6 @@ export default function DotaMapView({ buildings: b, heroPositions }: Props) {
       <circle cx={52} cy={258} r={48} fill="none" stroke="#162a18" strokeWidth={1} />
       <circle cx={268} cy={52} r={48} fill="none" stroke="#2a1618" strokeWidth={1} />
 
-      {/* Real Dota 2 minimap image — drop the file at client/public/dota-minimap.jpg.
-          When present, it covers the hand-drawn fallback art beneath. Building dots and hero
-          positions render ABOVE this image so they are always visible. */}
-      <image
-        href="/dota-minimap.jpg"
-        x={0} y={0}
-        width={S} height={S}
-        preserveAspectRatio="xMidYMid slice"
-        style={{ borderRadius: 6 }}
-      />
-
       {/* ── RADIANT buildings ── */}
       {/* Top lane (left edge, top to bottom from T1→T3→Rax) */}
       <Dot x={26} y={78}  alive={r.top.tier1}     team="radiant" />
