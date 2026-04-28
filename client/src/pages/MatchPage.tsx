@@ -95,8 +95,8 @@ export default function MatchPage() {
         />
       )}
 
-      {/* Pre-game / loading skeleton — show HeroPlayerGrid alone when two-column gate is closed */}
-      {!(match?.game_state === 5 && radiantPlayers.length > 0 && !buildings.unavailable) && (
+      {/* Pre-game / loading skeleton — show HeroPlayerGrid alone when in-game gate is closed */}
+      {!(match?.game_state === 5 && radiantPlayers.length > 0) && (
         <div className="mt-12">
           <HeroPlayerGrid
             radiantPlayers={radiantPlayers}
@@ -107,8 +107,10 @@ export default function MatchPage() {
       )}
 
       {/* Two-column layout (D-01): left = HeroPlayerGrid + ItemsBlock; right = DotaMapView + CooldownsBlock.
-          Renders only when in-game with scoreboard players present and buildings available. */}
-      {match?.game_state === 5 && radiantPlayers.length > 0 && !buildings.unavailable && (
+          Left column needs only in-game + scoreboard. Right column additionally requires buildings to be available
+          (DotaMapView is intrinsically a buildings view; CooldownsBlock follows the same gate to avoid an
+          orphaned right column when building_state is absent — see CLAUDE.md "building_state can be absent"). */}
+      {match?.game_state === 5 && radiantPlayers.length > 0 && (
         <div className="mt-12 flex gap-4 items-stretch">
           {/* Left column */}
           <div className="flex flex-col flex-1 gap-8">
@@ -125,36 +127,38 @@ export default function MatchPage() {
             />
           </div>
 
-          {/* Right column — fixed 320px to match DotaMapView width */}
-          <div className="flex flex-col gap-8" style={{ width: 320 }}>
-            <DotaMapView
-              buildings={buildings}
-              heroPositions={[
-                ...radiantPlayers
-                  .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
-                  .map(p => ({
-                    hero_id: p.hero_id as number,
-                    team: 'radiant' as const,
-                    position_x: p.position_x as number,
-                    position_y: p.position_y as number,
-                  })),
-                ...direPlayers
-                  .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
-                  .map(p => ({
-                    hero_id: p.hero_id as number,
-                    team: 'dire' as const,
-                    position_x: p.position_x as number,
-                    position_y: p.position_y as number,
-                  })),
-              ]}
-            />
-            <CooldownsBlock
-              players={[
-                ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
-                ...direPlayers.map(p => ({ ...p, team: 'dire' as const })),
-              ]}
-            />
-          </div>
+          {/* Right column — fixed 320px to match DotaMapView width; gated on buildings availability */}
+          {!buildings.unavailable && (
+            <div className="flex flex-col gap-8" style={{ width: 320 }}>
+              <DotaMapView
+                buildings={buildings}
+                heroPositions={[
+                  ...radiantPlayers
+                    .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
+                    .map(p => ({
+                      hero_id: p.hero_id as number,
+                      team: 'radiant' as const,
+                      position_x: p.position_x as number,
+                      position_y: p.position_y as number,
+                    })),
+                  ...direPlayers
+                    .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
+                    .map(p => ({
+                      hero_id: p.hero_id as number,
+                      team: 'dire' as const,
+                      position_x: p.position_x as number,
+                      position_y: p.position_y as number,
+                    })),
+                ]}
+              />
+              <CooldownsBlock
+                players={[
+                  ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
+                  ...direPlayers.map(p => ({ ...p, team: 'dire' as const })),
+                ]}
+              />
+            </div>
+          )}
         </div>
       )}
 
