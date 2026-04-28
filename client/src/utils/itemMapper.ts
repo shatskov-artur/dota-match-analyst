@@ -2,7 +2,7 @@
 // DO NOT import from shared/itemMapper.ts — that file uses createRequire (Node.js only, breaks Vite bundling).
 import items from '../../../shared/items.json'
 
-type ItemEntry = { id: number; img: string; dname: string }
+type ItemEntry = { id: number; img: string; dname?: string }
 
 // Build reverse lookup once at module load — O(1) resolution per call.
 const idToName: Record<number, string> = {}
