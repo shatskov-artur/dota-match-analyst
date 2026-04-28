@@ -62,18 +62,24 @@ export default function CooldownsBlock({ players }: CooldownsBlockProps) {
 
   const elapsedSeconds = (now - referenceRef.current) / 1000
 
-  // Strict filter: only state===2 with remaining > 0 — the unambiguous "ult on cooldown" case.
-  // Other states (0=unavail, 1=ready, 3=charging or other Valve semantics) are not surfaced —
-  // tournament-watch UX wants to see ONLY "who needs how long until their ult is back".
+  // Show every player whose ultimate_state is reported. state===2 decrements client-side;
+  // any other state (or remaining===0) is rendered as "ready". On-cooldown rows sort first
+  // (ascending), ready rows fall to the bottom.
   const active = players
     .map(p => {
-      if (p.ultimate_state !== 2) return null
+      if (p.ultimate_state == null) return null
       const baseCd = p.ultimate_cooldown ?? 0
-      const remaining = Math.max(0, baseCd - elapsedSeconds)
+      const remaining = p.ultimate_state === 2 ? Math.max(0, baseCd - elapsedSeconds) : 0
       return { ...p, _remaining: remaining }
     })
-    .filter((p): p is CooldownPlayer & { _remaining: number } => p != null && p._remaining > 0)
-    .sort((a, b) => a._remaining - b._remaining)
+    .filter((p): p is CooldownPlayer & { _remaining: number } => p != null)
+    .sort((a, b) => {
+      const aReady = a._remaining <= 0
+      const bReady = b._remaining <= 0
+      if (aReady && !bReady) return 1
+      if (!aReady && bReady) return -1
+      return a._remaining - b._remaining
+    })
 
   if (active.length === 0) return null
 
@@ -116,10 +122,16 @@ export default function CooldownsBlock({ players }: CooldownsBlockProps) {
 
               <UltSlot heroId={p.hero_id} />
 
-              <div style={{ fontSize: 14, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: '#e8e8e8' }}>
-                {Math.max(0, Math.round(p._remaining))}
-                <span style={{ fontSize: 12, color: '#555555' }}>s</span>
-              </div>
+              {p._remaining > 0 ? (
+                <div style={{ fontSize: 14, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: '#e8e8e8' }}>
+                  {Math.round(p._remaining)}
+                  <span style={{ fontSize: 12, color: '#555555' }}>s</span>
+                </div>
+              ) : (
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#4ade80' }}>
+                  ready
+                </div>
+              )}
             </div>
           )
         })}
