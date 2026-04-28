@@ -64,3 +64,57 @@ describe('LiveGameSchema — scoreboard extension (Phase 4 — DRAFT-01 schema c
     expect(parsed.scoreboard?.radiant?.picks?.[0]?.hero_id).toBeUndefined()
   })
 })
+
+// Phase 8 Wave 0 — RED-state contract for PlayerSchema phase-8 fields.
+// Locks the verified field-name correction (position_x/position_y NOT x_pos/y_pos)
+// and the four new optional fields. Plan 02 will add explicit z.number() validation
+// to PlayerSchema; the rejection-of-non-numeric test below is currently RED.
+
+function gameWithPlayer(player: Record<string, unknown>) {
+  return { match_id: 1, lobby_id: 1, league_id: 1, players: [player] }
+}
+
+describe('PlayerSchema phase-8 fields', () => {
+  it('accepts position_x, position_y, ultimate_state, ultimate_cooldown as optional numbers', () => {
+    const result = LiveGameSchema.safeParse(gameWithPlayer({
+      account_id: 1, hero_id: 1, team: 0,
+      position_x: -7000, position_y: 6000,
+      ultimate_state: 2, ultimate_cooldown: 47.5,
+    }))
+    expect(result.success).toBe(true)
+    if (result.success) {
+      const p = result.data.players?.[0] as Record<string, unknown>
+      expect(p.position_x).toBe(-7000)
+      expect(p.position_y).toBe(6000)
+      expect(p.ultimate_state).toBe(2)
+      expect(p.ultimate_cooldown).toBe(47.5)
+    }
+  })
+
+  it('accepts player with phase-8 fields omitted', () => {
+    const result = LiveGameSchema.safeParse(gameWithPlayer({ account_id: 1, hero_id: 1, team: 0 }))
+    expect(result.success).toBe(true)
+  })
+
+  it('rejects non-numeric ultimate_state', () => {
+    const result = LiveGameSchema.safeParse(gameWithPlayer({
+      account_id: 1, hero_id: 1, team: 0,
+      ultimate_state: 'active',
+    }))
+    expect(result.success).toBe(false)
+  })
+
+  it('passthrough preserves unknown fields like position_z', () => {
+    const result = LiveGameSchema.safeParse(gameWithPlayer({
+      account_id: 1, hero_id: 1, team: 0,
+      position_x: 0, position_y: 0,
+      ultimate_state: 1, ultimate_cooldown: 0,
+      position_z: 42,
+    }))
+    expect(result.success).toBe(true)
+    if (result.success) {
+      const p = result.data.players?.[0] as Record<string, unknown>
+      expect(p.position_z).toBe(42)
+    }
+  })
+})
