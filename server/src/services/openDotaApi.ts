@@ -12,24 +12,23 @@ const OPENDOTA_BASE = 'https://api.opendota.com/api'
  * SECURITY: T-02-02 — logs status/statusText only, never full URL.
  */
 async function fetchLeagueName(leagueId: number): Promise<string | null> {
-  let res: Response
   try {
-    res = await fetch(`${OPENDOTA_BASE}/leagues/${leagueId}`)
+    const res = await fetch(`${OPENDOTA_BASE}/leagues/${leagueId}`)
+    if (!res.ok) {
+      console.error(`[openDotaApi] League fetch error: ${res.status} ${res.statusText}`)
+      return null
+    }
+    const raw: unknown = await res.json()
+    const parsed = LeagueSchema.safeParse(raw)
+    if (!parsed.success) {
+      console.error(`[openDotaApi] LeagueSchema parse failure for league ${leagueId}`)
+      return null
+    }
+    return parsed.data.name ?? null
   } catch (err) {
-    console.error(`[openDotaApi] Network error fetching league ${leagueId}:`, (err as Error).message)
+    console.error(`[openDotaApi] Error fetching league ${leagueId}:`, (err as Error).message)
     return null
   }
-  if (!res.ok) {
-    console.error(`[openDotaApi] League fetch error: ${res.status} ${res.statusText}`)
-    return null
-  }
-  const raw: unknown = await res.json()
-  const parsed = LeagueSchema.safeParse(raw)
-  if (!parsed.success) {
-    console.error(`[openDotaApi] LeagueSchema parse failure for league ${leagueId}`)
-    return null
-  }
-  return parsed.data.name ?? null
 }
 
 /**
@@ -65,24 +64,23 @@ export function buildHeroStatsMap(raw: z.infer<typeof HeroStatsSchema>[]): HeroS
 }
 
 async function fetchHeroStats(): Promise<HeroStatsMap | null> {
-  let res: Response
   try {
-    res = await fetch(`${OPENDOTA_BASE}/heroStats`)
+    const res = await fetch(`${OPENDOTA_BASE}/heroStats`)
+    if (!res.ok) {
+      console.error(`[openDotaApi] heroStats fetch error: ${res.status} ${res.statusText}`)
+      return null
+    }
+    const raw: unknown = await res.json()
+    const parsed = z.array(HeroStatsSchema).safeParse(raw)
+    if (!parsed.success) {
+      console.error('[openDotaApi] HeroStatsSchema parse failure')
+      return null
+    }
+    return buildHeroStatsMap(parsed.data)
   } catch (err) {
-    console.error('[openDotaApi] Network error fetching heroStats:', (err as Error).message)
+    console.error('[openDotaApi] Error fetching heroStats:', (err as Error).message)
     return null
   }
-  if (!res.ok) {
-    console.error(`[openDotaApi] heroStats fetch error: ${res.status} ${res.statusText}`)
-    return null
-  }
-  const raw: unknown = await res.json()
-  const parsed = z.array(HeroStatsSchema).safeParse(raw)
-  if (!parsed.success) {
-    console.error('[openDotaApi] HeroStatsSchema parse failure')
-    return null
-  }
-  return buildHeroStatsMap(parsed.data)
 }
 
 /**
@@ -97,24 +95,23 @@ export function getHeroStats(): Promise<HeroStatsMap | null> {
 // ─── Player Heroes ───────────────────────────────────────────────────────────
 
 async function fetchPlayerHeroes(accountId: number): Promise<z.infer<typeof PlayerHeroSchema>[] | null> {
-  let res: Response
   try {
-    res = await fetch(`${OPENDOTA_BASE}/players/${accountId}/heroes`)
+    const res = await fetch(`${OPENDOTA_BASE}/players/${accountId}/heroes`)
+    if (!res.ok) {
+      console.error(`[openDotaApi] Player heroes fetch error: ${res.status} ${res.statusText}`)
+      return null
+    }
+    const raw: unknown = await res.json()
+    const parsed = z.array(PlayerHeroSchema).safeParse(raw)
+    if (!parsed.success) {
+      console.error(`[openDotaApi] PlayerHeroSchema parse failure for account ${accountId}`)
+      return null
+    }
+    return parsed.data
   } catch (err) {
-    console.error(`[openDotaApi] Network error fetching player heroes ${accountId}:`, (err as Error).message)
+    console.error(`[openDotaApi] Error fetching player heroes ${accountId}:`, (err as Error).message)
     return null
   }
-  if (!res.ok) {
-    console.error(`[openDotaApi] Player heroes fetch error: ${res.status} ${res.statusText}`)
-    return null
-  }
-  const raw: unknown = await res.json()
-  const parsed = z.array(PlayerHeroSchema).safeParse(raw)
-  if (!parsed.success) {
-    console.error(`[openDotaApi] PlayerHeroSchema parse failure for account ${accountId}`)
-    return null
-  }
-  return parsed.data
 }
 
 /**

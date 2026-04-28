@@ -7,7 +7,7 @@ const STEAM_API_BASE = 'https://api.steampowered.com'
 async function fetchLiveLeagueGames(): Promise<LiveLeagueGames> {
   // SECURITY: T-04-04 — log status/statusText only, never log the full URL (contains API key)
   const url = `${STEAM_API_BASE}/IDOTA2Match_570/GetLiveLeagueGames/v1/?key=${env.VALVE_API_KEY}&partner=1`
-  const res = await fetch(url)
+  const res = await fetch(url, { signal: AbortSignal.timeout(10_000) })
   if (!res.ok) {
     throw new Error(`Valve API error: ${res.status} ${res.statusText}`)
   }

@@ -1,4 +1,4 @@
-type Status = 'Draft' | 'Live' | 'Post-game' | 'Unknown'
+type Status = 'Draft' | 'Live' | 'Post-game' | 'Strategy' | 'Starting' | 'Waiting' | 'Break' | 'Unknown'
 
 interface StatusTagProps {
   status: Status
@@ -7,6 +7,10 @@ interface StatusTagProps {
 const styleMap: Record<Status, { dot: string; text: string; glow?: string; pulse?: boolean }> = {
   'Live':      { dot: '#b03030', text: '#c04040', glow: '#b03030' },
   'Draft':     { dot: '#b08c20', text: '#c8a830', glow: '#b08c20', pulse: true },
+  'Strategy':  { dot: '#2060b0', text: '#3080d0', glow: '#2060b0', pulse: true },
+  'Starting':  { dot: '#206030', text: '#30a050', glow: '#206030', pulse: true },
+  'Waiting':   { dot: '#383838', text: '#555555' },
+  'Break':     { dot: '#503020', text: '#806040' },
   'Post-game': { dot: '#303030', text: '#484848' },
   'Unknown':   { dot: '#252525', text: '#383838' },
 }

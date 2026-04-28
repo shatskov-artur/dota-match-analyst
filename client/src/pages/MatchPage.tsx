@@ -4,6 +4,7 @@ import { useMatchDetail } from '../hooks/useMatchDetail'
 import ScoreHeader from '../components/ScoreHeader'
 import HeroPlayerGrid from '../components/HeroPlayerGrid'
 import BuildingsSection from '../components/BuildingsSection'
+import DotaMapView from '../components/DotaMapView'
 import DraftSection from '../components/DraftSection'
 import { useDraftDetail } from '../hooks/useDraftDetail'
 import { useHeroStats } from '../hooks/useHeroStats'
@@ -93,30 +94,29 @@ export default function MatchPage() {
         />
       )}
 
-      {/* HeroPlayerGrid — D-01 section order step 3; D-05 merged widget */}
-      <div className="mt-12">
+      {/* HeroPlayerGrid + ItemsBlock side by side — D-01 section order step 3 */}
+      <div className="mt-12 flex gap-12 items-start">
         <HeroPlayerGrid
           radiantPlayers={radiantPlayers}
           direPlayers={direPlayers}
           isLoading={isLoading}
         />
+        {match?.game_state === 5 && radiantPlayers.length > 0 && (
+          <div className="w-fit">
+            <ItemsBlock
+              players={[
+                ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
+                ...direPlayers.map(p => ({ ...p, team: 'dire' as const })),
+              ].sort((a, b) => ((b.net_worth as number | undefined) ?? 0) - ((a.net_worth as number | undefined) ?? 0))}
+            />
+          </div>
+        )}
       </div>
 
-      {/* ItemsBlock — Phase 7 D-01: cross-team NW-ranked heroes with item icons */}
-      {draft.scoreboard && (
-        <div className="mt-12">
-          <ItemsBlock
-            players={[
-              ...(draft.scoreboard.radiant?.players ?? []).map(p => ({ ...p, team: 'radiant' as const })),
-              ...(draft.scoreboard.dire?.players ?? []).map(p => ({ ...p, team: 'dire' as const })),
-            ].sort((a, b) => ((b.net_worth as number) ?? 0) - ((a.net_worth as number) ?? 0))}
-          />
-        </div>
-      )}
-
-      {/* BuildingsSection — D-01 section order step 4; D-10 hidden when unavailable */}
+      {/* Map + buildings — hidden during draft (unavailable) */}
       {!buildings.unavailable && (
-        <div className="mt-12">
+        <div className="mt-12 flex gap-8 items-start">
+          <DotaMapView buildings={buildings} />
           <BuildingsSection buildings={buildings} />
         </div>
       )}

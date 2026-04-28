@@ -28,8 +28,9 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Error state: full-width banner when BFF unreachable */}
-        {isError && !isLoading && <ErrorBanner />}
+        {/* Error state: blocking banner only on first-load failure (no stale data).
+            Background refetch failures leave grouped populated — stale content stays visible. */}
+        {isError && !isLoading && grouped.length === 0 && <ErrorBanner />}
 
         {/* Empty state: fetch succeeded but no live games */}
         {!isLoading && !isError && grouped.length === 0 && (
@@ -42,8 +43,8 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Match list: accordion sections per league */}
-        {!isLoading && !isError && grouped.length > 0 && (
+        {/* Match list: show stale data even when background refetch errors */}
+        {!isLoading && grouped.length > 0 && (
           <div>
             {grouped.map(({ leagueId, leagueName, matches }) => (
               <LeagueAccordion

@@ -59,9 +59,21 @@ export function extractScoreboardInputs(
   )
   const goldDiff = radiantGold - direGold
 
-  // Kill diff from top-level match fields
-  const radiantScore = typeof game.radiant_score === 'number' ? game.radiant_score : 0
-  const direScore = typeof game.dire_score === 'number' ? game.dire_score : 0
+  // Kill diff — top-level radiant_score/dire_score when present, else scoreboard.{radiant,dire}.score
+  const sbRadiantScore = sbRadiant?.score
+  const sbDireScore = sbDire?.score
+  const radiantScore =
+    typeof game.radiant_score === 'number'
+      ? game.radiant_score
+      : typeof sbRadiantScore === 'number'
+        ? sbRadiantScore
+        : 0
+  const direScore =
+    typeof game.dire_score === 'number'
+      ? game.dire_score
+      : typeof sbDireScore === 'number'
+        ? sbDireScore
+        : 0
   const killDiff = radiantScore - direScore
 
   // Building advantage via buildingDecoder

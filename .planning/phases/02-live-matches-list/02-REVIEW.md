@@ -210,3 +210,39 @@ const seconds = LIVE_REFETCH_INTERVAL_MS / 1000
 _Reviewed: 2026-04-23_
 _Reviewer: Claude (gsd-code-reviewer)_
 _Depth: standard_
+
+---
+
+## Post-launch hotfixes (2026-04-27)
+
+Three bugs were discovered through user observation (intermittent "Valve API unreachable" error banner).
+
+### HF-01: `res.json()` uncaught in all three `openDotaApi.ts` fetch functions
+
+**Files:** `server/src/services/openDotaApi.ts` — `fetchLeagueName` (line 26), `fetchHeroStats` (line 79), `fetchPlayerHeroes` (line 111)
+
+**Root cause:** Each fetch function wrapped only the `fetch()` call in try/catch, leaving `res.json()` exposed. OpenDota occasionally returns a 200 OK with a truncated body. `res.json()` threw `SyntaxError: Unexpected end of JSON input`, which escaped the local try/catch, propagated through `cached()` and the `Promise.all` for league name lookups (not guarded by the route's own try/catch), and was caught by Hono's default error handler — logged as a raw `SyntaxError` without any `[live]` prefix.
+
+**Fix applied:** Collapsed the split try/catch into a single wrapping try/catch in all three functions. Each function now always returns `null` on any failure (network error, non-OK status, truncated body, Zod parse failure) — consistent with the existing "null on any error" contract.
+
+---
+
+### HF-02: TanStack Query v5 background-refetch failure hid stale match list
+
+**File:** `client/src/pages/HomePage.tsx` (lines 32, 47)
+
+**Root cause:** In TanStack Query v5, when a background refetch fails after a previously successful fetch, `isError=true` but `data` still holds the last successful result. The original conditions `{isError && !isLoading && <ErrorBanner />}` and `{!isLoading && !isError && grouped.length > 0 && ...}` combined to replace the match list with the error banner on every background poll failure — even when stale data was available.
+
+**Fix applied:**
+- Error banner condition changed to `isError && !isLoading && grouped.length === 0` — blocking banner only on first-load failure with no data.
+- Match list condition changed to `!isLoading && grouped.length > 0` — stale content stays visible through background refetch errors.
+
+---
+
+### HF-03: No timeout on Valve API fetch
+
+**File:** `server/src/services/valveApi.ts` (line 10)
+
+**Root cause:** Bare `fetch(url)` with no timeout. A slow or hanging Valve response would block the route handler indefinitely, eventually timing out at the infrastructure level and surfacing as an uncontrolled error.
+
+**Fix applied:** Added `signal: AbortSignal.timeout(10_000)` — Valve fetch aborts after 10 seconds and throws an `AbortError`, which the route's try/catch converts to a clean 503.

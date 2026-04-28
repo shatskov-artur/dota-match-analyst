@@ -40,7 +40,7 @@ function ItemSlot({ itemId, variant = 'main' }: { itemId?: number; variant?: 'ma
   if (isEmpty) {
     return (
       <div
-        style={{ ...baseStyle, ...neutralStyle, background: '#1a1a1a', border: '1px solid #2a2a2a' }}
+        style={{ ...baseStyle, background: '#1a1a1a', border: '1px solid #2a2a2a', ...neutralStyle }}
         aria-label="Empty item slot"
       />
     )

@@ -3,7 +3,10 @@ import MatchRow from './MatchRow'
 import type { EnrichedGame } from '../hooks/useLiveGames'
 import { getStatusLabel } from '../utils/gameState'
 
-const STATUS_ORDER = { 'Draft': 0, 'Live': 1, 'Post-game': 2, 'Unknown': 3 }
+const STATUS_ORDER: Record<string, number> = {
+  'Live': 0, 'Starting': 1, 'Strategy': 2, 'Draft': 3,
+  'Waiting': 4, 'Break': 5, 'Post-game': 6, 'Unknown': 7,
+}
 
 interface LeagueAccordionProps {
   leagueName: string
