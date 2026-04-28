@@ -95,14 +95,14 @@ export default function MatchPage() {
       )}
 
       {/* HeroPlayerGrid + ItemsBlock side by side — D-01 section order step 3 */}
-      <div className="mt-12 flex gap-12 items-start">
+      <div className="mt-12 flex gap-12 items-stretch">
         <HeroPlayerGrid
           radiantPlayers={radiantPlayers}
           direPlayers={direPlayers}
           isLoading={isLoading}
         />
         {match?.game_state === 5 && radiantPlayers.length > 0 && (
-          <div className="w-fit">
+          <div className="w-fit flex flex-col">
             <ItemsBlock
               players={[
                 ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),

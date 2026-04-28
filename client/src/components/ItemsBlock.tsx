@@ -62,7 +62,7 @@ export default function ItemsBlock({ players }: ItemsBlockProps) {
   if (players.length === 0) return null
 
   return (
-    <div>
+    <div className="flex flex-col flex-1">
       {/* Section header — matches HeroPlayerGrid label style */}
       <p
         className="text-[10px] uppercase tracking-[0.3em] font-bold mb-4"
@@ -71,6 +71,7 @@ export default function ItemsBlock({ players }: ItemsBlockProps) {
         Items
       </p>
 
+      <div className="flex flex-col justify-between flex-1">
       {players.map((player, index) => {
         const heroInfo = player.hero_id != null ? heroMapper(player.hero_id) : null
         const rankColor = player.team === 'radiant' ? '#4ade80' : '#ef4444'
@@ -166,6 +167,7 @@ export default function ItemsBlock({ players }: ItemsBlockProps) {
           </div>
         )
       })}
+      </div>
     </div>
   )
 }
