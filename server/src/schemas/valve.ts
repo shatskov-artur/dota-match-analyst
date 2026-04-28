@@ -20,6 +20,19 @@ const PlayerSchema = z
     xpm: z.number().optional(),
     lh: z.number().optional(),     // last hits
     dn: z.number().optional(),     // denies
+    // Phase 7: item slots — all optional, absent during draft phase
+    // VERIFY at runtime: item_neutral field name (may differ from Valve docs — D-04)
+    // VERIFY at runtime: item6/item7/item8 backpack presence in pro match live API (D-04)
+    item0: z.number().optional(),
+    item1: z.number().optional(),
+    item2: z.number().optional(),
+    item3: z.number().optional(),
+    item4: z.number().optional(),
+    item5: z.number().optional(),
+    item_neutral: z.number().optional(), // neutral item slot — D-04 VERIFY field name
+    item6: z.number().optional(),        // backpack slot 0 — D-04 VERIFY presence
+    item7: z.number().optional(),        // backpack slot 1
+    item8: z.number().optional(),        // backpack slot 2
   })
   .passthrough()
 
