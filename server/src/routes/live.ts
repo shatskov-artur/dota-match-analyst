@@ -84,6 +84,16 @@ liveRoutes.get('/games', async (c) => {
         xpm: stats.xp_per_min ?? p.xpm,
         lh: stats.last_hits ?? p.lh,
         dn: stats.denies ?? p.dn,
+        item0: stats.item0 ?? p.item0,
+        item1: stats.item1 ?? p.item1,
+        item2: stats.item2 ?? p.item2,
+        item3: stats.item3 ?? p.item3,
+        item4: stats.item4 ?? p.item4,
+        item5: stats.item5 ?? p.item5,
+        item_neutral: stats.item_neutral ?? p.item_neutral,
+        item6: stats.item6 ?? p.item6,
+        item7: stats.item7 ?? p.item7,
+        item8: stats.item8 ?? p.item8,
       }
     })
 
