@@ -94,6 +94,11 @@ liveRoutes.get('/games', async (c) => {
         item6: stats.item6 ?? p.item6,
         item7: stats.item7 ?? p.item7,
         item8: stats.item8 ?? p.item8,
+        // Phase 8 fields — surface scoreboard position + ultimate state into top-level players[]
+        position_x: stats.position_x ?? p.position_x,
+        position_y: stats.position_y ?? p.position_y,
+        ultimate_state: stats.ultimate_state ?? p.ultimate_state,
+        ultimate_cooldown: stats.ultimate_cooldown ?? p.ultimate_cooldown,
       }
     })
 
