@@ -106,19 +106,19 @@ export default function MatchPage() {
         </div>
       )}
 
-      {/* Two-column layout (D-01): left = HeroPlayerGrid + ItemsBlock; right = DotaMapView + CooldownsBlock.
-          Left column needs only in-game + scoreboard. Right column additionally requires buildings to be available
-          (DotaMapView is intrinsically a buildings view; CooldownsBlock follows the same gate to avoid an
-          orphaned right column when building_state is absent — see CLAUDE.md "building_state can be absent"). */}
+      {/* In-game row: HeroPlayerGrid | ItemsBlock | (Map + Cooldowns stacked).
+          Phase 7 preserved HPG and ItemsBlock side-by-side; Phase 8 adds the right-side
+          stack with DotaMapView (top) + CooldownsBlock (below). Right stack only mounts
+          when buildings are available (CLAUDE.md "building_state can be absent"). */}
       {match?.game_state === 5 && radiantPlayers.length > 0 && (
-        <div className="mt-12 flex gap-4 items-stretch">
-          {/* Left column */}
-          <div className="flex flex-col flex-1 gap-8">
-            <HeroPlayerGrid
-              radiantPlayers={radiantPlayers}
-              direPlayers={direPlayers}
-              isLoading={isLoading}
-            />
+        <div className="mt-12 flex gap-12 items-stretch">
+          <HeroPlayerGrid
+            radiantPlayers={radiantPlayers}
+            direPlayers={direPlayers}
+            isLoading={isLoading}
+          />
+
+          <div className="w-fit flex flex-col">
             <ItemsBlock
               players={[
                 ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
@@ -127,7 +127,6 @@ export default function MatchPage() {
             />
           </div>
 
-          {/* Right column — fixed 320px to match DotaMapView width; gated on buildings availability */}
           {!buildings.unavailable && (
             <div className="flex flex-col gap-8" style={{ width: 320 }}>
               <DotaMapView
