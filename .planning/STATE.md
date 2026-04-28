@@ -3,21 +3,21 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: executing
-last_updated: "2026-04-26T19:25:00.000Z"
+last_updated: "2026-04-28T02:21:00.000Z"
 progress:
   total_phases: 7
   completed_phases: 6
   total_plans: 29
   completed_plans: 29
-  percent: 99
+  percent: 100
 ---
 
 # Project State
 
 ## Current Status
 
-Phase: Phase 6 complete — ready for Phase 7
-Last updated: 2026-04-26
+Phase: Phase 7 executing — 07-01 complete (items.json + RED test stubs)
+Last updated: 2026-04-28
 
 ## Project Reference
 
@@ -36,13 +36,13 @@ See: .planning/PROJECT.md
 | 4 | Draft UX | Complete — all 6 plans done, verified 2026-04-25 |
 | 5 | Hero & Player Intel | Complete — all 6 plans done, verified 2026-04-25 |
 | 6 | Win Probability | Complete — all 5 plans done, verified 2026-04-26 |
-| 7 | Harden & Deploy | Not started |
+| 7 | In-Game Item Intel | Executing — 1/4 plans done (07-01 complete) |
 
 ## Current Position
 
-- **Phase:** 6 complete → Phase 7 next
-- **Status:** Phase 6 done — WinProbBar wired, status label fixed, game time displayed
-- **Progress:** [██████████] 99%
+- **Phase:** 7 executing — plan 01 complete
+- **Status:** 07-01 done (shared/items.json + RED test stubs for itemMapper + formatNW). Next: 07-02 (itemMapper GREEN implementation)
+- **Progress:** [██████████] 100%
 
 ## Performance Metrics
 
@@ -81,6 +81,7 @@ See: .planning/PROJECT.md
 - Phase 6: ScoreHeader now shows formatDuration(match.duration) as game clock between StatusTag and gold diff
 - Phase 6: WinProbBar self-gates: gameState===5 AND duration>300 AND radiantWinProb!==null — no wrapper needed in MatchPage
 - Phase 6: Stratz live.match returns null for matches it doesn't track — expected, bar silently hides
+- radiance item id is 137 in OpenDota data (plan had 119 which was stale); itemMapper test corrected
 
 ### Todos
 
@@ -93,9 +94,10 @@ None.
 
 ## Session Continuity
 
-- Last session: 2026-04-26 — Phase 6 complete (WinProbBar + status label fix + game clock)
-- Next action: Plan and execute Phase 7 (Harden & Deploy)
+- Last session: 2026-04-28 — Phase 7 plan 01 complete (items.json + RED test stubs)
+- Next action: Execute 07-02 (itemMapper GREEN implementation)
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
 
 **Completed Phase:** 6 (Win Probability) — all 5 plans done — 2026-04-26
+**In Progress:** Phase 7 (In-Game Item Intel) — 1/4 plans done — 2026-04-28
