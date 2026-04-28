@@ -3,7 +3,7 @@
 **Project:** Dota 2 Match Analyst
 **Version:** v1
 **Granularity:** standard
-**Last updated:** 2026-04-26
+**Last updated:** 2026-04-28
 
 ## Overview
 
@@ -168,19 +168,24 @@ Plans:
 ### Phase 7: In-Game Item Intel
 **Goal:** A user watching a live match sees all ten heroes ranked by net worth with their current items displayed as icons, so they can instantly read who is strongest and what power spikes are coming.
 **Depends on:** Phase 3
-**Requirements:** TBD
-**API reality (verified 2026-04-26):**
+**Requirements:** SC-01, SC-02, SC-03, SC-04
+**API reality (verified 2026-04-28):**
 - `item0`–`item5` (integer item IDs) are present on every player in `scoreboard.{radiant,dire}.players[]`
 - Item IDs must be mapped to names/icons via a static JSON (source: OpenDota `/constants/items` endpoint or bundled file)
 - Icon URL pattern: `https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/items/{item_name}.png`
 - `net_worth` field is present and reliable for sort order
-- **VERIFY during implementation:** confirm item ID → name mapping is stable across patches; check neutral item slot (item5 vs separate field); check backpack slots availability in live API
+- **VERIFY during implementation:** confirm item ID → name mapping is stable across patches; check neutral item slot (item_neutral vs item5 vs no field); check backpack slots (item6–item8) availability in live API
 **Success criteria** (what must be TRUE):
-  1. User sees all 10 heroes sorted descending by net worth in a dedicated block
-  2. Each hero row shows 6 item icon slots (empty slot rendered as placeholder)
-  3. Items update on the same 30s polling cycle as the match screen
-  4. Missing or unknown item IDs render as empty slot, not an error
-**Plans:** TBD
+  1. User sees all 10 heroes sorted descending by net worth in a dedicated block (SC-01)
+  2. Each hero row shows 6 item icon slots (empty slot rendered as placeholder) (SC-02)
+  3. Items update on the same 30s polling cycle as the match screen (SC-03)
+  4. Missing or unknown item IDs render as empty slot, not an error (SC-04)
+**Plans:** 4 plans
+Plans:
+- [ ] 07-01-PLAN.md — Wave 0: Download shared/items.json + RED-state test stubs (itemMapper.test.ts, formatNW.test.ts)
+- [ ] 07-02-PLAN.md — Wave 1A: Extend PlayerSchema (item0–item5, item_neutral, item6–item8) + shared/itemMapper.ts (server-side)
+- [ ] 07-03-PLAN.md — Wave 1B: client/src/utils/itemMapper.ts + formatNW.ts (turns tests GREEN) + ItemsBlock.tsx component
+- [ ] 07-04-PLAN.md — Wave 2: MatchPage wiring (ItemsBlock insertion, merge+sort scoreboard players) + human checkpoint
 **UI hint:** yes
 
 ### Phase 8: Ability Cooldowns
@@ -263,7 +268,7 @@ Plans:
 | 4. Draft UX | 6/6 | Complete | 2026-04-25 |
 | 5. Hero & Player Intel | 6/6 | Complete | 2026-04-25 |
 | 6. Win Probability | 5/5 | Complete | 2026-04-26 |
-| 7. In-Game Item Intel | 0/? | Not started | - |
+| 7. In-Game Item Intel | 0/4 | Not started | - |
 | 8. Ability Cooldowns | 0/? | Not started | - |
 | 9. Roshan Tracker | 0/? | Not started | - |
 | 10. Historical Graphs | 0/? | Not started | - |
