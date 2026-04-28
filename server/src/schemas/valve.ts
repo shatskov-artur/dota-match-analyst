@@ -33,6 +33,13 @@ const PlayerSchema = z
     item6: z.number().optional(),        // backpack slot 0 — D-04 VERIFY presence
     item7: z.number().optional(),        // backpack slot 1
     item8: z.number().optional(),        // backpack slot 2
+    // Phase 8: ability cooldowns + map positions — all optional, absent during draft.
+    // VERIFIED 2026-04-28 against real GetLiveLeagueGames payload: field names are
+    // position_x / position_y (NOT x_pos / y_pos as in earlier ROADMAP/CONTEXT drafts).
+    position_x: z.number().optional(),         // float, range ~±8192, centered at 0
+    position_y: z.number().optional(),         // float, range ~±8192, +Y = North (Y-flip required for SVG)
+    ultimate_state: z.number().int().optional(), // 0=unavail/dead, 1=ready, 2=cooldown, 3=charging
+    ultimate_cooldown: z.number().optional(),  // seconds remaining
   })
   .passthrough()
 
