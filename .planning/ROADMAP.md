@@ -30,7 +30,7 @@
 - [ ] **Phase 5: Hero & Player Intel** - Hero patch winrate, counterpick tooltip with "known to play" cross-reference, per-player hero stats, hidden-profile safety
 - [x] **Phase 6: Win Probability** - Stratz win-probability bar gated to >5min game time, degrades silently on failure ✓ 2026-04-26
 - [x] **Phase 7: In-Game Item Intel** - Heroes sorted by net worth with 6 item slots each, item icons from Valve CDN ✓ 2026-04-28
-- [ ] **Phase 8: Ability Cooldowns & Map** - Ultimates on cooldown block + hero positions on minimap, updating every 30s
+- [x] **Phase 8: Ability Cooldowns & Map** - Ultimates on cooldown block + hero positions on minimap, updating every 30s ✓ 2026-04-29
 - [ ] **Phase 9: Roshan Tracker** - Kill counter (Redis), loot prediction by kill number, respawn countdown
 - [ ] **Phase 10: Historical Graphs** - Gold diff and XP diff line charts accumulated server-side in Redis every 30s
 - [ ] **Phase 11: Harden & Deploy** - Rate-limit queues, error boundaries, 429 backoff, deploy to Vercel + Railway
@@ -203,7 +203,13 @@ Plans:
   3. Block is empty (hidden) when all ultimates are ready
   4. Minimap shows all 10 hero portraits positioned by `x_pos`/`y_pos`, Radiant green / Dire red, updating every 30s
   5. Hero positions are only shown when `draft.scoreboard` is present (hidden during draft phase)
-**Plans:** TBD
+**Plans:** 5 plans
+Plans:
+- [x] 08-01-PLAN.md — Wave 0: shared/heroUltimates.json + RED-state test stubs (heroUltimateMapper, mapCoords, PlayerSchema phase-8 fields)
+- [x] 08-02-PLAN.md — Wave 1 BFF: extend PlayerSchema (position_x/y, ultimate_state, ultimate_cooldown) + scoreboard merge in /api/live/games
+- [x] 08-03-PLAN.md — Wave 1 client utils: heroUltimateMapper.ts + mapCoords.ts (turns Wave 0 client tests GREEN; centered ±8192 + Y-flip)
+- [x] 08-04-PLAN.md — Wave 2 client UI: CooldownsBlock.tsx + DotaMapView heroPositions extension
+- [x] 08-05-PLAN.md — Wave 3 page wiring: MatchPage layout integration + human checkpoint (Phase 7 HPG | IB side-by-side preserved per user feedback)
 **UI hint:** yes
 
 ### Phase 9: Roshan Tracker
@@ -271,7 +277,7 @@ Plans:
 | 5. Hero & Player Intel | 6/6 | Complete | 2026-04-25 |
 | 6. Win Probability | 5/5 | Complete | 2026-04-26 |
 | 7. In-Game Item Intel | 4/4 | Complete | 2026-04-28 |
-| 8. Ability Cooldowns | 0/? | Not started | - |
+| 8. Ability Cooldowns | 0/5 | Planned | - |
 | 9. Roshan Tracker | 0/? | Not started | - |
 | 10. Historical Graphs | 0/? | Not started | - |
 | 11. Harden & Deploy | 0/? | Not started | - |

@@ -2,29 +2,29 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: complete
-last_updated: "2026-04-28T22:25:00.000Z"
+status: executing
+last_updated: "2026-04-29T00:08:00.000Z"
 progress:
-  total_phases: 7
-  completed_phases: 7
-  total_plans: 33
-  completed_plans: 33
-  percent: 100
+  total_phases: 11
+  completed_phases: 8
+  total_plans: 45
+  completed_plans: 40
+  percent: 89
 ---
 
 # Project State
 
 ## Current Status
 
-Phase: Phase 7 complete — all 4 plans done, verified 2026-04-28
-Last updated: 2026-04-28
+Phase: Phase 8 complete — all 5 plans done, human checkpoint approved 2026-04-29
+Last updated: 2026-04-29
 
 ## Project Reference
 
 See: .planning/PROJECT.md
 
 **Core value:** You open a live match and instantly understand who's winning and why — from draft through final push.
-**Current focus:** Phase 7 — Harden & Deploy
+**Current focus:** Phase 08 — ability-cooldowns-map
 
 ## Phase Progress
 
@@ -37,11 +37,15 @@ See: .planning/PROJECT.md
 | 5 | Hero & Player Intel | Complete — all 6 plans done, verified 2026-04-25 |
 | 6 | Win Probability | Complete — all 5 plans done, verified 2026-04-26 |
 | 7 | In-Game Item Intel | Complete — all 4 plans done, verified 2026-04-28 |
+| 8 | Ability Cooldowns & Map | Complete — all 5 plans done, human checkpoint approved 2026-04-29 |
 
 ## Current Position
 
-- **Phase:** 7 executing — plan 01 complete
-- **Status:** 07-01 done (shared/items.json + RED test stubs for itemMapper + formatNW). Next: 07-02 (itemMapper GREEN implementation)
+Phase: 08 (ability-cooldowns-map) — COMPLETE
+Plans: 5 of 5
+
+- **Phase:** 08 complete — all 5 plans landed; checkpoint approved (`да, все верно`)
+- **Status:** Awaiting Phase 09 (next: Hero Stats and Item Patch refresh / Harden & Deploy depending on roadmap order)
 - **Progress:** [██████████] 100%
 
 ## Performance Metrics
@@ -101,3 +105,5 @@ None.
 
 **Completed Phase:** 6 (Win Probability) — all 5 plans done — 2026-04-26
 **In Progress:** Phase 7 (In-Game Item Intel) — 1/4 plans done — 2026-04-28
+
+**Planned Phase:** 08 (ability-cooldowns-map) — 5 plans — 2026-04-28T21:10:43.977Z
