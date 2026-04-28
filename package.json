@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
-    "seed": "tsx scripts/seed-heroes.ts"
+    "seed": "tsx scripts/seed-heroes.ts",
+    "build:ults": "tsx scripts/build-hero-ultimates.ts"
   },
   "devDependencies": {
     "concurrently": "^9.0.0",
+    "dotaconstants": "^10.8.0",
     "tsx": "^4.0.0"
   }
 }
