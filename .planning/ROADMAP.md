@@ -29,8 +29,8 @@
 - [x] **Phase 4: Draft UX** - Live picks/bans grid with 5s polling and whose-turn indicator ✓ 2026-04-25
 - [ ] **Phase 5: Hero & Player Intel** - Hero patch winrate, counterpick tooltip with "known to play" cross-reference, per-player hero stats, hidden-profile safety
 - [x] **Phase 6: Win Probability** - Stratz win-probability bar gated to >5min game time, degrades silently on failure ✓ 2026-04-26
-- [ ] **Phase 7: In-Game Item Intel** - Heroes sorted by net worth with 6 item slots each, item icons from Valve CDN
-- [ ] **Phase 8: Ability Cooldowns** - Ultimates on cooldown block, sorted ascending by time remaining
+- [x] **Phase 7: In-Game Item Intel** - Heroes sorted by net worth with 6 item slots each, item icons from Valve CDN ✓ 2026-04-28
+- [ ] **Phase 8: Ability Cooldowns & Map** - Ultimates on cooldown block + hero positions on minimap, updating every 30s
 - [ ] **Phase 9: Roshan Tracker** - Kill counter (Redis), loot prediction by kill number, respawn countdown
 - [ ] **Phase 10: Historical Graphs** - Gold diff and XP diff line charts accumulated server-side in Redis every 30s
 - [ ] **Phase 11: Harden & Deploy** - Rate-limit queues, error boundaries, 429 backoff, deploy to Vercel + Railway
@@ -188,19 +188,21 @@ Plans:
 - [ ] 07-04-PLAN.md — Wave 2: MatchPage wiring (ItemsBlock insertion, merge+sort scoreboard players) + human checkpoint
 **UI hint:** yes
 
-### Phase 8: Ability Cooldowns
-**Goal:** A user sees which ultimates are currently on cooldown across all ten heroes, ordered by shortest remaining cooldown first.
+### Phase 8: Ability Cooldowns & Map
+**Goal:** A user sees which ultimates are on cooldown (sorted by time remaining) and where all 10 heroes are on the minimap, both updating every 30s.
 **Depends on:** Phase 7
 **Requirements:** TBD
 **API reality (verified 2026-04-26):**
 - Valve live API exposes per-player: `ultimate_state` (0=unavailable, 1=ready, 2=on cooldown, 3=charging) and `ultimate_cooldown` (seconds remaining)
 - Regular ability cooldowns are NOT in the live API — `abilities[]` only carries `{ability_id, ability_level}`, no cooldown state
-- **VERIFY during implementation:** re-confirm `ultimate_state`/`ultimate_cooldown` field names and value meanings against a real in-game payload; check if `abilities[]` has gained cooldown fields in newer patches
+- Valve live API exposes per-player: `x_pos` and `y_pos` (map coordinates in Valve's internal coordinate space, ~0–16000)
+- **VERIFY during implementation:** re-confirm `ultimate_state`/`ultimate_cooldown` field names; re-confirm `x_pos`/`y_pos` field names and coordinate range against a real in-game payload
 **Success criteria** (what must be TRUE):
-  1. A dedicated "Cooldowns" block lists only heroes with `ultimate_state !== 1` (not ready)
-  2. Entries sorted ascending by `ultimate_cooldown` (shortest first)
-  3. Each entry shows hero portrait + ultimate icon + countdown in seconds
-  4. Block is empty (hidden) when all ultimates are ready
+  1. A dedicated "Cooldowns" block lists only heroes with `ultimate_state !== 1` (not ready), sorted ascending by `ultimate_cooldown`
+  2. Each cooldown entry shows hero portrait + ultimate icon + countdown in seconds
+  3. Block is empty (hidden) when all ultimates are ready
+  4. Minimap shows all 10 hero portraits positioned by `x_pos`/`y_pos`, Radiant green / Dire red, updating every 30s
+  5. Hero positions are only shown when `draft.scoreboard` is present (hidden during draft phase)
 **Plans:** TBD
 **UI hint:** yes
 
@@ -268,7 +270,7 @@ Plans:
 | 4. Draft UX | 6/6 | Complete | 2026-04-25 |
 | 5. Hero & Player Intel | 6/6 | Complete | 2026-04-25 |
 | 6. Win Probability | 5/5 | Complete | 2026-04-26 |
-| 7. In-Game Item Intel | 0/4 | Not started | - |
+| 7. In-Game Item Intel | 4/4 | Complete | 2026-04-28 |
 | 8. Ability Cooldowns | 0/? | Not started | - |
 | 9. Roshan Tracker | 0/? | Not started | - |
 | 10. Historical Graphs | 0/? | Not started | - |
