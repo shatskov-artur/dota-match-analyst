@@ -10,6 +10,7 @@ import { useHeroStats } from '../hooks/useHeroStats'
 import { useMatchIntel } from '../hooks/useMatchIntel'
 import WinProbBar from '../components/WinProbBar'
 import { useWinProbability } from '../hooks/useWinProbability'
+import ItemsBlock from '../components/ItemsBlock'
 
 export default function MatchPage() {
   const { matchId } = useParams()
@@ -100,6 +101,18 @@ export default function MatchPage() {
           isLoading={isLoading}
         />
       </div>
+
+      {/* ItemsBlock — Phase 7 D-01: cross-team NW-ranked heroes with item icons */}
+      {draft.scoreboard && (
+        <div className="mt-12">
+          <ItemsBlock
+            players={[
+              ...(draft.scoreboard.radiant?.players ?? []).map(p => ({ ...p, team: 'radiant' as const })),
+              ...(draft.scoreboard.dire?.players ?? []).map(p => ({ ...p, team: 'dire' as const })),
+            ].sort((a, b) => ((b.net_worth as number) ?? 0) - ((a.net_worth as number) ?? 0))}
+          />
+        </div>
+      )}
 
       {/* BuildingsSection — D-01 section order step 4; D-10 hidden when unavailable */}
       {!buildings.unavailable && (
