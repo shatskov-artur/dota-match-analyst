@@ -37,14 +37,14 @@ export default function DotaMapView({ buildings: b, heroPositions }: Props) {
       width={S} height={S} viewBox={`0 0 ${S} ${S}`}
       style={{ borderRadius: 6, display: 'block' }}
     >
-      {/* Background */}
+      {/* Background — solid fill is the bottom layer */}
       <rect width={S} height={S} fill="#07100a" rx={6} />
 
-      {/* River diagonal strip */}
+      {/* River diagonal strip — fallback art (visible only when minimap image is missing) */}
       <polygon points="105,0 148,0 0,148 0,105" fill="#0b1a0d" />
       <polygon points="172,320 215,320 320,215 320,172" fill="#0b1a0d" />
 
-      {/* Lane paths (faint) */}
+      {/* Lane paths (faint) — fallback art */}
       {/* Top lane: Radiant base → left edge up → across top → Dire base */}
       <polyline points="52,258 26,230 26,26 230,26" fill="none" stroke="#0f1f12" strokeWidth={10} strokeLinejoin="round" strokeLinecap="round" />
       {/* Bot lane: Radiant base → across bottom → right edge up → Dire base */}
@@ -52,9 +52,20 @@ export default function DotaMapView({ buildings: b, heroPositions }: Props) {
       {/* Mid lane */}
       <line x1={52} y1={258} x2={268} y2={52} stroke="#0f1f12" strokeWidth={10} />
 
-      {/* Base area rings */}
+      {/* Base area rings — fallback art */}
       <circle cx={52} cy={258} r={48} fill="none" stroke="#162a18" strokeWidth={1} />
       <circle cx={268} cy={52} r={48} fill="none" stroke="#2a1618" strokeWidth={1} />
+
+      {/* Real Dota 2 minimap image — drop the file at client/public/dota-minimap.jpg.
+          When present, it covers the hand-drawn fallback art beneath. Building dots and hero
+          positions render ABOVE this image so they are always visible. */}
+      <image
+        href="/dota-minimap.jpg"
+        x={0} y={0}
+        width={S} height={S}
+        preserveAspectRatio="xMidYMid slice"
+        style={{ borderRadius: 6 }}
+      />
 
       {/* ── RADIANT buildings ── */}
       {/* Top lane (left edge, top to bottom from T1→T3→Rax) */}

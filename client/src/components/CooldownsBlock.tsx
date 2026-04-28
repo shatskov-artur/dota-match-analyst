@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { heroMapper } from '../utils/heroMapper'
 import { heroUltimateIconUrl } from '../utils/heroUltimateMapper'
 
@@ -42,9 +42,41 @@ function UltSlot({ heroId }: { heroId?: number }) {
 }
 
 export default function CooldownsBlock({ players }: CooldownsBlockProps) {
+  // Tick once per second so countdowns decrement client-side (overrides Phase 8 Pitfall 4 per user feedback).
+  // Reset reference time only when the actual cooldown CONTENT changes (not on every parent re-render),
+  // so unrelated parent state updates don't restart the countdown.
+  const contentSig = players
+    .map(p => `${p.account_id ?? p.hero_id ?? ''}:${p.ultimate_state ?? ''}:${p.ultimate_cooldown ?? ''}`)
+    .join('|')
+  const sigRef = useRef(contentSig)
+  const referenceRef = useRef<number>(Date.now())
+  if (sigRef.current !== contentSig) {
+    sigRef.current = contentSig
+    referenceRef.current = Date.now()
+  }
+  const [now, setNow] = useState<number>(Date.now())
+  useEffect(() => {
+    const id = setInterval(() => setNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [])
+
+  const elapsedSeconds = (now - referenceRef.current) / 1000
+
   const active = players
-    .filter(p => p.ultimate_state != null && p.ultimate_state !== 1)
-    .sort((a, b) => (a.ultimate_cooldown ?? 0) - (b.ultimate_cooldown ?? 0))
+    .map(p => {
+      if (p.ultimate_state == null) return null
+      // state===2 cooldown decrements; states 0 (unavail) and 3 (charging) are not time-driven.
+      const baseCd = p.ultimate_cooldown ?? 0
+      const remaining = p.ultimate_state === 2 ? Math.max(0, baseCd - elapsedSeconds) : baseCd
+      return { ...p, _remaining: remaining }
+    })
+    .filter((p): p is CooldownPlayer & { _remaining: number } => {
+      if (!p) return false
+      if (p.ultimate_state === 1) return false // ready — never shown
+      if (p.ultimate_state === 2 && p._remaining <= 0) return false // expired client-side
+      return true
+    })
+    .sort((a, b) => a._remaining - b._remaining)
 
   if (active.length === 0) return null
 
@@ -88,7 +120,7 @@ export default function CooldownsBlock({ players }: CooldownsBlockProps) {
               <UltSlot heroId={p.hero_id} />
 
               <div style={{ fontSize: 14, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: '#e8e8e8' }}>
-                {p.ultimate_state === 0 ? '—' : Math.max(0, Math.round(p.ultimate_cooldown ?? 0))}
+                {p.ultimate_state === 0 ? '—' : Math.max(0, Math.round(p._remaining))}
                 {p.ultimate_state !== 0 && <span style={{ fontSize: 12, color: '#555555' }}>s</span>}
               </div>
 
