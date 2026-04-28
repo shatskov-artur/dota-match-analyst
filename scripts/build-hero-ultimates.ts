@@ -14,7 +14,7 @@ import { writeFileSync } from 'fs'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import heroes from '../shared/heroes.json' with { type: 'json' }
-import { hero_abilities } from 'dotaconstants'
+import { hero_abilities, abilities as dcAbilities } from 'dotaconstants'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 
@@ -31,6 +31,25 @@ interface HeroAbilities {
 
 const heroesMap = heroes as Record<string, HeroEntry>
 const abilitiesMap = hero_abilities as Record<string, HeroAbilities>
+interface AbilityMeta {
+  is_innate?: boolean
+  behavior?: string | string[]
+}
+const abMeta = dcAbilities as Record<string, AbilityMeta>
+
+// Manual overrides for heroes whose "ultimate" doesn't fit the heuristic — typically because
+// their kit is mechanic-driven rather than ability-driven (Invoker, Rubick). Keys are
+// `npc_dota_hero_*` keys so they're stable across hero_id reorderings.
+const OVERRIDES: Record<string, string> = {
+  npc_dota_hero_invoker: 'invoker_invoke',
+}
+
+function isHidden(meta: AbilityMeta | undefined): boolean {
+  if (!meta) return false
+  const b = meta.behavior
+  if (Array.isArray(b)) return b.includes('Hidden')
+  return b === 'Hidden'
+}
 
 const out: Record<string, string> = {}
 const skipped: Array<{ id: string; reason: string }> = []
@@ -48,14 +67,27 @@ for (const [idStr, h] of Object.entries(heroesMap)) {
     skipped.push({ id: idStr, reason: `no entry in hero_abilities for ${npcKey}` })
     continue
   }
-  // Filter out 'generic_hidden' placeholders AND any aspect/facet ability names
-  // (newer dotaconstants append facet abilities after the real ultimate — see RESEARCH.md A1).
-  const facetNames = new Set((entry.facets ?? []).map((f) => f?.name).filter((n): n is string => !!n))
-  const ult = [...entry.abilities]
-    .reverse()
-    .find((a) => a && a !== 'generic_hidden' && !facetNames.has(a))
+  // Manual override path — bypasses the heuristic for hard-to-detect heroes.
+  if (OVERRIDES[npcKey]) {
+    out[idStr] = OVERRIDES[npcKey]
+    continue
+  }
+  // Filter chain (in order): drop generic_hidden, non-string entries (toggle-form arrays like
+  // Monkey King's [untransform, transfiguration]), abilities with is_innate: true (Innates 7.36+),
+  // and abilities with behavior containing "Hidden" (sub-abilities like _cancel / _end / _unburrow
+  // / scepter helpers). Then take the LAST surviving entry — that's the real ultimate.
+  // (We do NOT filter facet names: dotaconstants flags some real ults like Windranger's
+  // `focusfire` as facets too, so blanket-filtering facets would drop them.)
+  const candidates = entry.abilities.filter((a): a is string => {
+    if (!a || typeof a !== 'string' || a === 'generic_hidden') return false
+    const meta = abMeta[a]
+    if (meta?.is_innate) return false
+    if (isHidden(meta)) return false
+    return true
+  })
+  const ult = candidates[candidates.length - 1]
   if (!ult) {
-    skipped.push({ id: idStr, reason: `no non-generic_hidden ability for ${npcKey}` })
+    skipped.push({ id: idStr, reason: `no surviving ability after filter for ${npcKey}` })
     continue
   }
   out[idStr] = ult
