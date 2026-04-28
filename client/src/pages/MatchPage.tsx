@@ -107,9 +107,9 @@ export default function MatchPage() {
       )}
 
       {/* In-game row: HeroPlayerGrid | ItemsBlock | (Map + Cooldowns stacked).
-          Phase 7 preserved HPG and ItemsBlock side-by-side; Phase 8 adds the right-side
-          stack with DotaMapView (top) + CooldownsBlock (below). Right stack only mounts
-          when buildings are available (CLAUDE.md "building_state can be absent"). */}
+          Right stack does NOT depend on buildings.unavailable — Cooldowns + hero positions
+          come from scoreboard players, not tower_state. DotaMapView with unavailable=true
+          still renders lane art + hero rings. BuildingsSection (below) remains buildings-gated. */}
       {match?.game_state === 5 && radiantPlayers.length > 0 && (
         <div className="mt-12 flex gap-12 items-stretch">
           <HeroPlayerGrid
@@ -127,37 +127,35 @@ export default function MatchPage() {
             />
           </div>
 
-          {!buildings.unavailable && (
-            <div className="flex flex-col gap-8" style={{ width: 320 }}>
-              <DotaMapView
-                buildings={buildings}
-                heroPositions={[
-                  ...radiantPlayers
-                    .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
-                    .map(p => ({
-                      hero_id: p.hero_id as number,
-                      team: 'radiant' as const,
-                      position_x: p.position_x as number,
-                      position_y: p.position_y as number,
-                    })),
-                  ...direPlayers
-                    .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
-                    .map(p => ({
-                      hero_id: p.hero_id as number,
-                      team: 'dire' as const,
-                      position_x: p.position_x as number,
-                      position_y: p.position_y as number,
-                    })),
-                ]}
-              />
-              <CooldownsBlock
-                players={[
-                  ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
-                  ...direPlayers.map(p => ({ ...p, team: 'dire' as const })),
-                ]}
-              />
-            </div>
-          )}
+          <div className="flex flex-col gap-8" style={{ width: 320 }}>
+            <DotaMapView
+              buildings={buildings}
+              heroPositions={[
+                ...radiantPlayers
+                  .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
+                  .map(p => ({
+                    hero_id: p.hero_id as number,
+                    team: 'radiant' as const,
+                    position_x: p.position_x as number,
+                    position_y: p.position_y as number,
+                  })),
+                ...direPlayers
+                  .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
+                  .map(p => ({
+                    hero_id: p.hero_id as number,
+                    team: 'dire' as const,
+                    position_x: p.position_x as number,
+                    position_y: p.position_y as number,
+                  })),
+              ]}
+            />
+            <CooldownsBlock
+              players={[
+                ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
+                ...direPlayers.map(p => ({ ...p, team: 'dire' as const })),
+              ]}
+            />
+          </div>
         </div>
       )}
 
