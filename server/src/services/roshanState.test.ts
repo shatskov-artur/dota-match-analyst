@@ -8,7 +8,7 @@ vi.mock('../cache.js', () => ({
   redis: { get: vi.fn(), set: vi.fn() },
 }))
 
-import { detectRoshanKill, readRoshanState, writeRoshanState } from './roshanState'
+import { detectRoshanKill, readRoshanState, writeRoshanState } from './roshanState.js'
 import { redis } from '../cache.js'
 
 const NOW = 1_700_000_000_000 // fixed clock for deterministic kills timestamps
