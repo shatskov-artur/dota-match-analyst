@@ -7,6 +7,9 @@ import type { StratzHeroDryadEntry } from '../schemas/stratz.js'
 import { hiddenProfile } from '../../../shared/hiddenProfile.js'
 import { cached, TTL } from '../cache.js'
 import { extractScoreboardInputs, computeGoldWinProb, computeEstWinProb } from '../services/winProbHeuristic.js'
+import { detectRoshanKill, readRoshanState, writeRoshanState } from '../services/roshanState.js'
+import { lookupRoshanLoot } from '../../../shared/roshanLoot.js'
+import { logger } from '../logger.js'
 
 const liveRoutes = new Hono()
 
@@ -42,7 +45,7 @@ liveRoutes.get('/games', async (c) => {
   )
   const nameMap = Object.fromEntries(nameEntries)
 
-  const enriched = games.map((g) => {
+  const enriched = await Promise.all(games.map(async (g) => {
     // Valve puts combat stats in scoreboard.{radiant,dire}.players[], NOT in top-level players[].
     // Top-level players[] only carries: account_id, hero_id, name, team.
     // Merge scoreboard stats into top-level players so downstream components read one array.
@@ -102,15 +105,55 @@ liveRoutes.get('/games', async (c) => {
       }
     })
 
+    // Phase 9 Roshan: read prev state → detect → conditionally write
+    let roshan: { killCount: number; alive: boolean; respawnIn: number | null; lastKillLoot: number[] | null } | null = null
+    if (typeof g.match_id === 'number') {
+      const matchId = g.match_id
+      const prevState = await readRoshanState(matchId)
+      const gameTime = sbDuration ?? g.duration ?? 0
+      const { state: nextState, killed } = detectRoshanKill(
+        prevState,
+        sbRoshanTimer,
+        gameTime,
+        Date.now(),
+      )
+      const stateChanged = !prevState
+        || prevState.killCount !== nextState.killCount
+        || prevState.prevTimer !== nextState.prevTimer
+      if (stateChanged && (killed || sbRoshanTimer !== undefined)) {
+        await writeRoshanState(matchId, nextState)
+      }
+      if (killed) {
+        logger.info(
+          {
+            matchId,
+            killNumber: nextState.killCount,
+            prevTimer: prevState?.prevTimer ?? 0,
+            curTimer: sbRoshanTimer ?? 0,
+          },
+          'roshan kill detected',
+        )
+      }
+      if (nextState.killCount > 0 || sbRoshanTimer !== undefined) {
+        roshan = {
+          killCount: nextState.killCount,
+          alive: (sbRoshanTimer ?? 0) === 0,
+          respawnIn: (sbRoshanTimer ?? 0) > 0 ? sbRoshanTimer ?? null : null,
+          lastKillLoot: nextState.killCount > 0 ? Array.from(lookupRoshanLoot(nextState.killCount)) : null,
+        }
+      }
+    }
+
     return {
       ...g,
       game_state: derivedGameState,
       duration: g.duration ?? sbDuration,
       roshan_respawn_timer: sbRoshanTimer,
+      roshan,
       players,
       league_name: nameMap[g.league_id] ?? `League #${g.league_id}`,
     }
-  })
+  }))
 
   return c.json({ games: enriched })
 })
