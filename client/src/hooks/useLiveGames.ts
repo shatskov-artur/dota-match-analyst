@@ -35,6 +35,12 @@ export interface EnrichedGame {
   tower_state?: number
   barracks_state?: number
   roshan_respawn_timer?: number
+  roshan?: {
+    killCount: number
+    alive: boolean
+    respawnIn: number | null
+    lastKillLoot: number[] | null
+  } | null
   stream_delay_s?: number
   players?: PlayerDetail[]
   radiant_team?: { team_name?: string }
