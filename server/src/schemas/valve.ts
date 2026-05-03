@@ -74,6 +74,11 @@ const ScoreboardSchema = z
   .object({
     radiant: TeamScoreboardSchema.optional(),
     dire: TeamScoreboardSchema.optional(),
+    // Phase 9: Roshan respawn timer (seconds). 0 = alive, >0 = dead.
+    // Optional because Valve omits scoreboard fields entirely outside game_state===5.
+    roshan_respawn_timer: z.number().optional(),
+    // duration is also surfaced here for live.ts:58 — typing it eliminates one more cast.
+    duration: z.number().optional(),
   })
   .passthrough()
 
