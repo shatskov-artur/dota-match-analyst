@@ -36,14 +36,18 @@ Server-side Roshan kill counter inferred from `scoreboard.roshan_respawn_timer` 
 ### Loot Table
 - **D-15:** Source: TS constant `ROSHAN_LOOT: Record<number, ItemId[]>` in `shared/roshanLoot.ts`. Item IDs reuse `itemMapper` types from Phase 7.
 - **D-16:** Patch versioning: `const ROSHAN_LOOT_PATCH = '7.41' as const` + header comment `// VERIFIED: patch 7.41 (2026-04-26)`. Grep-friendly when patch updates.
-- **D-17:** Patch table (re-verify at execute-time per ROADMAP `VERIFY` note):
-  - Kill 1: Aegis
-  - Kill 2: Aegis + Cheese
-  - Kill 3: Aegis + Cheese + Aghanim's Shard
-  - Kill 4+: Aegis + Cheese + Aghanim's Blessing
+- **D-17:** Patch table (verified 2026-05-03 via Liquipedia /Roshan; resolves research OQ-1):
+  - Kill 1: Aegis (id 117)
+  - Kill 2: Aegis + Roshan's Banner (id 1804)
+  - Kill 3+: Aegis + Roshan's Banner + Cheese (id 33) + Refresher Shard (id 260)
+  - **Source of truth:** https://liquipedia.net/dota2/Roshan §"Consumable Drops"
+  - **Note:** Earlier draft of D-17 listed Aghanim's Shard/Blessing — that was a pre-7.37 table. Liquipedia and Hawk.live both confirm the above for the current patch.
 
 ### Icons / Assets
-- **D-18:** Icons via OpenDota CDN: `https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/items/{name}.png` — same source as ItemsBlock (Phase 7). No local assets.
+- **D-18:** Icons via OpenDota CDN: `https://cdn.cloudflare.steamstatic.com/apps/dota2/images/dota_react/items/{name}.png` — same source as ItemsBlock (Phase 7). No local assets. Resolved item slugs: `aegis`, `roshans_banner`, `cheese`, `refresher_shard`.
+
+### Logging
+- **D-21:** (resolves research OQ-2) Scaffold `server/src/logger.ts` with `import pino from 'pino'; export const logger = pino({...})` in this phase. ~5 LOC. D-05 uses this logger directly.
 
 ### API Shape
 - **D-19:** Surface roshan state inside the existing match-detail response: `match.roshan: { killCount: number, alive: boolean, respawnIn: number | null, lastKillLoot: ItemId[] | null }`. No new endpoint, no extra round-trip.
