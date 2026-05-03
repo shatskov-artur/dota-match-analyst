@@ -13,6 +13,7 @@ import WinProbBar from '../components/WinProbBar'
 import { useWinProbability } from '../hooks/useWinProbability'
 import ItemsBlock from '../components/ItemsBlock'
 import CooldownsBlock from '../components/CooldownsBlock'
+import RoshanBlock from '../components/RoshanBlock'
 
 export default function MatchPage() {
   const { matchId } = useParams()
@@ -149,6 +150,7 @@ export default function MatchPage() {
                   })),
               ]}
             />
+            <RoshanBlock roshan={match?.roshan ?? null} />
             <CooldownsBlock
               players={[
                 ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
