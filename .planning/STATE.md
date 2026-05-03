@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-last_updated: "2026-04-29T00:08:00.000Z"
+status: "Awaiting Phase 09 (next: Hero Stats and Item Patch refresh / Harden & Deploy depending on roadmap order)"
+last_updated: "2026-05-03T22:52:35.496Z"
 progress:
   total_phases: 11
   completed_phases: 8
-  total_plans: 45
+  total_plans: 46
   completed_plans: 40
-  percent: 89
+  percent: 87
 ---
 
 # Project State
@@ -106,4 +106,4 @@ None.
 **Completed Phase:** 6 (Win Probability) — all 5 plans done — 2026-04-26
 **In Progress:** Phase 7 (In-Game Item Intel) — 1/4 plans done — 2026-04-28
 
-**Planned Phase:** 08 (ability-cooldowns-map) — 5 plans — 2026-04-28T21:10:43.977Z
+**Planned Phase:** 9 (Roshan Tracker) — 6 plans — 2026-05-03T22:52:35.488Z

@@ -231,7 +231,14 @@ Plans:
   2. User sees "Roshan #N" with the exact loot icons for that kill number
   3. When Roshan is dead, a respawn countdown is shown (reuses `roshan_respawn_timer`)
   4. Counter resets correctly when a new match begins (match_id change)
-**Plans:** TBD
+**Plans:** 6 plans
+Plans:
+- [ ] 09-01-PLAN.md — Wave 0: RED test stubs (roshanState, roshanLoot, live.roshan integration, RoshanBlock component) — 35 failing tests authored
+- [ ] 09-02-PLAN.md — Wave 1: shared/roshanLoot.ts (patch 7.41 table) + server/src/logger.ts (pino scaffold, D-21) + export redis from cache.ts
+- [ ] 09-03-PLAN.md — Wave 1: schema work — add roshan_respawn_timer + duration to ScoreboardSchema; add RoshanStateSchema + roshan field to EnrichedLiveGameSchema (D-19)
+- [ ] 09-04-PLAN.md — Wave 2: server/src/services/roshanState.ts (pure detector + Redis I/O + bootstrap) + inline into /api/live/games per-game enrichment (Promise.all refactor)
+- [ ] 09-05-PLAN.md — Wave 3: client/src/components/RoshanBlock.tsx (alive/dead/last-drop states + 1Hz tick) + insert in MatchPage between DotaMapView and CooldownsBlock
+- [ ] 09-06-PLAN.md — Wave 4: full-suite green sweep + manual UAT on a live tournament match + 09-UAT.md sign-off (human checkpoint)
 **UI hint:** yes
 
 ### Phase 10: Historical Graphs
@@ -278,7 +285,7 @@ Plans:
 | 6. Win Probability | 5/5 | Complete | 2026-04-26 |
 | 7. In-Game Item Intel | 4/4 | Complete | 2026-04-28 |
 | 8. Ability Cooldowns | 0/5 | Planned | - |
-| 9. Roshan Tracker | 0/? | Not started | - |
+| 9. Roshan Tracker | 0/6 | Planned | - |
 | 10. Historical Graphs | 0/? | Not started | - |
 | 11. Harden & Deploy | 0/? | Not started | - |
 
