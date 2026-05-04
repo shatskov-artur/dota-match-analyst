@@ -1,10 +1,12 @@
 ---
 phase: 9
 slug: roshan-tracker
-status: draft
-nyquist_compliant: false
-wave_0_complete: false
+status: complete
+nyquist_compliant: true
+wave_0_complete: true
 created: 2026-05-03
+completed: 2026-05-04
+manual_uat: deferred
 ---
 
 # Phase 9 — Validation Strategy
@@ -41,37 +43,37 @@ created: 2026-05-03
 
 | Behavioral Coverage | Plan (expected) | Requirement | Test Type | Automated Command | Status |
 |---------------------|-----------------|-------------|-----------|-------------------|--------|
-| Transition detector: prev=0, cur>0 → count++ | roshanState | ROSH-01 | unit | `pnpm -F server test roshanState` | ⬜ pending |
-| Transition detector: prev=0, cur=0 → no-op | roshanState | ROSH-01 | unit | `pnpm -F server test roshanState` | ⬜ pending |
-| Transition detector: prev>0, cur>0 (still dead) → no-op | roshanState | ROSH-01 | unit | `pnpm -F server test roshanState` | ⬜ pending |
-| Transition detector: prev>0, cur=0 (just respawned) → no-op | roshanState | ROSH-01 | unit | `pnpm -F server test roshanState` | ⬜ pending |
-| Bootstrap: no prior state + timer>0 → count=1 | roshanState | ROSH-01 | unit | `pnpm -F server test roshanState` | ⬜ pending |
-| Bootstrap: no prior state + timer=0 → count=0 | roshanState | ROSH-01 | unit | `pnpm -F server test roshanState` | ⬜ pending |
-| Loot table lookup: 1 → [Aegis] | roshanLoot | ROSH-02 | unit | `pnpm -F shared test roshanLoot` | ⬜ pending |
-| Loot table lookup: 2 → [Aegis, Banner] | roshanLoot | ROSH-02 | unit | `pnpm -F shared test roshanLoot` | ⬜ pending |
-| Loot table lookup: 3 → [Aegis, Banner, Cheese, RefresherShard] | roshanLoot | ROSH-02 | unit | `pnpm -F shared test roshanLoot` | ⬜ pending |
-| Loot table lookup: 5 → same as 3 (clamped to 3+) | roshanLoot | ROSH-02 | unit | `pnpm -F shared test roshanLoot` | ⬜ pending |
-| Item IDs in roshanLoot exist in items.json | roshanLoot | ROSH-02 | unit | `pnpm -F shared test roshanLoot` | ⬜ pending |
-| Match-detail response includes `match.roshan` shape | live route | ROSH-01..03 | integration | `pnpm -F server test live.roshan` | ⬜ pending |
-| Schema: `roshan_respawn_timer` accepts number, optional | valve schema | ROSH-03 | unit | `pnpm -F server test schemas` | ⬜ pending |
-| RoshanBlock renders alive state (header + icons) | RoshanBlock | ROSH-02 | component | `pnpm -F client test RoshanBlock` | ⬜ pending |
-| RoshanBlock renders dead state (mm:ss countdown) | RoshanBlock | ROSH-03 | component | `pnpm -F client test RoshanBlock` | ⬜ pending |
-| RoshanBlock countdown ticks every 1s | RoshanBlock | ROSH-03 | component | `pnpm -F client test RoshanBlock` | ⬜ pending |
-| RoshanBlock LAST DROP row appears once killCount>=1 | RoshanBlock | ROSH-02 | component | `pnpm -F client test RoshanBlock` | ⬜ pending |
-| Counter persists across simulated 30s polls | live route | ROSH-01 | integration | `pnpm -F server test live.roshan` | ⬜ pending |
-| New match_id → fresh Redis key (no carryover) | roshanState | ROSH-04 | integration | `pnpm -F server test roshanState` | ⬜ pending |
+| Transition detector: prev=0, cur>0 → count++ | roshanState | ROSH-01 | unit | `pnpm -F server test roshanState` | ✅ green |
+| Transition detector: prev=0, cur=0 → no-op | roshanState | ROSH-01 | unit | `pnpm -F server test roshanState` | ✅ green |
+| Transition detector: prev>0, cur>0 (still dead) → no-op | roshanState | ROSH-01 | unit | `pnpm -F server test roshanState` | ✅ green |
+| Transition detector: prev>0, cur=0 (just respawned) → no-op | roshanState | ROSH-01 | unit | `pnpm -F server test roshanState` | ✅ green |
+| Bootstrap: no prior state + timer>0 → count=1 | roshanState | ROSH-01 | unit | `pnpm -F server test roshanState` | ✅ green |
+| Bootstrap: no prior state + timer=0 → count=0 | roshanState | ROSH-01 | unit | `pnpm -F server test roshanState` | ✅ green |
+| Loot table lookup: 1 → [Aegis] | roshanLoot | ROSH-02 | unit | `pnpm -F shared test roshanLoot` | ✅ green |
+| Loot table lookup: 2 → [Aegis, Banner] | roshanLoot | ROSH-02 | unit | `pnpm -F shared test roshanLoot` | ✅ green |
+| Loot table lookup: 3 → [Aegis, Banner, Cheese, RefresherShard] | roshanLoot | ROSH-02 | unit | `pnpm -F shared test roshanLoot` | ✅ green |
+| Loot table lookup: 5 → same as 3 (clamped to 3+) | roshanLoot | ROSH-02 | unit | `pnpm -F shared test roshanLoot` | ✅ green |
+| Item IDs in roshanLoot exist in items.json | roshanLoot | ROSH-02 | unit | `pnpm -F shared test roshanLoot` | ✅ green |
+| Match-detail response includes `match.roshan` shape | live route | ROSH-01..03 | integration | `pnpm -F server test live.roshan` | ✅ green |
+| Schema: `roshan_respawn_timer` accepts number, optional | valve schema | ROSH-03 | unit | `pnpm -F server test schemas` | ✅ green |
+| RoshanBlock renders alive state (header + icons) | RoshanBlock | ROSH-02 | component | `pnpm -F client test RoshanBlock` | ✅ green |
+| RoshanBlock renders dead state (mm:ss countdown) | RoshanBlock | ROSH-03 | component | `pnpm -F client test RoshanBlock` | ✅ green |
+| RoshanBlock countdown ticks every 1s | RoshanBlock | ROSH-03 | component | `pnpm -F client test RoshanBlock` | ✅ green |
+| RoshanBlock LAST DROP row appears once killCount>=1 | RoshanBlock | ROSH-02 | component | `pnpm -F client test RoshanBlock` | ✅ green |
+| Counter persists across simulated 30s polls | live route | ROSH-01 | integration | `pnpm -F server test live.roshan` | ✅ green |
+| New match_id → fresh Redis key (no carryover) | roshanState | ROSH-04 | integration | `pnpm -F server test roshanState` | ✅ green |
 
-*Status: ⬜ pending · ✅ green · ❌ red · ⚠️ flaky*
+*Status: ✅ green · ✅ green · ❌ red · ⚠️ flaky*
 
 ---
 
 ## Wave 0 Requirements
 
-- [ ] `server/src/services/roshanState.test.ts` — RED stubs for all transition + bootstrap cases
-- [ ] `shared/roshanLoot.test.ts` — RED stubs for table lookup
-- [ ] `server/src/routes/live.roshan.test.ts` — RED stubs for response shape + persistence
-- [ ] `client/src/components/RoshanBlock.test.tsx` — RED stubs for render states + tick
-- [ ] vitest already configured project-wide (no install needed)
+- [x] `server/src/services/roshanState.test.ts` — now GREEN (14/14)
+- [x] `shared/roshanLoot.test.ts` — now GREEN (9/9)
+- [x] `server/src/routes/live.roshan.test.ts` — now GREEN (6/6)
+- [x] `client/src/components/RoshanBlock.test.tsx` — now GREEN (6/6)
+- [x] vitest configured (client: jsdom env + cleanup() setup file added)
 
 ---
 
@@ -88,13 +90,13 @@ created: 2026-05-03
 
 ## Validation Sign-Off
 
-- [ ] All tasks have `<automated>` verify or Wave 0 dependencies
-- [ ] Sampling continuity: no 3 consecutive tasks without automated verify
-- [ ] Wave 0 covers all MISSING references
-- [ ] No watch-mode flags
-- [ ] Feedback latency < 30s
-- [ ] `nyquist_compliant: true` set in frontmatter
+- [x] All tasks have `<automated>` verify or Wave 0 dependencies
+- [x] Sampling continuity: no 3 consecutive tasks without automated verify
+- [x] Wave 0 covers all MISSING references
+- [x] No watch-mode flags
+- [x] Feedback latency < 30s
+- [x] `nyquist_compliant: true` set in frontmatter
 
-**Approval:** pending
+**Approval:** automated suite signed off 2026-05-04 (74 server + 92 client + 9 shared tests, 35/35 phase-specific). Manual UAT on a live tournament match deferred — see `09-UAT.md` "Deferred UAT".
 </content>
 </invoke>
