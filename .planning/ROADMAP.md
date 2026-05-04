@@ -31,7 +31,7 @@
 - [x] **Phase 6: Win Probability** - Stratz win-probability bar gated to >5min game time, degrades silently on failure ✓ 2026-04-26
 - [x] **Phase 7: In-Game Item Intel** - Heroes sorted by net worth with 6 item slots each, item icons from Valve CDN ✓ 2026-04-28
 - [x] **Phase 8: Ability Cooldowns & Map** - Ultimates on cooldown block + hero positions on minimap, updating every 30s ✓ 2026-04-29
-- [ ] **Phase 9: Roshan Tracker** - Kill counter (Redis), loot prediction by kill number, respawn countdown
+- [x] **Phase 9: Roshan Tracker** - Kill counter (Redis), loot prediction by kill number, respawn countdown ✓ 2026-05-04 (manual UAT deferred)
 - [ ] **Phase 10: Historical Graphs** - Gold diff and XP diff line charts accumulated server-side in Redis every 30s
 - [ ] **Phase 11: Harden & Deploy** - Rate-limit queues, error boundaries, 429 backoff, deploy to Vercel + Railway
 
@@ -233,12 +233,12 @@ Plans:
   4. Counter resets correctly when a new match begins (match_id change)
 **Plans:** 6 plans
 Plans:
-- [ ] 09-01-PLAN.md — Wave 0: RED test stubs (roshanState, roshanLoot, live.roshan integration, RoshanBlock component) — 35 failing tests authored
-- [ ] 09-02-PLAN.md — Wave 1: shared/roshanLoot.ts (patch 7.41 table) + server/src/logger.ts (pino scaffold, D-21) + export redis from cache.ts
-- [ ] 09-03-PLAN.md — Wave 1: schema work — add roshan_respawn_timer + duration to ScoreboardSchema; add RoshanStateSchema + roshan field to EnrichedLiveGameSchema (D-19)
-- [ ] 09-04-PLAN.md — Wave 2: server/src/services/roshanState.ts (pure detector + Redis I/O + bootstrap) + inline into /api/live/games per-game enrichment (Promise.all refactor)
-- [ ] 09-05-PLAN.md — Wave 3: client/src/components/RoshanBlock.tsx (alive/dead/last-drop states + 1Hz tick) + insert in MatchPage between DotaMapView and CooldownsBlock
-- [ ] 09-06-PLAN.md — Wave 4: full-suite green sweep + manual UAT on a live tournament match + 09-UAT.md sign-off (human checkpoint)
+- [x] 09-01-PLAN.md — Wave 0: RED test stubs (roshanState, roshanLoot, live.roshan integration, RoshanBlock component) — 35 failing tests authored
+- [x] 09-02-PLAN.md — Wave 1: shared/roshanLoot.ts (patch 7.41 table) + server/src/logger.ts (pino scaffold, D-21) + export redis from cache.ts
+- [x] 09-03-PLAN.md — Wave 1: schema work — add roshan_respawn_timer + duration to ScoreboardSchema; add RoshanStateSchema + roshan field to EnrichedLiveGameSchema (D-19)
+- [x] 09-04-PLAN.md — Wave 2: server/src/services/roshanState.ts (pure detector + Redis I/O + bootstrap) + inline into /api/live/games per-game enrichment (Promise.all refactor)
+- [x] 09-05-PLAN.md — Wave 3: client/src/components/RoshanBlock.tsx (alive/dead/last-drop states + 1Hz tick) + insert in MatchPage between DotaMapView and CooldownsBlock
+- [x] 09-06-PLAN.md — Wave 4: full-suite green sweep + manual UAT on a live tournament match + 09-UAT.md sign-off (human checkpoint)
 **UI hint:** yes
 
 ### Phase 10: Historical Graphs

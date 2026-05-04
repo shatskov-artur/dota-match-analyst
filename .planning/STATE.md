@@ -2,29 +2,29 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: "Awaiting Phase 09 (next: Hero Stats and Item Patch refresh / Harden & Deploy depending on roadmap order)"
-last_updated: "2026-05-03T22:52:35.496Z"
+status: "Phase 09 (Roshan Tracker) code complete — manual UAT deferred"
+last_updated: "2026-05-04T01:42:00.000Z"
 progress:
   total_phases: 11
-  completed_phases: 8
+  completed_phases: 9
   total_plans: 46
-  completed_plans: 40
-  percent: 87
+  completed_plans: 46
+  percent: 100
 ---
 
 # Project State
 
 ## Current Status
 
-Phase: Phase 8 complete — all 5 plans done, human checkpoint approved 2026-04-29
-Last updated: 2026-04-29
+Phase: Phase 9 complete — all 6 plans landed (35/35 phase-specific tests GREEN; manual UAT deferred)
+Last updated: 2026-05-04
 
 ## Project Reference
 
 See: .planning/PROJECT.md
 
 **Core value:** You open a live match and instantly understand who's winning and why — from draft through final push.
-**Current focus:** Phase 08 — ability-cooldowns-map
+**Current focus:** Phase 09 (Roshan Tracker) complete — manual UAT outstanding
 
 ## Phase Progress
 
@@ -38,14 +38,15 @@ See: .planning/PROJECT.md
 | 6 | Win Probability | Complete — all 5 plans done, verified 2026-04-26 |
 | 7 | In-Game Item Intel | Complete — all 4 plans done, verified 2026-04-28 |
 | 8 | Ability Cooldowns & Map | Complete — all 5 plans done, human checkpoint approved 2026-04-29 |
+| 9 | Roshan Tracker | Complete — all 6 plans done 2026-05-04; 35/35 phase tests GREEN; manual UAT deferred |
 
 ## Current Position
 
-Phase: 08 (ability-cooldowns-map) — COMPLETE
-Plans: 5 of 5
+Phase: 09 (roshan-tracker) — COMPLETE (UAT deferred)
+Plans: 6 of 6
 
-- **Phase:** 08 complete — all 5 plans landed; checkpoint approved (`да, все верно`)
-- **Status:** Awaiting Phase 09 (next: Hero Stats and Item Patch refresh / Harden & Deploy depending on roadmap order)
+- **Phase:** 09 code complete — all 6 plans landed; manual live-match UAT deferred per user
+- **Status:** Awaiting next phase (Hero Stats refresh / Harden & Deploy depending on roadmap order)
 - **Progress:** [██████████] 100%
 
 ## Performance Metrics
