@@ -44,15 +44,32 @@ function formatMmSs(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`
 }
 
+// Re-anchor to the server's view only when local prediction drifts more than this
+// many seconds from the freshly-reported respawnIn. Below the threshold we ride
+// the local 1Hz tick to avoid the visible "jump" at every 30s backend resync.
+const RESYNC_DRIFT_THRESHOLD_SECONDS = 5
+
 export default function RoshanBlock({ roshan }: RoshanBlockProps) {
-  const sigRef = useRef<string>('')
-  const referenceRef = useRef<number>(Date.now())
+  const killCountRef = useRef<number>(-1)
+  const anchorRespawnRef = useRef<number>(0) // server-reported respawnIn at last anchor
+  const anchorAtRef = useRef<number>(Date.now()) // wall clock when we anchored
   const [now, setNow] = useState<number>(Date.now())
 
-  const contentSig = `${roshan?.respawnIn ?? ''}:${roshan?.killCount ?? ''}`
-  if (sigRef.current !== contentSig) {
-    sigRef.current = contentSig
-    referenceRef.current = Date.now()
+  // Anchor decisions: re-anchor only on killCount transition or large drift.
+  // Backend tick (30s) is constant, so a fresh respawnIn arrives roughly every poll;
+  // ignoring it lets the local 1Hz countdown stay smooth.
+  if (roshan && roshan.respawnIn != null) {
+    const anchorIsFresh = killCountRef.current === roshan.killCount
+    const elapsedSinceAnchor = (Date.now() - anchorAtRef.current) / 1000
+    const localPrediction = anchorRespawnRef.current - elapsedSinceAnchor
+    const drift = Math.abs(localPrediction - roshan.respawnIn)
+    if (!anchorIsFresh || drift > RESYNC_DRIFT_THRESHOLD_SECONDS) {
+      killCountRef.current = roshan.killCount
+      anchorRespawnRef.current = roshan.respawnIn
+      anchorAtRef.current = Date.now()
+    }
+  } else if (roshan && killCountRef.current !== roshan.killCount) {
+    killCountRef.current = roshan.killCount
   }
 
   useEffect(() => {
@@ -62,8 +79,10 @@ export default function RoshanBlock({ roshan }: RoshanBlockProps) {
 
   if (roshan === null) return null
 
-  const elapsedSeconds = (now - referenceRef.current) / 1000
-  const remaining = roshan.respawnIn != null ? Math.max(0, roshan.respawnIn - elapsedSeconds) : 0
+  const elapsedSeconds = (now - anchorAtRef.current) / 1000
+  const remaining = roshan.respawnIn != null
+    ? Math.max(0, anchorRespawnRef.current - elapsedSeconds)
+    : 0
 
   const nextKillNumber = roshan.killCount + 1
   const nextKillLoot = Array.from(lookupRoshanLoot(nextKillNumber))
