@@ -117,10 +117,16 @@ liveRoutes.get('/games', async (c) => {
         gameTime,
         Date.now(),
       )
-      const stateChanged = !prevState
-        || prevState.killCount !== nextState.killCount
-        || prevState.prevTimer !== nextState.prevTimer
-      if (stateChanged && (killed || sbRoshanTimer !== undefined)) {
+      // Write only on meaningful transitions, not on every timer tick:
+      //   - first observation (no prev state at all)
+      //   - kill detected (killCount changed)
+      //   - respawn boundary crossed (prev>0 → cur=0): we need to clear prevTimer so the
+      //     NEXT kill (cur 0 → >0) is detectable
+      // Skip writes when Roshan is dead and the timer is just decrementing — that's
+      // ~16 unnecessary writes per respawn cycle per match.
+      const crossedRespawnBoundary = !!prevState && prevState.prevTimer > 0 && nextState.prevTimer === 0
+      const shouldWrite = !prevState || killed || crossedRespawnBoundary
+      if (shouldWrite && sbRoshanTimer !== undefined) {
         await writeRoshanState(matchId, nextState)
       }
       if (killed) {
@@ -357,9 +363,9 @@ liveRoutes.get('/intel/:matchId', async (c) => {
           accountId,
           heroId,
           playerName: entry?.playerName ?? p.name ?? '',
-          games: entry?.stats?.games ?? null,
-          winRate: entry?.stats
-            ? (entry.stats.games > 0 ? entry.stats.win / entry.stats.games : 0)
+          games: entry?.stats && entry.stats.games > 0 ? entry.stats.games : null,
+          winRate: entry?.stats && entry.stats.games > 0
+            ? entry.stats.win / entry.stats.games
             : null,
           counters: countersWithFlags,
         }
@@ -368,7 +374,13 @@ liveRoutes.get('/intel/:matchId', async (c) => {
       return { players: output }
     })
 
-    return c.json(payload)
+    // game_state must live OUTSIDE the 15-min cache — otherwise a stale game_state===2
+    // would keep useMatchIntel polling forever past draft end.
+    const sbRadiant = (game.scoreboard?.radiant as Record<string, unknown> | undefined)
+    const hasInGamePlayers = Array.isArray(sbRadiant?.players) && (sbRadiant?.players as unknown[]).length > 0
+    const derivedGameState = game.game_state ?? (hasInGamePlayers ? 5 : 2)
+
+    return c.json({ ...payload, game_state: derivedGameState })
   } catch {
     return c.json({ error: 'Upstream error' }, 502)
   }
