@@ -197,10 +197,41 @@ liveRoutes.get('/draft/:matchId', async (c) => {
       return c.json({ error: 'Match not live' }, 404)
     }
 
+    // Valve sometimes ships game_state=2 with `players[].hero_id` populated but no
+    // scoreboard at all (observed 2026-05-04). Without scoreboard the client's
+    // DraftSection silently hides — even though picks have already happened.
+    // Synthesize picks from top-level players when scoreboard is empty so users
+    // at least see who picked what. Bans are only carried under scoreboard, so
+    // they remain unavailable in this Valve window.
+    const sb = game.scoreboard as Record<string, unknown> | undefined
+    const sbRadiant = (sb?.radiant as Record<string, unknown> | undefined) ?? {}
+    const sbDire = (sb?.dire as Record<string, unknown> | undefined) ?? {}
+    const rPicks = (sbRadiant.picks as Array<Record<string, unknown>> | undefined) ?? []
+    const dPicks = (sbDire.picks as Array<Record<string, unknown>> | undefined) ?? []
+
+    let scoreboard: unknown = game.scoreboard
+    if (rPicks.length === 0 && dPicks.length === 0) {
+      const players = game.players ?? []
+      const pickFromPlayer = (p: { hero_id?: number }) => ({ hero_id: p.hero_id })
+      const synthRadiantPicks = players
+        .filter((p) => p.team === 0 && typeof p.hero_id === 'number' && p.hero_id !== 0)
+        .map(pickFromPlayer)
+      const synthDirePicks = players
+        .filter((p) => p.team === 1 && typeof p.hero_id === 'number' && p.hero_id !== 0)
+        .map(pickFromPlayer)
+      if (synthRadiantPicks.length > 0 || synthDirePicks.length > 0) {
+        scoreboard = {
+          ...(sb ?? {}),
+          radiant: { ...sbRadiant, picks: synthRadiantPicks, bans: sbRadiant.bans ?? [] },
+          dire: { ...sbDire, picks: synthDirePicks, bans: sbDire.bans ?? [] },
+        }
+      }
+    }
+
     return c.json({
       match_id: game.match_id,
       game_state: game.game_state,
-      scoreboard: game.scoreboard,
+      scoreboard,
     })
   } catch {
     return c.json({ error: 'Upstream error' }, 502)
