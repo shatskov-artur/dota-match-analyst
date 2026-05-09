@@ -63,6 +63,7 @@ export function useMatchDetail(matchId: string | undefined) {
     radiantPlayers,
     direPlayers,
     buildings,
+    history: match?.history ?? [],
     isLoading: query.isLoading,
     gameState: match?.game_state,
   }

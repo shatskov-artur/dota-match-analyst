@@ -50,6 +50,7 @@ export interface EnrichedGame {
     dire?: { score?: number; [key: string]: unknown }
     [key: string]: unknown
   }
+  history?: Array<{ t: number; gold: number; xp: number }>
 }
 
 export interface LiveGamesResponse {
