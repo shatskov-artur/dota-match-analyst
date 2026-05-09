@@ -8,6 +8,8 @@ import { hiddenProfile } from '../../../shared/hiddenProfile.js'
 import { cached, TTL } from '../cache.js'
 import { extractScoreboardInputs, computeGoldWinProb, computeEstWinProb } from '../services/winProbHeuristic.js'
 import { detectRoshanKill, readRoshanState, writeRoshanState } from '../services/roshanState.js'
+import { readHistory, tryWriteSample, deleteHistory, buildSample } from '../services/historySampler.js'
+import type { HistorySample } from '../schemas/bff.js'
 import { lookupRoshanLoot } from '../../../shared/roshanLoot.js'
 import { logger } from '../logger.js'
 
@@ -150,6 +152,41 @@ liveRoutes.get('/games', async (c) => {
       }
     }
 
+    // Phase 10: history sampler — fire-and-forget piggyback (D-05, D-09).
+    // MUST NOT throw. MUST run AFTER derivedGameState is computed.
+    let history: HistorySample[] = []
+    if (typeof g.match_id === 'number') {
+      const matchId = g.match_id
+      try {
+        if (derivedGameState === 6) {
+          // D-13: explicit cleanup on post-game observation
+          await deleteHistory(matchId)
+        } else if (derivedGameState === 5) {
+          const sample = buildSample({
+            scoreboard: g.scoreboard as never,
+            duration: g.duration,
+            game_state: derivedGameState,
+          })
+          if (sample) {
+            const wrote = await tryWriteSample(matchId, sample)
+            if (wrote) {
+              logger.info(
+                { matchId, t: sample.t, gold: sample.gold, xp: sample.xp },
+                'history sample written',
+              )
+            }
+          }
+        }
+        history = await readHistory(matchId)
+      } catch (err) {
+        // D-09: fire-and-forget — never break the live response
+        logger.error(
+          { matchId, err: (err as Error).message },
+          'history sampler failed',
+        )
+      }
+    }
+
     return {
       ...g,
       game_state: derivedGameState,
@@ -158,6 +195,7 @@ liveRoutes.get('/games', async (c) => {
       roshan,
       players,
       league_name: nameMap[g.league_id] ?? `League #${g.league_id}`,
+      history,
     }
   }))
 
