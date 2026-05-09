@@ -104,25 +104,26 @@ export async function buildPlayerIntelEntry(
 
 /**
  * Transforms Stratz heroVsHeroMatchup advantage array into ranked CounterHeroResult[].
- * Input: advantage array from StratzMatchupResponseSchema (nested HeroDryadType structure).
- * Each entry: { heroId: opponentHeroId, vs: [{ winRateHeroId1, ... }] }
- * winRateHeroId1 < 0.5 means our hero (heroId1) loses more — these are the hard counters.
+ *
+ * Actual Stratz response shape (verified 2026-05-04):
+ *   advantage[0].heroId === queriedHero
+ *   advantage[0].vs[]   === one entry per opposing hero, with vs[].heroId2 = opponent hero id
+ *
+ * winRateHeroId1 < 0.5 means our hero loses more vs that opponent → hard counter.
  * Sort ascending (lowest winRateHeroId1 first) → top 3 are worst matchups.
  *
- * NOTE (Finding 3): vs[] may have multiple entries (one per bracket). We use winRateHeroId1
- * from the first vs entry that has it, or fall back to 0.5 (neutral) if absent.
+ * Some entries may have vs[].matchCount = 0 (no data) — filter those out so they don't
+ * win the sort with 0.5 default.
  */
 export function rankCountersStratz(advantage: StratzHeroDryadEntry[]): CounterHeroResult[] {
   return advantage
-    .flatMap(entry => {
-      const heroId = entry.heroId ?? 0
-      const vsEntry = (entry.vs ?? [])[0]  // first vs entry (per-bracket grouping)
-      return [{
-        heroId,
-        winRateHeroId1: vsEntry?.winRateHeroId1 ?? 0.5,
-      }]
-    })
-    .filter(e => e.heroId !== 0)
+    .flatMap(entry => entry.vs ?? [])
+    .map(v => ({
+      heroId: v.heroId2 ?? 0,
+      winRateHeroId1: v.winRateHeroId1 ?? 0.5,
+      matchCount: v.matchCount ?? 0,
+    }))
+    .filter(e => e.heroId !== 0 && e.matchCount > 0)
     .sort((a, b) => a.winRateHeroId1 - b.winRateHeroId1)
     .slice(0, 3)
     .map(e => ({ heroId: e.heroId, disadvantageScore: 1 - e.winRateHeroId1 }))

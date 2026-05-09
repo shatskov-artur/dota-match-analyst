@@ -97,7 +97,7 @@ async function fetchHeroMatchupsStratz(heroId: number): Promise<StratzHeroDryadE
             heroVsHeroMatchup(heroId: $heroId, bracketBasicIds: [DIVINE_IMMORTAL]) {
               advantage {
                 heroId
-                vs { winRateHeroId1 matchCount winCount }
+                vs { heroId2 winRateHeroId1 matchCount winCount }
               }
             }
           }
@@ -124,9 +124,11 @@ async function fetchHeroMatchupsStratz(heroId: number): Promise<StratzHeroDryadE
 
 /**
  * Returns hero matchup advantage array cached 6h per heroId.
- * Cache key: 'stratz:matchups:{heroId}' (D-11 — replaces 'hero:matchups:{heroId}').
+ * Cache key: 'stratz:matchups:v2:{heroId}' (v2 — bumped 2026-05-04 after fixing the
+ * vs[].heroId2 query/transform shape mismatch that left v1 cache filled with empty
+ * counter arrays for 6h).
  * TTL.HERO_STATS = 21_600s = 6h — pro matchup data as static as patch hero stats.
  */
 export function getHeroMatchupsStratz(heroId: number): Promise<StratzHeroDryadEntry[] | null> {
-  return cached(`stratz:matchups:${heroId}`, TTL.HERO_STATS, () => fetchHeroMatchupsStratz(heroId))
+  return cached(`stratz:matchups:v2:${heroId}`, TTL.HERO_STATS, () => fetchHeroMatchupsStratz(heroId))
 }

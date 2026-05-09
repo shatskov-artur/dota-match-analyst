@@ -100,27 +100,41 @@ describe('hidden-profile skip (PLAYER-02 — account_id = 4294967295 returns nul
 })
 
 describe('rankCountersStratz (MATCH-06 — Stratz nested advantage transform)', () => {
+  // Real Stratz shape (verified 2026-05-04):
+  //   advantage[0].heroId === queried hero (e.g. 14 = Pudge)
+  //   advantage[0].vs[]   === one entry per opposing hero, with vs[].heroId2 = opponent
   it('returns top-3 counter heroes sorted by winRateHeroId1 ascending', async () => {
     const { rankCountersStratz } = await import('./intel.js')
     const advantage = [
-      { heroId: 10, vs: [{ winRateHeroId1: 0.40 }] },  // worst matchup: heroId1 wins only 40%
-      { heroId: 20, vs: [{ winRateHeroId1: 0.45 }] },
-      { heroId: 30, vs: [{ winRateHeroId1: 0.42 }] },
-      { heroId: 40, vs: [{ winRateHeroId1: 0.48 }] },  // 4th — excluded by top-3 slice
+      {
+        heroId: 14,
+        vs: [
+          { heroId2: 10, winRateHeroId1: 0.40, matchCount: 100 }, // hardest counter
+          { heroId2: 20, winRateHeroId1: 0.45, matchCount: 100 },
+          { heroId2: 30, winRateHeroId1: 0.42, matchCount: 100 },
+          { heroId2: 40, winRateHeroId1: 0.48, matchCount: 100 }, // 4th — sliced
+        ],
+      },
     ]
     const result = rankCountersStratz(advantage)
     expect(result).toHaveLength(3)
-    expect(result[0].heroId).toBe(10)  // lowest winRateHeroId1 = hardest counter
+    expect(result[0].heroId).toBe(10)
     expect(result[1].heroId).toBe(30)
     expect(result[2].heroId).toBe(20)
   })
 
-  it('filters out entries where heroId is 0 or missing', async () => {
+  it('filters out entries where heroId2 is 0/missing or matchCount is 0', async () => {
     const { rankCountersStratz } = await import('./intel.js')
     const advantage = [
-      { heroId: 0, vs: [{ winRateHeroId1: 0.30 }] },    // invalid — heroId 0 excluded
-      { heroId: undefined, vs: [{ winRateHeroId1: 0.32 }] },  // invalid — no heroId
-      { heroId: 15, vs: [{ winRateHeroId1: 0.44 }] },   // valid
+      {
+        heroId: 14,
+        vs: [
+          { heroId2: 0, winRateHeroId1: 0.30, matchCount: 100 }, // invalid: heroId 0
+          { heroId2: undefined, winRateHeroId1: 0.32, matchCount: 100 }, // invalid: missing
+          { heroId2: 99, winRateHeroId1: 0.30, matchCount: 0 },  // invalid: no data
+          { heroId2: 15, winRateHeroId1: 0.44, matchCount: 100 }, // valid
+        ],
+      },
     ]
     const result = rankCountersStratz(advantage)
     expect(result).toHaveLength(1)
@@ -134,7 +148,9 @@ describe('rankCountersStratz (MATCH-06 — Stratz nested advantage transform)', 
 
   it('disadvantageScore equals 1 - winRateHeroId1', async () => {
     const { rankCountersStratz } = await import('./intel.js')
-    const advantage = [{ heroId: 7, vs: [{ winRateHeroId1: 0.40 }] }]
+    const advantage = [
+      { heroId: 14, vs: [{ heroId2: 7, winRateHeroId1: 0.40, matchCount: 100 }] },
+    ]
     const result = rankCountersStratz(advantage)
     expect(result[0].disadvantageScore).toBeCloseTo(0.60)
   })

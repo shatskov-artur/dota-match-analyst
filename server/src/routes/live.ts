@@ -284,7 +284,7 @@ liveRoutes.get('/intel/:matchId', async (c) => {
     if (!game) return c.json({ error: 'Match not live' }, 404)
 
     // Outer cache: entire intel payload keyed by match_id (not per-user — T-5-04)
-    const payload = await cached(`intel:${parsedId}`, TTL.PLAYER_STATS, async () => {
+    const payload = await cached(`intel:v2:${parsedId}`, TTL.PLAYER_STATS, async () => {
       // Extract picks from both teams (Pitfall 5: use scoreboard, not picks_bans)
       const radiantPicks = game.scoreboard?.radiant?.picks ?? []
       const direPicks = game.scoreboard?.dire?.picks ?? []
