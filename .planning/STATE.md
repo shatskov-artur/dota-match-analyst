@@ -2,29 +2,29 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: "Phase 09 (Roshan Tracker) code complete — manual UAT deferred"
-last_updated: "2026-05-04T01:42:00.000Z"
+status: Phase 10 complete — awaiting Phase 11 (Harden & Deploy)
+last_updated: "2026-05-09T15:40:00.000Z"
 progress:
   total_phases: 11
-  completed_phases: 9
-  total_plans: 46
-  completed_plans: 46
-  percent: 100
+  completed_phases: 10
+  total_plans: 54
+  completed_plans: 50
+  percent: 91
 ---
 
 # Project State
 
 ## Current Status
 
-Phase: Phase 9 complete — all 6 plans landed (35/35 phase-specific tests GREEN; manual UAT deferred)
-Last updated: 2026-05-04
+Phase: Phase 10 complete — all 4 plans landed; 103/103 client tests + 92/92 server tests GREEN; live UAT deferred
+Last updated: 2026-05-09
 
 ## Project Reference
 
 See: .planning/PROJECT.md
 
 **Core value:** You open a live match and instantly understand who's winning and why — from draft through final push.
-**Current focus:** Phase 09 (Roshan Tracker) complete — manual UAT outstanding
+**Current focus:** Phase 10 (Historical Graphs) complete — Phase 11 (Harden & Deploy) next
 
 ## Phase Progress
 
@@ -39,14 +39,15 @@ See: .planning/PROJECT.md
 | 7 | In-Game Item Intel | Complete — all 4 plans done, verified 2026-04-28 |
 | 8 | Ability Cooldowns & Map | Complete — all 5 plans done, human checkpoint approved 2026-04-29 |
 | 9 | Roshan Tracker | Complete — all 6 plans done 2026-05-04; 35/35 phase tests GREEN; manual UAT deferred |
+| 10 | Historical Graphs | Complete — all 4 plans done 2026-05-09; verifier 5/5 success criteria MET; live UAT deferred |
 
 ## Current Position
 
-Phase: 09 (roshan-tracker) — COMPLETE (UAT deferred)
-Plans: 6 of 6
+Phase: 10 (Historical Graphs) — COMPLETE
+Plans: 4 of 4
 
-- **Phase:** 09 code complete — all 6 plans landed; manual live-match UAT deferred per user
-- **Status:** Awaiting next phase (Hero Stats refresh / Harden & Deploy depending on roadmap order)
+- **Phase:** 10 code complete — server sampler + BFF wiring + HistoryGraphs SVG + MatchPage mount (option B, below BuildingsSection)
+- **Status:** Awaiting Phase 11 (Harden & Deploy)
 - **Progress:** [██████████] 100%
 
 ## Performance Metrics
@@ -107,4 +108,4 @@ None.
 **Completed Phase:** 6 (Win Probability) — all 5 plans done — 2026-04-26
 **In Progress:** Phase 7 (In-Game Item Intel) — 1/4 plans done — 2026-04-28
 
-**Planned Phase:** 9 (Roshan Tracker) — 6 plans — 2026-05-03T22:52:35.488Z
+**Planned Phase:** 10 (Historical Graphs) — 4 plans — 2026-05-09T12:24:49.238Z

@@ -32,7 +32,7 @@
 - [x] **Phase 7: In-Game Item Intel** - Heroes sorted by net worth with 6 item slots each, item icons from Valve CDN ✓ 2026-04-28
 - [x] **Phase 8: Ability Cooldowns & Map** - Ultimates on cooldown block + hero positions on minimap, updating every 30s ✓ 2026-04-29
 - [x] **Phase 9: Roshan Tracker** - Kill counter (Redis), loot prediction by kill number, respawn countdown ✓ 2026-05-04 (manual UAT deferred)
-- [ ] **Phase 10: Historical Graphs** - Gold diff and XP diff line charts accumulated server-side in Redis every 30s
+- [x] **Phase 10: Historical Graphs** - Gold diff and XP diff line charts accumulated server-side in Redis every 30s ✓ 2026-05-09
 - [ ] **Phase 11: Harden & Deploy** - Rate-limit queues, error boundaries, 429 backoff, deploy to Vercel + Railway
 
 ## Phase Details
@@ -258,7 +258,13 @@ Plans:
   3. Charts update every 30s with new data points appended
   4. No data persists in Redis after match ends (TTL or explicit cleanup)
   5. Charts render a loading/empty state gracefully for the first 30s before history accumulates
-**Plans:** TBD
+**Plans:** 4 plans
+
+Plans:
+- [ ] 10-01-PLAN.md — Server history sampler module (pure buildSample + Redis I/O wrappers + unit tests)
+- [ ] 10-02-PLAN.md — BFF schema extension and live-route inline sampler piggyback
+- [ ] 10-03-PLAN.md — HistoryGraphs SVG component (skeleton, dual chart, hover tooltip + tests)
+- [ ] 10-04-PLAN.md — Hook surfacing and MatchPage mount (autonomous: false, layout-preservation checkpoint)
 **UI hint:** yes
 
 ### Phase 11: Harden & Deploy
