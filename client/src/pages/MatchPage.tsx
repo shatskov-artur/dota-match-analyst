@@ -14,10 +14,11 @@ import { useWinProbability } from '../hooks/useWinProbability'
 import ItemsBlock from '../components/ItemsBlock'
 import CooldownsBlock from '../components/CooldownsBlock'
 import RoshanBlock from '../components/RoshanBlock'
+import HistoryGraphs from '../components/HistoryGraphs'
 
 export default function MatchPage() {
   const { matchId } = useParams()
-  const { match, radiantPlayers, direPlayers, buildings, isLoading } = useMatchDetail(matchId)
+  const { match, radiantPlayers, direPlayers, buildings, history, isLoading } = useMatchDetail(matchId)
   const draft = useDraftDetail(matchId)
   const heroStatsMap = useHeroStats()
   const intel = useMatchIntel(matchId)
@@ -167,6 +168,15 @@ export default function MatchPage() {
           <BuildingsSection buildings={buildings} />
         </div>
       )}
+
+      {/* Phase 10: historical graphs — self-gates internally (skeleton when history.length < 2) */}
+      <section style={{ marginTop: 16 }}>
+        <HistoryGraphs
+          history={history}
+          gameDuration={match?.duration}
+          gameState={match?.game_state}
+        />
+      </section>
     </div>
   )
 }
