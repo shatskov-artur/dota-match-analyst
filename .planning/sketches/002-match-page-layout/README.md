@@ -41,11 +41,13 @@ file:///d:/MateProjects/projects/dota/dota_stats/.planning/sketches/002-match-pa
 
 ## Winner
 
-_TBD_
+**Variant C — Map · Roshan (50/50) + Buildings · HistoryGraphs (50/50) stacked** (выбрано 2026-05-15)
+
+Причина: карта получает полноценные ~830px ширины (читабельная геометрия дорожек, видимые heroes/towers), Buildings и HistoryGraphs делят следующую строку поровну — оба важны и оба не страдают от узкости. Симметрия 2+2 пар.
 
 ## Decisions captured
 
-_Заполняется на `/gsd-sketch-wrap-up`_
+См. `.claude/skills/sketch-findings-dota-stats/references/match-page-layout.md` (создаётся `/gsd-sketch-wrap-up`).
 
 ## Tags
 
