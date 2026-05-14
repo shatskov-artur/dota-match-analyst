@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Phase 10.2 complete — Wave 3 (right-column equalize + CooldownsBlock overflow) landed; Phase 11 (Harden & Deploy) next
-last_updated: "2026-05-15T00:25:00.000Z"
+status: Phase 10.3 in progress — Wave 1 (MatchPage 3-row restructure per sketch 002-C) landed; Wave 2 (per-component sanity sweep) next
+last_updated: "2026-05-15T01:00:00.000Z"
 progress:
   total_phases: 12
   completed_phases: 11
@@ -42,15 +42,16 @@ See: .planning/PROJECT.md
 | 10 | Historical Graphs | Complete — all 4 plans done 2026-05-09; verifier 5/5 success criteria MET; live UAT deferred |
 | 10.1 | background-history-sampler | Complete — all 3 plans done 2026-05-14; 100/100 server tests GREEN; SIGTERM/SIGINT graceful drain wired |
 | 10.2 | HistoryGraphs polish + XP fix | Complete — all 3 waves landed 2026-05-15; 102/102 server + 105/105 client tests GREEN; manual UAT-LAYOUT-01/03 deferred to phase gate |
+| 10.3 | Match page layout restructure | In progress — Wave 1 (MatchPage 3-row restructure) landed 2026-05-15; 105/105 client tests GREEN, tsc+build green; Wave 2 (per-component sanity sweep) pending |
 
 ## Current Position
 
-Phase: 10.2 (HistoryGraphs polish + XP fix) — COMPLETE
-Plans: 3 of 3
+Phase: 10.3 (Match page layout restructure) — IN PROGRESS
+Plans: 1 of 2
 
-- **Phase:** 10.2 all 3 waves landed — XP source fix + HistoryGraphs sketch-001-C rewrite + right-column equalize (h-full + shrink-0 on MatchPage wrapper; min-h-0 overflow-y-auto on CooldownsBlock)
-- **Status:** Ready for Phase 11 (Harden & Deploy)
-- **Progress:** [██████████] 98%
+- **Phase:** 10.3 Wave 1 landed — MatchPage in-game branch restructured into 3 rows per sketch 002-C (Row 1: heroes/items/cooldowns 3×flex-1; Row 2: map/roshan 2×flex-1; Row 3: buildings/history 2×flex-1). Obsolete 320px right-column wrapper + standalone BuildingsSection/HistoryGraphs sections removed.
+- **Status:** Wave 2 (10.3-02 per-component sanity sweep at new widths) pending
+- **Progress:** [█████████░] 98%
 
 ## Performance Metrics
 
@@ -108,11 +109,11 @@ None.
 
 ## Session Continuity
 
-- Last session: 2026-05-15 — Phase 10.2 complete + Phase 10.3 inserted; sketch 002 winner = C
-- Next action: `/gsd-plan-phase 10.3` (sketch winner + scope captured; can plan without discuss)
+- Last session: 2026-05-15 — Phase 10.3 Wave 1 (10.3-01) landed; MatchPage 3-row restructure per sketch 002-C
+- Next action: execute 10.3-02 (per-component sanity sweep at new widths)
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
 
-**Completed Phase:** 10.2 (HistoryGraphs polish + right-column equalize + XP fix) — all 3 plans done — 2026-05-15
+**Completed Plan:** 10.3-01 (MatchPage in-game JSX restructure, 3 rows) — 2026-05-15
 
-**Next Phase:** 10.3 (Match page layout restructure) — TBD plans
+**Next Plan:** 10.3-02 (per-component sanity sweep — RoshanBlock / CooldownsBlock / BuildingsSection / HistoryGraphs at new widths)
