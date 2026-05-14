@@ -148,7 +148,7 @@ export default function MatchPage() {
             </div>
           </div>
 
-          {/* Row 2 — three columns: HistoryGraphs | Map (fixed 420px) | Roshan+Buildings stack */}
+          {/* Row 2 — three columns: HistoryGraphs | Roshan+Buildings stack | Map (fixed 420px) */}
           <div className="flex gap-8 items-start">
             <div className="flex-1 min-w-0 flex flex-col">
               <HistoryGraphs
@@ -156,6 +156,12 @@ export default function MatchPage() {
                 gameDuration={match?.duration}
                 gameState={match?.game_state}
               />
+            </div>
+            <div className="flex-1 min-w-0 flex flex-col gap-8">
+              <RoshanBlock roshan={match?.roshan ?? null} />
+              {!buildings.unavailable && (
+                <BuildingsSection buildings={buildings} />
+              )}
             </div>
             <div className="shrink-0">
               <DotaMapView
@@ -180,12 +186,6 @@ export default function MatchPage() {
                     })),
                 ]}
               />
-            </div>
-            <div className="flex-1 min-w-0 flex flex-col gap-8">
-              <RoshanBlock roshan={match?.roshan ?? null} />
-              {!buildings.unavailable && (
-                <BuildingsSection buildings={buildings} />
-              )}
             </div>
           </div>
         </div>
