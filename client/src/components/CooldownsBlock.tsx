@@ -84,7 +84,7 @@ export default function CooldownsBlock({ players }: CooldownsBlockProps) {
   if (active.length === 0) return null
 
   return (
-    <div className="flex flex-col flex-1">
+    <div className="flex flex-col flex-1 min-h-0 overflow-y-auto">
       <p
         className="text-[10px] uppercase tracking-[0.3em] font-bold mb-4"
         style={{ color: '#555555' }}
