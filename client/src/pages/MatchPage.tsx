@@ -104,6 +104,7 @@ export default function MatchPage() {
             radiantPlayers={radiantPlayers}
             direPlayers={direPlayers}
             isLoading={isLoading}
+            playerIntelMap={playerIntelMap}
           />
         </div>
       )}
@@ -118,6 +119,7 @@ export default function MatchPage() {
             radiantPlayers={radiantPlayers}
             direPlayers={direPlayers}
             isLoading={isLoading}
+            playerIntelMap={playerIntelMap}
           />
 
           <div className="w-fit flex flex-col">
@@ -129,7 +131,7 @@ export default function MatchPage() {
             />
           </div>
 
-          <div className="flex flex-col gap-8" style={{ width: 320 }}>
+          <div className="flex flex-col gap-8 shrink-0 w-[320px] h-full">
             <DotaMapView
               buildings={buildings}
               heroPositions={[
