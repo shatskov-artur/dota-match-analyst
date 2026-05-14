@@ -148,51 +148,47 @@ export default function MatchPage() {
             </div>
           </div>
 
-          {/* Row 2 — map / roshan */}
-          <div className="flex gap-8 items-stretch">
-            <div className="flex-1 min-w-0 flex items-start justify-center">
-              <DotaMapView
-                buildings={buildings}
-                heroPositions={[
-                  ...radiantPlayers
-                    .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
-                    .map(p => ({
-                      hero_id: p.hero_id as number,
-                      team: 'radiant' as const,
-                      position_x: p.position_x as number,
-                      position_y: p.position_y as number,
-                    })),
-                  ...direPlayers
-                    .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
-                    .map(p => ({
-                      hero_id: p.hero_id as number,
-                      team: 'dire' as const,
-                      position_x: p.position_x as number,
-                      position_y: p.position_y as number,
-                    })),
-                ]}
-              />
-            </div>
-            <div className="flex-1 min-w-0 flex flex-col">
-              <RoshanBlock roshan={match?.roshan ?? null} />
-            </div>
-          </div>
-
-          {/* Row 3 — buildings / history */}
-          <div className="flex gap-8 items-stretch">
-            <div className="flex-1 min-w-0 flex flex-col">
-              {!buildings.unavailable ? (
-                <BuildingsSection buildings={buildings} />
-              ) : (
-                <div aria-hidden="true" />
-              )}
-            </div>
-            <div className="flex-1 min-w-0 flex flex-col">
+          {/* Row 2 — two columns, each stacks two blocks.
+              Left col: Map (shrunk to max-w-[450px] aspect-square, centered) + HistoryGraphs.
+              Right col: RoshanBlock + BuildingsSection. */}
+          <div className="flex gap-8 items-start">
+            <div className="flex-1 min-w-0 flex flex-col gap-8">
+              <div className="flex justify-start">
+                <div className="w-full max-w-[450px] aspect-square">
+                  <DotaMapView
+                    buildings={buildings}
+                    heroPositions={[
+                      ...radiantPlayers
+                        .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
+                        .map(p => ({
+                          hero_id: p.hero_id as number,
+                          team: 'radiant' as const,
+                          position_x: p.position_x as number,
+                          position_y: p.position_y as number,
+                        })),
+                      ...direPlayers
+                        .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
+                        .map(p => ({
+                          hero_id: p.hero_id as number,
+                          team: 'dire' as const,
+                          position_x: p.position_x as number,
+                          position_y: p.position_y as number,
+                        })),
+                    ]}
+                  />
+                </div>
+              </div>
               <HistoryGraphs
                 history={history}
                 gameDuration={match?.duration}
                 gameState={match?.game_state}
               />
+            </div>
+            <div className="flex-1 min-w-0 flex flex-col gap-8">
+              <RoshanBlock roshan={match?.roshan ?? null} />
+              {!buildings.unavailable && (
+                <BuildingsSection buildings={buildings} />
+              )}
             </div>
           </div>
         </div>
