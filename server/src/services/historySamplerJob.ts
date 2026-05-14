@@ -29,17 +29,87 @@ export const SAMPLER_SOURCE = 'historySamplerJob'
 let handle: NodeJS.Timeout | null = null
 let isRunning = false
 let inFlight: Promise<void> | null = null
+let inFlightStartedAt = 0
+
+type ValveLiveGame = {
+  match_id?: number
+  game_state?: number
+  duration?: number
+  scoreboard?: {
+    duration?: number
+    radiant?: { players?: Array<{ net_worth?: number; xpm?: number }> }
+    dire?: { players?: Array<{ net_worth?: number; xpm?: number }> }
+  }
+}
+
+function deriveGameState(g: ValveLiveGame): number {
+  if (typeof g.game_state === 'number') return g.game_state
+  const radiantPlayers = g.scoreboard?.radiant?.players
+  return Array.isArray(radiantPlayers) && radiantPlayers.length > 0 ? 5 : 2
+}
+
+async function processMatch(g: ValveLiveGame): Promise<void> {
+  const matchId = g.match_id
+  if (typeof matchId !== 'number') return
+  const state = deriveGameState(g)
+  try {
+    if (state === 6) {
+      await deleteHistory(matchId)
+      return
+    }
+    if (state === 5) {
+      const sample = buildSample({
+        scoreboard: g.scoreboard,
+        duration: g.duration,
+        game_state: 5,
+      })
+      if (sample) {
+        await tryWriteSample(matchId, sample)
+      }
+    }
+  } catch (err) {
+    logger.error(
+      { matchId, err: (err as Error).message },
+      'history sampler match failed',
+    )
+  }
+}
 
 /**
- * Wave 2 fills body. Public contract:
+ * Public contract:
  *   - if isRunning → logger.warn({ inFlightAgeMs }, 'history sampler tick overlap, skipping') and return
  *   - else: getLiveLeagueGames(), filter derivedGameState ∈ {5,6}, allSettled per-match
  *   - per-match try/catch: 5 → buildSample + tryWriteSample; 6 → deleteHistory
  *   - outer try/catch on getLiveLeagueGames throws → logger.error('history sampler tick failed')
  */
 export async function runOnce(): Promise<void> {
-  // Wave 2: implement. Skeleton resolves immediately so Wave 1 RED tests can import.
-  return
+  if (isRunning) {
+    const inFlightAgeMs = Date.now() - inFlightStartedAt
+    logger.warn(
+      { inFlightAgeMs },
+      'history sampler tick overlap, skipping',
+    )
+    return
+  }
+  isRunning = true
+  inFlightStartedAt = Date.now()
+  try {
+    const data = await getLiveLeagueGames()
+    const games = (data?.result?.games ?? []) as ValveLiveGame[]
+    const active = games.filter((g) => {
+      if (typeof g.match_id !== 'number') return false
+      const s = deriveGameState(g)
+      return s === 5 || s === 6
+    })
+    await Promise.allSettled(active.map((g) => processMatch(g)))
+  } catch (err) {
+    logger.error(
+      { err: (err as Error).message },
+      'history sampler tick failed',
+    )
+  } finally {
+    isRunning = false
+  }
 }
 
 /**
@@ -50,7 +120,8 @@ export async function runOnce(): Promise<void> {
  *   - logger.info({ intervalMs: INTERVAL_MS, source: SAMPLER_SOURCE }, 'history sampler started')
  */
 export function startSampler(): void {
-  // Wave 2: implement.
+  // Wave 2 Task 2: implement.
+  void inFlight
 }
 
 /**
@@ -60,15 +131,8 @@ export function startSampler(): void {
  *   - logger.info({ source: SAMPLER_SOURCE }, 'history sampler stopped')
  */
 export async function stopSampler(): Promise<void> {
-  // Wave 2: implement.
+  // Wave 2 Task 2: implement.
+  void handle
 }
 
-// Silence unused-import warnings in the skeleton — Wave 2 consumes these.
-void getLiveLeagueGames
-void buildSample
-void tryWriteSample
-void deleteHistory
-void logger
-void isRunning
-void inFlight
 export type { HistorySample }
