@@ -300,7 +300,7 @@ Plans:
 
 Plans:
 - [x] 10.3-01-PLAN.md — Wave 1: MatchPage.tsx in-game JSX restructure (3 rows, flex-1 slots) ✓ 2026-05-15
-- [ ] 10.3-02-PLAN.md — Wave 2: per-component sanity sweep (RoshanBlock / CooldownsBlock / BuildingsSection / HistoryGraphs at new widths)
+- [x] 10.3-02-PLAN.md — Wave 2: per-component sanity sweep (RoshanBlock clamp / CooldownsBlock no-op / BuildingsSection justify-center / HistoryGraphs label +2) ✓ 2026-05-15
 
 ### Phase 11: Harden & Deploy
 **Goal:** The owner and a small group of friends can hit a public URL and use the tool for a full day of tournament viewing without crashes, quota exhaustion, or manual restarts.
@@ -330,7 +330,7 @@ Plans:
 | 10. Historical Graphs | 4/4 | Complete | 2026-05-09 |
 | 10.1. background-history-sampler | 3/3 | Complete | 2026-05-14 |
 | 10.2. HistoryGraphs polish + XP fix | 3/3 | Complete | 2026-05-15 |
-| 10.3. Match page layout restructure | 1/2 | In progress | - |
+| 10.3. Match page layout restructure | 2/2 | Complete | 2026-05-15 |
 | 11. Harden & Deploy | 0/? | Not started | - |
 
 ## Coverage Validation

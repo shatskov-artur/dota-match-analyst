@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Phase 10.3 in progress — Wave 1 (MatchPage 3-row restructure per sketch 002-C) landed; Wave 2 (per-component sanity sweep) next
-last_updated: "2026-05-15T01:00:00.000Z"
+status: Phase 10.3 complete — both waves landed (MatchPage 3-row restructure + per-component sanity sweep at new widths); Phase 11 (Harden & Deploy) next
+last_updated: "2026-05-15T01:30:00.000Z"
 progress:
   total_phases: 12
   completed_phases: 11
@@ -16,7 +16,7 @@ progress:
 
 ## Current Status
 
-Phase: Phase 10.2 complete — all 3 waves landed (XP fix, sketch-001-C chart rewrite, right-column equalize); 105/105 client tests GREEN, 102/102 server tests GREEN
+Phase: Phase 10.3 complete — both waves landed (Wave 1: MatchPage 3-row restructure per sketch 002-C; Wave 2: per-component sanity sweep — RoshanBlock content clamp, HistoryGraphs label size bump, BuildingsSection justify-center, CooldownsBlock no-op); 105/105 client tests GREEN, tsc + build green
 Last updated: 2026-05-15
 
 ## Project Reference
@@ -24,7 +24,7 @@ Last updated: 2026-05-15
 See: .planning/PROJECT.md
 
 **Core value:** You open a live match and instantly understand who's winning and why — from draft through final push.
-**Current focus:** Phase 10.2 (HistoryGraphs polish + XP fix + right-column equalize) complete — Phase 11 (Harden & Deploy) next
+**Current focus:** Phase 10.3 (Match page layout restructure per sketch 002-C) complete — Phase 11 (Harden & Deploy) next
 
 ## Phase Progress
 
@@ -42,16 +42,16 @@ See: .planning/PROJECT.md
 | 10 | Historical Graphs | Complete — all 4 plans done 2026-05-09; verifier 5/5 success criteria MET; live UAT deferred |
 | 10.1 | background-history-sampler | Complete — all 3 plans done 2026-05-14; 100/100 server tests GREEN; SIGTERM/SIGINT graceful drain wired |
 | 10.2 | HistoryGraphs polish + XP fix | Complete — all 3 waves landed 2026-05-15; 102/102 server + 105/105 client tests GREEN; manual UAT-LAYOUT-01/03 deferred to phase gate |
-| 10.3 | Match page layout restructure | In progress — Wave 1 (MatchPage 3-row restructure) landed 2026-05-15; 105/105 client tests GREEN, tsc+build green; Wave 2 (per-component sanity sweep) pending |
+| 10.3 | Match page layout restructure | Complete — both waves landed 2026-05-15 (2/2); 105/105 client tests GREEN, tsc+build green; manual UAT-LAYOUT-10.3-01..07 deferred to phase gate |
 
 ## Current Position
 
-Phase: 10.3 (Match page layout restructure) — IN PROGRESS
-Plans: 1 of 2
+Phase: 10.3 (Match page layout restructure) — COMPLETE
+Plans: 2 of 2
 
-- **Phase:** 10.3 Wave 1 landed — MatchPage in-game branch restructured into 3 rows per sketch 002-C (Row 1: heroes/items/cooldowns 3×flex-1; Row 2: map/roshan 2×flex-1; Row 3: buildings/history 2×flex-1). Obsolete 320px right-column wrapper + standalone BuildingsSection/HistoryGraphs sections removed.
-- **Status:** Wave 2 (10.3-02 per-component sanity sweep at new widths) pending
-- **Progress:** [█████████░] 98%
+- **Phase:** 10.3 complete — Wave 1 (MatchPage 3-row restructure) + Wave 2 (per-component sanity sweep) both landed 2026-05-15. RoshanBlock content clamp (max-w-[360px] mx-auto), HistoryGraphs label fontSize +2, BuildingsSection justify-center, CooldownsBlock no-op.
+- **Status:** Phase 11 (Harden & Deploy) next
+- **Progress:** [█████████░] 99%
 
 ## Performance Metrics
 
@@ -109,11 +109,11 @@ None.
 
 ## Session Continuity
 
-- Last session: 2026-05-15 — Phase 10.3 Wave 1 (10.3-01) landed; MatchPage 3-row restructure per sketch 002-C
-- Next action: execute 10.3-02 (per-component sanity sweep at new widths)
+- Last session: 2026-05-15 — Phase 10.3 Wave 2 (10.3-02) landed; per-component sanity sweep at new slot widths
+- Next action: Phase 11 (Harden & Deploy) — rate-limit queues, error boundaries, 429 backoff, Vercel + Railway deploy
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
 
-**Completed Plan:** 10.3-01 (MatchPage in-game JSX restructure, 3 rows) — 2026-05-15
+**Completed Plan:** 10.3-02 (per-component sanity sweep — RoshanBlock clamp, HistoryGraphs label bump, BuildingsSection center, CooldownsBlock no-op) — 2026-05-15
 
-**Next Plan:** 10.3-02 (per-component sanity sweep — RoshanBlock / CooldownsBlock / BuildingsSection / HistoryGraphs at new widths)
+**Next Plan:** Phase 11 first plan (TBD — discuss/plan Harden & Deploy)
