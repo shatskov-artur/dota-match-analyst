@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Phase 10.2 in progress — Wave 2 (HistoryGraphs sketch-001-C rewrite) landed
-last_updated: "2026-05-15T00:20:00.000Z"
+status: Phase 10.2 complete — Wave 3 (right-column equalize + CooldownsBlock overflow) landed; Phase 11 (Harden & Deploy) next
+last_updated: "2026-05-15T00:25:00.000Z"
 progress:
   total_phases: 12
   completed_phases: 11
@@ -16,7 +16,7 @@ progress:
 
 ## Current Status
 
-Phase: Phase 10.2 in progress — Wave 2 (10.2-02) HistoryGraphs sketch-001-C rewrite landed; 105/105 client tests GREEN, 102/102 server tests GREEN
+Phase: Phase 10.2 complete — all 3 waves landed (XP fix, sketch-001-C chart rewrite, right-column equalize); 105/105 client tests GREEN, 102/102 server tests GREEN
 Last updated: 2026-05-15
 
 ## Project Reference
@@ -24,7 +24,7 @@ Last updated: 2026-05-15
 See: .planning/PROJECT.md
 
 **Core value:** You open a live match and instantly understand who's winning and why — from draft through final push.
-**Current focus:** Phase 10.1 (background-history-sampler) complete — Phase 11 (Harden & Deploy) next
+**Current focus:** Phase 10.2 (HistoryGraphs polish + XP fix + right-column equalize) complete — Phase 11 (Harden & Deploy) next
 
 ## Phase Progress
 
@@ -41,15 +41,15 @@ See: .planning/PROJECT.md
 | 9 | Roshan Tracker | Complete — all 6 plans done 2026-05-04; 35/35 phase tests GREEN; manual UAT deferred |
 | 10 | Historical Graphs | Complete — all 4 plans done 2026-05-09; verifier 5/5 success criteria MET; live UAT deferred |
 | 10.1 | background-history-sampler | Complete — all 3 plans done 2026-05-14; 100/100 server tests GREEN; SIGTERM/SIGINT graceful drain wired |
-| 10.2 | HistoryGraphs polish + XP fix | In progress — Waves 1 + 2 landed 2026-05-15; 102/102 server + 105/105 client tests GREEN; Wave 3 (right-column equalize) pending |
+| 10.2 | HistoryGraphs polish + XP fix | Complete — all 3 waves landed 2026-05-15; 102/102 server + 105/105 client tests GREEN; manual UAT-LAYOUT-01/03 deferred to phase gate |
 
 ## Current Position
 
-Phase: 10.2 (HistoryGraphs polish + XP fix) — IN PROGRESS
-Plans: 2 of 3
+Phase: 10.2 (HistoryGraphs polish + XP fix) — COMPLETE
+Plans: 3 of 3
 
-- **Phase:** 10.2 Waves 1 + 2 complete — XP source fix + HistoryGraphs rewritten per sketch 001-C (line + soft fill + static peak labels, no hover; 13 UAT-CHART tests green)
-- **Status:** Awaiting Wave 3 (right-column equalize — h-full + shrink-0 + min-h-0 overflow-y-auto)
+- **Phase:** 10.2 all 3 waves landed — XP source fix + HistoryGraphs sketch-001-C rewrite + right-column equalize (h-full + shrink-0 on MatchPage wrapper; min-h-0 overflow-y-auto on CooldownsBlock)
+- **Status:** Ready for Phase 11 (Harden & Deploy)
 - **Progress:** [██████████] 98%
 
 ## Performance Metrics
@@ -107,11 +107,11 @@ None.
 
 ## Session Continuity
 
-- Last session: 2026-05-15 — Phase 10.2 Wave 2 (10.2-02 HistoryGraphs sketch-001-C rewrite) executed; 105/105 client + 102/102 server tests GREEN; commits 5359a79 (refactor) + af37d2d (test)
-- Next action: execute Phase 10.2 Wave 3 (10.2-03 — right-column equalize)
+- Last session: 2026-05-15 — Phase 10.2 Wave 3 (10.2-03 right-column equalize + CooldownsBlock overflow) executed; 105/105 client + 102/102 server tests GREEN; commits c4697bf (MatchPage h-full + shrink-0) + bd8ddc2 (CooldownsBlock min-h-0 overflow-y-auto)
+- Next action: begin Phase 11 (Harden & Deploy) — error boundaries, rate-limit queues, 429 backoff, Vercel + Railway deploy
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
 
-**Completed Phase:** 10.1 (background-history-sampler) — all 3 plans done — 2026-05-14
+**Completed Phase:** 10.2 (HistoryGraphs polish + right-column equalize + XP fix) — all 3 plans done — 2026-05-15
 
-**Current Phase:** 10.2 (HistoryGraphs polish + right-column equalize + XP fix) — 2/3 plans done (10.2-01 ✓ 2026-05-15, 10.2-02 ✓ 2026-05-15)
+**Current Phase:** None — between phases, Phase 11 (Harden & Deploy) is next
