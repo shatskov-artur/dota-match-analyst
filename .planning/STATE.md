@@ -3,28 +3,28 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Awaiting Phase 11 (Harden & Deploy)
-last_updated: "2026-05-14T21:05:59.173Z"
+last_updated: "2026-05-14T23:14:30.000Z"
 progress:
   total_phases: 12
-  completed_phases: 10
+  completed_phases: 11
   total_plans: 53
-  completed_plans: 51
-  percent: 96
+  completed_plans: 53
+  percent: 98
 ---
 
 # Project State
 
 ## Current Status
 
-Phase: Phase 10 complete — all 4 plans landed; 103/103 client tests + 92/92 server tests GREEN; live UAT deferred
-Last updated: 2026-05-09
+Phase: Phase 10.1 complete — all 3 plans landed; 100/100 server tests GREEN; background sampler wired + SIGTERM/SIGINT graceful drain
+Last updated: 2026-05-14
 
 ## Project Reference
 
 See: .planning/PROJECT.md
 
 **Core value:** You open a live match and instantly understand who's winning and why — from draft through final push.
-**Current focus:** Phase 10 (Historical Graphs) complete — Phase 11 (Harden & Deploy) next
+**Current focus:** Phase 10.1 (background-history-sampler) complete — Phase 11 (Harden & Deploy) next
 
 ## Phase Progress
 
@@ -40,15 +40,16 @@ See: .planning/PROJECT.md
 | 8 | Ability Cooldowns & Map | Complete — all 5 plans done, human checkpoint approved 2026-04-29 |
 | 9 | Roshan Tracker | Complete — all 6 plans done 2026-05-04; 35/35 phase tests GREEN; manual UAT deferred |
 | 10 | Historical Graphs | Complete — all 4 plans done 2026-05-09; verifier 5/5 success criteria MET; live UAT deferred |
+| 10.1 | background-history-sampler | Complete — all 3 plans done 2026-05-14; 100/100 server tests GREEN; SIGTERM/SIGINT graceful drain wired |
 
 ## Current Position
 
-Phase: 10 (Historical Graphs) — COMPLETE
-Plans: 4 of 4
+Phase: 10.1 (background-history-sampler) — COMPLETE
+Plans: 3 of 3
 
-- **Phase:** 10 code complete — server sampler + BFF wiring + HistoryGraphs SVG + MatchPage mount (option B, below BuildingsSection)
+- **Phase:** 10.1 code complete — historySamplerJob module (Plans 01+02) + index.ts wire-up + SIGTERM/SIGINT graceful drain (Plan 03)
 - **Status:** Awaiting Phase 11 (Harden & Deploy)
-- **Progress:** [██████████] 96%
+- **Progress:** [██████████] 98%
 
 ## Performance Metrics
 
@@ -104,12 +105,11 @@ None.
 
 ## Session Continuity
 
-- Last session: 2026-05-14 — Phase 10.1 plan 02 complete (Wave 2 GREEN: runOnce + startSampler + stopSampler implemented; all 5 sampler-job tests GREEN; full server suite 97/97 GREEN)
-- Next action: Execute 10.1-03 (Wave 3: index.ts wire-up + SIGTERM/SIGINT graceful shutdown + lifecycle smoke test)
+- Last session: 2026-05-14 — Phase 10.1 plan 03 complete (Wave 3: index.ts wire-up + SIGTERM/SIGINT graceful shutdown + lifecycle smoke test; full server suite 100/100 GREEN)
+- Next action: Execute Phase 11 (Harden & Deploy) — rate-limit queues, error boundaries, 429 backoff, deploy to Vercel + Railway
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
 
-**Completed Phase:** 6 (Win Probability) — all 5 plans done — 2026-04-26
-**In Progress:** Phase 7 (In-Game Item Intel) — 1/4 plans done — 2026-04-28
+**Completed Phase:** 10.1 (background-history-sampler) — all 3 plans done — 2026-05-14
 
-**Planned Phase:** 10.1 (background-history-sampler) — 3 plans — 2/3 complete (Wave 1 RED+skeleton + Wave 2 GREEN impl — 2026-05-14)
+**Next Phase:** 11 (Harden & Deploy) — TBD plans

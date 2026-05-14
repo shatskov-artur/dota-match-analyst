@@ -277,7 +277,7 @@ Plans:
 Plans:
 - [x] 10.1-01-PLAN.md — Wave 1: RED tests + module skeleton (historySamplerJob.ts + historySamplerJob.test.ts) ✓ 2026-05-14
 - [x] 10.1-02-PLAN.md — Wave 2: GREEN implementation of runOnce + startSampler + stopSampler ✓ 2026-05-14
-- [ ] 10.1-03-PLAN.md — Wave 3: index.ts wire-up + SIGTERM/SIGINT graceful shutdown + lifecycle smoke test
+- [x] 10.1-03-PLAN.md — Wave 3: index.ts wire-up + SIGTERM/SIGINT graceful shutdown + lifecycle smoke test ✓ 2026-05-14
 
 ### Phase 11: Harden & Deploy
 **Goal:** The owner and a small group of friends can hit a public URL and use the tool for a full day of tournament viewing without crashes, quota exhaustion, or manual restarts.
@@ -304,7 +304,8 @@ Plans:
 | 7. In-Game Item Intel | 4/4 | Complete | 2026-04-28 |
 | 8. Ability Cooldowns | 0/5 | Planned | - |
 | 9. Roshan Tracker | 0/6 | Planned | - |
-| 10. Historical Graphs | 0/? | Not started | - |
+| 10. Historical Graphs | 4/4 | Complete | 2026-05-09 |
+| 10.1. background-history-sampler | 3/3 | Complete | 2026-05-14 |
 | 11. Harden & Deploy | 0/? | Not started | - |
 
 ## Coverage Validation
