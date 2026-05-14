@@ -104,14 +104,15 @@ None.
 
 - Phase 10.1 inserted after Phase 10: background-history-sampler — server-side setInterval(30s) polls GetLiveLeagueGames so any viewer joining mid-game sees gold/XP history from minute 0 (URGENT — Phase 10 only sampled while a viewer's request hit /api/live/games).
 - Phase 10.2 inserted after Phase 10.1: HistoryGraphs polish + right-column equalize + XP fix (URGENT — live UAT feedback 2026-05-14: XP graph stuck at 0.0k, charts hard to read at a glance, right-column blocks have uneven heights). Sketch 001 winner = variant C captured in `.claude/skills/sketch-findings-dota-stats/`.
+- Phase 10.3 inserted after Phase 10.2: Match page layout restructure (URGENT — live UAT feedback 2026-05-15: 3-column row needs to become heroes | items | cooldowns flex-1; Map/Roshan/Buildings/HistoryGraphs redistribute below). Sketch 002 winner = variant C (Map+Roshan 50/50 Row 2; Buildings+HistoryGraphs 50/50 Row 3).
 
 ## Session Continuity
 
-- Last session: 2026-05-15 — Phase 10.2 Wave 3 (10.2-03 right-column equalize + CooldownsBlock overflow) executed; 105/105 client + 102/102 server tests GREEN; commits c4697bf (MatchPage h-full + shrink-0) + bd8ddc2 (CooldownsBlock min-h-0 overflow-y-auto)
-- Next action: begin Phase 11 (Harden & Deploy) — error boundaries, rate-limit queues, 429 backoff, Vercel + Railway deploy
+- Last session: 2026-05-15 — Phase 10.2 complete + Phase 10.3 inserted; sketch 002 winner = C
+- Next action: `/gsd-plan-phase 10.3` (sketch winner + scope captured; can plan without discuss)
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
 
 **Completed Phase:** 10.2 (HistoryGraphs polish + right-column equalize + XP fix) — all 3 plans done — 2026-05-15
 
-**Current Phase:** None — between phases, Phase 11 (Harden & Deploy) is next
+**Next Phase:** 10.3 (Match page layout restructure) — TBD plans

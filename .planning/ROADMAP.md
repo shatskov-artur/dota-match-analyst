@@ -291,6 +291,16 @@ Plans:
 - [x] 10.2-02-PLAN.md — Wave 2: HistoryGraphs.tsx rewrite per sketch 001-C (line + soft fill + static peak labels, no hover) + test rewrite ✓ 2026-05-15
 - [x] 10.2-03-PLAN.md — Wave 3: Right-column equalize (h-full + shrink-0 on MatchPage column wrapper) + defensive min-h-0 overflow-y-auto on CooldownsBlock ✓ 2026-05-15
 
+### Phase 10.3: Match page layout restructure (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 10, Phase 10.2
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 10.3 to break down)
+
 ### Phase 11: Harden & Deploy
 **Goal:** The owner and a small group of friends can hit a public URL and use the tool for a full day of tournament viewing without crashes, quota exhaustion, or manual restarts.
 **Depends on:** Phase 2, Phase 3, Phase 4, Phase 5, Phase 6, Phase 7, Phase 8, Phase 9, Phase 10
