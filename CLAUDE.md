@@ -45,6 +45,10 @@ This project uses the GSD (Get Shit Done) workflow system.
 - Stratz is always optional — wrapped in `Promise.allSettled`, typed as `value | null`
 - Hidden profiles (`account_id === 4294967295`) short-circuit at aggregator, never crash UI
 
+## Auto-loaded skills
+
+- **Sketch findings for dota_stats** (design decisions, CSS patterns, visual direction) → `Skill("sketch-findings-dota-stats")`
+
 ## Critical Pitfalls
 
 - `building_state` can be absent — always check before decoding bitmask

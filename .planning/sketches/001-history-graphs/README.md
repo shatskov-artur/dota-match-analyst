@@ -38,11 +38,13 @@ file:///d:/MateProjects/projects/dota/dota_stats/.planning/sketches/001-history-
 
 ## Winner
 
-_TBD — после ревью пользователем_
+**Variant C — Line + soft fill + static peak labels** (выбрано 2026-05-14)
+
+Причина: спокойный, читается без мыши, peak-метки `+3.4k @ 14:30` дают всю критичную инфу пассивно. Подходит под cadence просмотра (30s polling, glance not hover).
 
 ## Decisions captured
 
-_Заполняется на `/gsd-sketch-wrap-up`_
+См. `.claude/skills/sketch-findings-dota-stats/references/charts-data-viz.md` — палитра, геометрия, peak-detection JS, edge-anchor clamping, anti-patterns.
 
 ## Tags
 
