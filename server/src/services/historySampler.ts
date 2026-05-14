@@ -40,13 +40,29 @@ export interface HistorySample {
  * Sign convention: Radiant-positive (gold = sumNwR - sumNwD,
  * xp = round(teamXpR - teamXpD)).
  *
- * Missing player.xpm / player.net_worth contribute 0 (D-18) — undercount
- * is preferable to crashing on rare incomplete payloads.
+ * Field-name fallback: Valve's canonical scoreboard player field is
+ * `xp_per_min` (verified server/src/routes/live.ts:89). Older / typed
+ * fixtures use `xpm`; both are accepted. Non-finite values (NaN, Infinity,
+ * undefined) contribute 0 — D-18 undercount over crash.
  */
 export function buildSample(game: {
   scoreboard?: {
-    radiant?: { players?: Array<{ net_worth?: number; xpm?: number }> }
-    dire?: { players?: Array<{ net_worth?: number; xpm?: number }> }
+    radiant?: {
+      players?: Array<{
+        net_worth?: number
+        xpm?: number
+        xp_per_min?: number
+        gold_per_min?: number
+      }>
+    }
+    dire?: {
+      players?: Array<{
+        net_worth?: number
+        xpm?: number
+        xp_per_min?: number
+        gold_per_min?: number
+      }>
+    }
     duration?: number
   }
   duration?: number
@@ -58,10 +74,17 @@ export function buildSample(game: {
   const r = game.scoreboard?.radiant?.players ?? []
   const d = game.scoreboard?.dire?.players ?? []
   if (r.length === 0 || d.length === 0) return null
-  const sumNw = (ps: Array<{ net_worth?: number; xpm?: number }>) =>
-    ps.reduce((s, p) => s + (p.net_worth ?? 0), 0)
-  const teamXp = (ps: Array<{ net_worth?: number; xpm?: number }>) =>
-    ps.reduce((s, p) => s + ((p.xpm ?? 0) * duration) / 60, 0)
+  const sumNw = (ps: typeof r) =>
+    ps.reduce((s, p) => s + (Number.isFinite(p.net_worth) ? (p.net_worth as number) : 0), 0)
+  // Pick the first finite value from [xp_per_min, xpm]; otherwise 0.
+  // Mirrors server/src/routes/live.ts:89 `stats.xp_per_min ?? p.xpm` pattern.
+  const xpmOf = (p: { xp_per_min?: number; xpm?: number }): number => {
+    if (Number.isFinite(p.xp_per_min)) return p.xp_per_min as number
+    if (Number.isFinite(p.xpm)) return p.xpm as number
+    return 0
+  }
+  const teamXp = (ps: typeof r) =>
+    ps.reduce((s, p) => s + (xpmOf(p) * duration) / 60, 0)
   return {
     t: Math.floor(duration),
     gold: sumNw(r) - sumNw(d),

@@ -37,8 +37,22 @@ type ValveLiveGame = {
   duration?: number
   scoreboard?: {
     duration?: number
-    radiant?: { players?: Array<{ net_worth?: number; xpm?: number }> }
-    dire?: { players?: Array<{ net_worth?: number; xpm?: number }> }
+    radiant?: {
+      players?: Array<{
+        net_worth?: number
+        xpm?: number
+        xp_per_min?: number
+        gold_per_min?: number
+      }>
+    }
+    dire?: {
+      players?: Array<{
+        net_worth?: number
+        xpm?: number
+        xp_per_min?: number
+        gold_per_min?: number
+      }>
+    }
   }
 }
 
