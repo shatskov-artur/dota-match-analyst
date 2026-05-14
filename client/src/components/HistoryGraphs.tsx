@@ -142,7 +142,7 @@ function ChartSection({
           position: 'absolute',
           top: 6,
           left: 6,
-          fontSize: 11,
+          fontSize: 12,
           letterSpacing: '0.18em',
           textTransform: 'uppercase',
           color: SECONDARY_FG,
@@ -156,7 +156,7 @@ function ChartSection({
           position: 'absolute',
           top: 6,
           right: 6,
-          fontSize: 12,
+          fontSize: 13,
           fontVariantNumeric: 'tabular-nums',
           color: headlineColor,
           pointerEvents: 'none',
@@ -205,7 +205,7 @@ function ChartSection({
               <text
                 x={px}
                 y={ly}
-                fontSize={10}
+                fontSize={12}
                 fontWeight={600}
                 fill={RADIANT_GREEN}
                 textAnchor={anchorFor(px)}
@@ -228,7 +228,7 @@ function ChartSection({
               <text
                 x={px}
                 y={ly}
-                fontSize={10}
+                fontSize={12}
                 fontWeight={600}
                 fill={DIRE_RED}
                 textAnchor={anchorFor(px)}
@@ -246,7 +246,7 @@ function ChartSection({
             key={`xlabel-${t}`}
             x={xOf(t)}
             y={H - 4}
-            fontSize={10}
+            fontSize={12}
             fill={TERTIARY_FG}
             textAnchor="middle"
           >
