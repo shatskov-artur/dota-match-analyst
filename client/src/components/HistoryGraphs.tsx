@@ -167,7 +167,7 @@ function ChartSection({
       <svg
         viewBox={`0 0 ${W} ${H}`}
         preserveAspectRatio="none"
-        style={{ display: 'block', width: '100%', height: 200 }}
+        style={{ display: 'block', width: '100%', height: 'auto', aspectRatio: `${W} / ${H}` }}
       >
         {/* 1. Gridlines */}
         {ticks.map(t => (
