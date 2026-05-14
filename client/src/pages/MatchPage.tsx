@@ -157,7 +157,7 @@ export default function MatchPage() {
                 gameState={match?.game_state}
               />
             </div>
-            <div className="flex-1 min-w-0 flex flex-col gap-8">
+            <div className="shrink-0 w-[320px] flex flex-col gap-8">
               <RoshanBlock roshan={match?.roshan ?? null} />
               {!buildings.unavailable && (
                 <BuildingsSection buildings={buildings} />
