@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Awaiting Phase 11 (Harden & Deploy)
-last_updated: "2026-05-14T23:14:30.000Z"
+status: Phase 10.2 in progress — Wave 1 (XP fix) landed
+last_updated: "2026-05-15T00:15:00.000Z"
 progress:
   total_phases: 12
   completed_phases: 11
@@ -16,8 +16,8 @@ progress:
 
 ## Current Status
 
-Phase: Phase 10.1 complete — all 3 plans landed; 100/100 server tests GREEN; background sampler wired + SIGTERM/SIGINT graceful drain
-Last updated: 2026-05-14
+Phase: Phase 10.2 in progress — Wave 1 (10.2-01) XP source fix landed; 102/102 server tests GREEN
+Last updated: 2026-05-15
 
 ## Project Reference
 
@@ -41,14 +41,15 @@ See: .planning/PROJECT.md
 | 9 | Roshan Tracker | Complete — all 6 plans done 2026-05-04; 35/35 phase tests GREEN; manual UAT deferred |
 | 10 | Historical Graphs | Complete — all 4 plans done 2026-05-09; verifier 5/5 success criteria MET; live UAT deferred |
 | 10.1 | background-history-sampler | Complete — all 3 plans done 2026-05-14; 100/100 server tests GREEN; SIGTERM/SIGINT graceful drain wired |
+| 10.2 | HistoryGraphs polish + XP fix | In progress — Wave 1 (10.2-01) XP source fix landed 2026-05-15; 102/102 server tests GREEN; Waves 2-3 pending |
 
 ## Current Position
 
-Phase: 10.1 (background-history-sampler) — COMPLETE
-Plans: 3 of 3
+Phase: 10.2 (HistoryGraphs polish + XP fix) — IN PROGRESS
+Plans: 1 of 3
 
-- **Phase:** 10.1 code complete — historySamplerJob module (Plans 01+02) + index.ts wire-up + SIGTERM/SIGINT graceful drain (Plan 03)
-- **Status:** Awaiting Phase 11 (Harden & Deploy)
+- **Phase:** 10.2 Wave 1 complete — buildSample now reads `xp_per_min ?? xpm` with `Number.isFinite` hardening; ValveLiveGame type widened in historySamplerJob.ts
+- **Status:** Awaiting Wave 2 (HistoryGraphs.tsx sketch 001-C rewrite) + Wave 3 (right-column equalize)
 - **Progress:** [██████████] 98%
 
 ## Performance Metrics
@@ -106,11 +107,11 @@ None.
 
 ## Session Continuity
 
-- Last session: 2026-05-14 — Phase 10.2 inserted after Phase 10.1 (UAT feedback); sketch 001 winner = variant C (line + soft fill + static peak labels) wrapped into project skill
-- Next action: `/gsd-plan-phase 10.2` (sketch winner + scope already captured; can plan without discuss)
+- Last session: 2026-05-15 — Phase 10.2 Wave 1 (10.2-01 XP source fix) executed; 102/102 server tests GREEN; commits bc370e4 (RED) + ad547d7 (GREEN)
+- Next action: execute Phase 10.2 Wave 2 (10.2-02 — HistoryGraphs.tsx sketch 001-C rewrite)
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
 
 **Completed Phase:** 10.1 (background-history-sampler) — all 3 plans done — 2026-05-14
 
-**Next Phase:** 10.2 (HistoryGraphs polish + right-column equalize + XP fix) — TBD plans
+**Current Phase:** 10.2 (HistoryGraphs polish + right-column equalize + XP fix) — 1/3 plans done (10.2-01 ✓ 2026-05-15)

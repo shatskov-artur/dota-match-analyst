@@ -281,13 +281,15 @@ Plans:
 
 ### Phase 10.2: HistoryGraphs polish + right-column equalize + XP fix (INSERTED)
 
-**Goal:** [Urgent work - to be planned]
-**Requirements**: TBD
+**Goal:** Close UAT feedback (2026-05-14): XP history graph shows real non-zero values (fix server xpm/xp_per_min field mismatch), HistoryGraphs chart redesigned per sketch 001-C (line + soft fill + static peak labels, no hover) for at-a-glance readability, and right-column blocks (DotaMapView + RoshanBlock + CooldownsBlock) equalize to HeroPlayerGrid height via flex h-full + items-stretch.
+**Requirements:** UAT-XP-01, UAT-XP-02, UAT-CHART-01, UAT-CHART-02, UAT-CHART-03, UAT-CHART-04, UAT-CHART-05, UAT-CHART-06, UAT-LAYOUT-01, UAT-LAYOUT-02, UAT-LAYOUT-03
 **Depends on:** Phase 10, Phase 10.1
-**Plans:** 0 plans
+**Plans:** 3 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 10.2 to break down)
+- [x] 10.2-01-PLAN.md — Wave 1: XP source fix — alias xp_per_min ?? xpm in historySampler.ts + finite-number hardening + new RED test ✓ 2026-05-15
+- [ ] 10.2-02-PLAN.md — Wave 2: HistoryGraphs.tsx rewrite per sketch 001-C (line + soft fill + static peak labels, no hover) + test rewrite
+- [ ] 10.2-03-PLAN.md — Wave 3: Right-column equalize (h-full + shrink-0 on MatchPage column wrapper) + defensive min-h-0 overflow-y-auto on CooldownsBlock
 
 ### Phase 11: Harden & Deploy
 **Goal:** The owner and a small group of friends can hit a public URL and use the tool for a full day of tournament viewing without crashes, quota exhaustion, or manual restarts.
@@ -316,6 +318,7 @@ Plans:
 | 9. Roshan Tracker | 0/6 | Planned | - |
 | 10. Historical Graphs | 4/4 | Complete | 2026-05-09 |
 | 10.1. background-history-sampler | 3/3 | Complete | 2026-05-14 |
+| 10.2. HistoryGraphs polish + XP fix | 1/3 | In progress | - |
 | 11. Harden & Deploy | 0/? | Not started | - |
 
 ## Coverage Validation
