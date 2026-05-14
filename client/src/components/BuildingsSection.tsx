@@ -28,7 +28,7 @@ export default function BuildingsSection({ buildings }: BuildingsSectionProps) {
       <p className="text-[10px] uppercase tracking-[0.3em] mb-4" style={{ color: '#303030' }}>
         Buildings
       </p>
-      <div className="flex gap-12">
+      <div className="flex gap-12 justify-center">
         {/* Radiant column */}
         <div className="flex flex-col gap-2">
           {LANES.map((lane) => (
