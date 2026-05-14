@@ -2,29 +2,17 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { render, screen, act, fireEvent } from '@testing-library/react'
 import HistoryGraphs from './HistoryGraphs'
 
-// Phase 10 Plan 03 — co-located RTL tests for HistoryGraphs.
-// Drives D-04, D-17, D-22, D-23, D-24 from 10-CONTEXT.md.
+// Phase 10.2 Plan 02 — RTL tests for the rewritten HistoryGraphs.
+// Drives UAT-CHART-01..06 from 10.2-RESEARCH.md §"Validation Architecture".
+// Tests use RELATIVE assertions only — no hard-coded internal geometry constants.
+
+const PAD_TOP = 28 // matches component constant; only used as a *lower bound* for headroom checks
 
 afterEach(() => {
   vi.useRealTimers()
 })
 
-function mockBCR<T extends Element>(el: T, rect: Partial<DOMRect>): void {
-  el.getBoundingClientRect = (() => ({
-    width: 640,
-    height: 160,
-    top: 0,
-    left: 0,
-    right: 640,
-    bottom: 160,
-    x: 0,
-    y: 0,
-    toJSON: () => ({}),
-    ...rect,
-  })) as never
-}
-
-describe('HistoryGraphs', () => {
+describe('HistoryGraphs — skeleton state', () => {
   it('returns skeleton text when history is empty (D-23)', () => {
     render(<HistoryGraphs history={[]} gameDuration={120} gameState={5} />)
     expect(screen.getByText(/Накапливаем историю/)).toBeTruthy()
@@ -45,11 +33,12 @@ describe('HistoryGraphs', () => {
     act(() => {
       vi.advanceTimersByTime(2000)
     })
-    // After 2s, skeleton still mounted and counter regex still matches.
     expect(screen.getByText(/Накапливаем историю… \(\d+\/30с\)/)).toBeTruthy()
   })
+})
 
-  it('with >=2 samples renders 2 polyline elements (one per chart)', () => {
+describe('HistoryGraphs — rendered chart', () => {
+  it('renders exactly two <svg> elements (one per section) when >=2 samples (UAT-CHART)', () => {
     const { container } = render(
       <HistoryGraphs
         history={[
@@ -60,24 +49,131 @@ describe('HistoryGraphs', () => {
         gameState={5}
       />,
     )
-    expect(container.querySelectorAll('polyline').length).toBe(2)
+    expect(container.querySelectorAll('svg').length).toBe(2)
   })
 
-  it('shows XP lead (approx.) disclosure label (D-17)', () => {
-    render(
+  it('renders Radiant peak dot+label when any sample.gold > 0 (UAT-CHART-01)', () => {
+    const { container } = render(
       <HistoryGraphs
         history={[
-          { t: 0, gold: 1000, xp: 500 },
-          { t: 60, gold: 2000, xp: 1000 },
+          { t: 0, gold: 0, xp: 0 },
+          { t: 60, gold: 3400, xp: 0 },
+          { t: 120, gold: 1000, xp: 0 },
+        ]}
+        gameDuration={120}
+        gameState={5}
+      />,
+    )
+    // The gold ChartSection's Radiant peak text should be the leftmost text with this pattern.
+    const peakTexts = Array.from(container.querySelectorAll('text')).filter(t =>
+      /^\+[\d.]+k? @ \d+:\d{2}$/.test(t.textContent ?? ''),
+    )
+    expect(peakTexts.length).toBeGreaterThanOrEqual(1)
+    expect(peakTexts[0].getAttribute('fill')).toBe('#4ade80')
+    // Sibling dot
+    const circles = Array.from(container.querySelectorAll('circle[r="3.5"]'))
+    expect(circles.some(c => c.getAttribute('fill') === '#4ade80')).toBe(true)
+  })
+
+  it('renders Dire peak dot+label when any sample.gold < 0 (UAT-CHART-02)', () => {
+    const { container } = render(
+      <HistoryGraphs
+        history={[
+          { t: 0, gold: 0, xp: 0 },
+          { t: 60, gold: -2200, xp: 0 },
+          { t: 120, gold: -500, xp: 0 },
+        ]}
+        gameDuration={120}
+        gameState={5}
+      />,
+    )
+    const peakTexts = Array.from(container.querySelectorAll('text')).filter(t =>
+      /^-[\d.]+k? @ \d+:\d{2}$/.test(t.textContent ?? ''),
+    )
+    expect(peakTexts.length).toBeGreaterThanOrEqual(1)
+    expect(peakTexts[0].getAttribute('fill')).toBe('#ef4444')
+    const circles = Array.from(container.querySelectorAll('circle[r="3.5"]'))
+    expect(circles.some(c => c.getAttribute('fill') === '#ef4444')).toBe(true)
+  })
+
+  it('headline is Radiant-green when last sample gold >= 0 (UAT-CHART-03)', () => {
+    const { container } = render(
+      <HistoryGraphs
+        history={[
+          { t: 0, gold: -1000, xp: 0 },
+          { t: 60, gold: 3400, xp: 0 },
         ]}
         gameDuration={60}
         gameState={5}
       />,
     )
-    expect(screen.getByText(/XP lead/)).toBeTruthy()
+    const headline = Array.from(container.querySelectorAll('span')).find(s =>
+      (s.textContent ?? '').startsWith('Radiant +'),
+    )
+    expect(headline).toBeTruthy()
+    const color = (headline as HTMLElement).style.color
+    // jsdom may normalize to rgb(...) or preserve hex; accept either.
+    expect(color === '#4ade80' || color === 'rgb(74, 222, 128)').toBe(true)
   })
 
-  it('symmetric Y — positive gold sample lies above midline; negative below', () => {
+  it('headline is Dire-red when last sample gold < 0 (UAT-CHART-03)', () => {
+    const { container } = render(
+      <HistoryGraphs
+        history={[
+          { t: 0, gold: 3400, xp: 0 },
+          { t: 60, gold: -2200, xp: 0 },
+        ]}
+        gameDuration={60}
+        gameState={5}
+      />,
+    )
+    const headline = Array.from(container.querySelectorAll('span')).find(s =>
+      (s.textContent ?? '').startsWith('Dire +'),
+    )
+    expect(headline).toBeTruthy()
+    const color = (headline as HTMLElement).style.color
+    expect(color === '#ef4444' || color === 'rgb(239, 68, 68)').toBe(true)
+  })
+
+  it('peak label uses text-anchor="start" when peak is near left edge (UAT-CHART-05)', () => {
+    // Place positive gold peak at the FIRST sample → px ≈ 0 → anchor "start"
+    const { container } = render(
+      <HistoryGraphs
+        history={[
+          { t: 0, gold: 5000, xp: 0 },
+          { t: 60, gold: 100, xp: 0 },
+          { t: 120, gold: 50, xp: 0 },
+        ]}
+        gameDuration={120}
+        gameState={5}
+      />,
+    )
+    const peakTexts = Array.from(container.querySelectorAll('text')).filter(t =>
+      /^\+[\d.]+k? @ \d+:\d{2}$/.test(t.textContent ?? ''),
+    )
+    expect(peakTexts[0].getAttribute('text-anchor')).toBe('start')
+  })
+
+  it('peak label uses text-anchor="end" when peak is near right edge (UAT-CHART-05)', () => {
+    // Place positive gold peak at the LAST sample → px ≈ 1000 → anchor "end"
+    const { container } = render(
+      <HistoryGraphs
+        history={[
+          { t: 0, gold: 100, xp: 0 },
+          { t: 60, gold: 50, xp: 0 },
+          { t: 120, gold: 5000, xp: 0 },
+        ]}
+        gameDuration={120}
+        gameState={5}
+      />,
+    )
+    const peakTexts = Array.from(container.querySelectorAll('text')).filter(t =>
+      /^\+[\d.]+k? @ \d+:\d{2}$/.test(t.textContent ?? ''),
+    )
+    expect(peakTexts[0].getAttribute('text-anchor')).toBe('end')
+  })
+
+  it('Y headroom: max-magnitude sample lies strictly inside the chart, not at the edge (UAT-CHART-06)', () => {
     const { container } = render(
       <HistoryGraphs
         history={[
@@ -88,36 +184,22 @@ describe('HistoryGraphs', () => {
         gameState={5}
       />,
     )
-    const goldPolyline = container.querySelector('polyline')!
-    const points = goldPolyline.getAttribute('points')!
-    // Each "x,y" pair separated by space.
-    const parts = points.trim().split(/\s+/).map(p => p.split(',').map(Number))
-    // Midline computation matches component: yMid = (H - PAD_T - PAD_B)/2 + PAD_T = (160-12-24)/2 + 12 = 74
-    const yMid = 74
-    // First sample is gold:+5000 — must be above midline (smaller y in SVG coords).
-    expect(parts[0][1]).toBeLessThan(yMid)
-    // Second sample is gold:-5000 — must be below midline.
-    expect(parts[1][1]).toBeGreaterThan(yMid)
+    // First gold polyline = radiant outline (max(0, v) curve). First point should be at y of max(0, 5000) = 5000 → high in chart.
+    const polylines = container.querySelectorAll('polyline')
+    expect(polylines.length).toBeGreaterThanOrEqual(2)
+    const radiantOutline = polylines[0]
+    const points = (radiantOutline.getAttribute('points') ?? '')
+      .trim()
+      .split(/\s+/)
+      .map(p => p.split(',').map(Number))
+    // points[0] corresponds to the first sample (gold=5000) on the radiant outline (max(0, v) = 5000)
+    const yOfMax = points[0][1]
+    // With peak * 1.20 headroom, yOfMax should be strictly GREATER than PAD_TOP (28) — the line never touches the top.
+    expect(yOfMax).toBeGreaterThan(PAD_TOP + 8)
   })
 
-  it('Y-axis label uses one-decimal Xk format (D-04)', () => {
-    render(
-      <HistoryGraphs
-        history={[
-          { t: 0, gold: 12345, xp: 1000 },
-          { t: 60, gold: 12345, xp: 1000 },
-        ]}
-        gameDuration={60}
-        gameState={5}
-      />,
-    )
-    // "12.3k" appears for both top & bottom labels of the gold chart.
-    const labels = screen.getAllByText('12.3k')
-    expect(labels.length).toBeGreaterThanOrEqual(1)
-  })
-
-  it('X-axis ticks use MM:SS format', () => {
-    render(
+  it('renders 5-min gridlines and minute labels when samples span >5 min', () => {
+    const { container } = render(
       <HistoryGraphs
         history={[
           { t: 0, gold: 1000, xp: 500 },
@@ -127,12 +209,15 @@ describe('HistoryGraphs', () => {
         gameState={5}
       />,
     )
-    // Should render at least one tick label like "5:00" or "10:00".
-    const ticks = screen.getAllByText(/^\d+:\d{2}$/)
-    expect(ticks.length).toBeGreaterThanOrEqual(1)
+    const gridLines = Array.from(container.querySelectorAll('line[stroke-dasharray="2 4"]'))
+    expect(gridLines.length).toBeGreaterThanOrEqual(1)
+    const minuteLabels = Array.from(container.querySelectorAll('text')).filter(t =>
+      /^\d+m$/.test(t.textContent ?? ''),
+    )
+    expect(minuteLabels.length).toBeGreaterThanOrEqual(1)
   })
 
-  it('mouseMove on gold chart shows tooltip with Radiant prefix when nearest.gold >= 0', () => {
+  it('UAT-CHART-04: no hover infrastructure — mouseMove on SVG does not create a tooltip element', () => {
     const { container } = render(
       <HistoryGraphs
         history={[
@@ -143,51 +228,13 @@ describe('HistoryGraphs', () => {
         gameState={5}
       />,
     )
-    const wrapper = container.querySelector('section')!
-    mockBCR(wrapper, { width: 800, height: 400 })
+    const beforeCount = container.querySelectorAll('*').length
     const svg = container.querySelector('svg')!
-    mockBCR(svg, { width: 640, left: 0, top: 0 })
     fireEvent.mouseMove(svg, { clientX: 200, clientY: 80 })
-    expect(screen.getByText(/\d+:\d{2} — Radiant \+\d+\.\dk gold, \+\d+\.\dk xp/)).toBeTruthy()
-  })
-
-  it('mouseMove tooltip swaps to Dire prefix when nearest.gold < 0', () => {
-    const { container } = render(
-      <HistoryGraphs
-        history={[
-          { t: 0, gold: -1000, xp: -500 },
-          { t: 60, gold: -2000, xp: -1000 },
-        ]}
-        gameDuration={60}
-        gameState={5}
-      />,
-    )
-    const wrapper = container.querySelector('section')!
-    mockBCR(wrapper, { width: 800, height: 400 })
-    const svg = container.querySelector('svg')!
-    mockBCR(svg, { width: 640 })
-    fireEvent.mouseMove(svg, { clientX: 200, clientY: 80 })
-    expect(screen.getByText(/Dire \+\d+\.\dk gold/)).toBeTruthy()
-  })
-
-  it('mouseLeave clears the tooltip', () => {
-    const { container } = render(
-      <HistoryGraphs
-        history={[
-          { t: 0, gold: 1000, xp: 500 },
-          { t: 60, gold: 2000, xp: 1000 },
-        ]}
-        gameDuration={60}
-        gameState={5}
-      />,
-    )
-    const wrapper = container.querySelector('section')!
-    mockBCR(wrapper, { width: 800, height: 400 })
-    const svg = container.querySelector('svg')!
-    mockBCR(svg, { width: 640 })
-    fireEvent.mouseMove(svg, { clientX: 200, clientY: 80 })
-    expect(screen.queryByText(/Radiant \+|Dire \+/)).not.toBeNull()
-    fireEvent.mouseLeave(svg)
-    expect(screen.queryByText(/Radiant \+|Dire \+/)).toBeNull()
+    fireEvent.mouseMove(svg, { clientX: 400, clientY: 80 })
+    const afterCount = container.querySelectorAll('*').length
+    expect(afterCount).toBe(beforeCount)
+    // Also assert no element matches the old hover tooltip text shape (" gold, " was unique to it).
+    expect(container.textContent ?? '').not.toContain(' gold, ')
   })
 })
