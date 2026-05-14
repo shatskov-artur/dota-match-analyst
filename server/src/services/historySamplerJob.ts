@@ -120,19 +120,46 @@ export async function runOnce(): Promise<void> {
  *   - logger.info({ intervalMs: INTERVAL_MS, source: SAMPLER_SOURCE }, 'history sampler started')
  */
 export function startSampler(): void {
-  // Wave 2 Task 2: implement.
-  void inFlight
+  if (process.env.HISTORY_SAMPLER_DISABLED === '1') {
+    logger.info(
+      { source: SAMPLER_SOURCE },
+      'history sampler disabled via env',
+    )
+    return
+  }
+  if (handle) return // idempotent — second call is a no-op
+  handle = setInterval(() => {
+    inFlight = runOnce()
+  }, INTERVAL_MS)
+  logger.info(
+    { intervalMs: INTERVAL_MS, source: SAMPLER_SOURCE },
+    'history sampler started',
+  )
 }
 
 /**
- * Wave 2 fills body. Public contract:
+ * Public contract:
  *   - if (handle) clearInterval(handle); handle = null
  *   - if (inFlight) await inFlight
  *   - logger.info({ source: SAMPLER_SOURCE }, 'history sampler stopped')
  */
 export async function stopSampler(): Promise<void> {
-  // Wave 2 Task 2: implement.
-  void handle
+  if (handle) {
+    clearInterval(handle)
+    handle = null
+  }
+  if (inFlight) {
+    try {
+      await inFlight
+    } catch {
+      // runOnce already swallows + logs; defensive catch in case body changes.
+    }
+    inFlight = null
+  }
+  logger.info(
+    { source: SAMPLER_SOURCE },
+    'history sampler stopped',
+  )
 }
 
 export type { HistorySample }

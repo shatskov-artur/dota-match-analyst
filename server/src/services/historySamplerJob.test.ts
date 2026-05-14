@@ -108,6 +108,26 @@ describe('runOnce — Validation Architecture (D-04, D-05, D-06, D-09, D-13)', (
     )
   })
 
+  it('Test 4 — redis null no-op: tryWriteSample returns false, runOnce resolves cleanly (D-09)', async () => {
+    vi.mocked(getLiveLeagueGames).mockResolvedValue({
+      result: { games: [gameFixture(1, 5), gameFixture(2, 5)] },
+    } as never)
+    vi.mocked(buildSample).mockReturnValue({ t: 600, gold: 0, xp: 0 })
+    // tryWriteSample returns false when redis is null (per historySampler primitive contract)
+    vi.mocked(tryWriteSample).mockResolvedValue(false)
+
+    await expect(runOnce()).resolves.toBeUndefined()
+
+    expect(tryWriteSample).toHaveBeenCalledTimes(2)
+    expect(logger.error).not.toHaveBeenCalled()
+  })
+
+  // Test 3 runs LAST within this describe block because its `never-resolving`
+  // getLiveLeagueGames mock leaves module-level `isRunning = true` behind —
+  // subsequent runOnce() calls in the same SUT module instance would short-
+  // circuit on the overlap guard. Re-ordering is the minimum-impact fix; the
+  // alternative (vi.resetModules + dynamic import per test) would touch every
+  // test. See Plan 10.1-02 SUMMARY §"Deviations".
   it('Test 3 — skip-if-running: overlapping ticks log warn and do not re-fan-out (D-05)', async () => {
     vi.useFakeTimers()
     // never resolves — keeps the first tick in-flight across subsequent intervals
@@ -128,20 +148,6 @@ describe('runOnce — Validation Architecture (D-04, D-05, D-06, D-09, D-13)', (
     // afterEach restores real timers. Each test file owns its own SUT module
     // instance under vitest so leftover module state does not leak across files.
     void stopSampler
-  })
-
-  it('Test 4 — redis null no-op: tryWriteSample returns false, runOnce resolves cleanly (D-09)', async () => {
-    vi.mocked(getLiveLeagueGames).mockResolvedValue({
-      result: { games: [gameFixture(1, 5), gameFixture(2, 5)] },
-    } as never)
-    vi.mocked(buildSample).mockReturnValue({ t: 600, gold: 0, xp: 0 })
-    // tryWriteSample returns false when redis is null (per historySampler primitive contract)
-    vi.mocked(tryWriteSample).mockResolvedValue(false)
-
-    await expect(runOnce()).resolves.toBeUndefined()
-
-    expect(tryWriteSample).toHaveBeenCalledTimes(2)
-    expect(logger.error).not.toHaveBeenCalled()
   })
 })
 
