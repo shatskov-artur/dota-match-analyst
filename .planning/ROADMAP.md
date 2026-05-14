@@ -279,6 +279,16 @@ Plans:
 - [x] 10.1-02-PLAN.md — Wave 2: GREEN implementation of runOnce + startSampler + stopSampler ✓ 2026-05-14
 - [x] 10.1-03-PLAN.md — Wave 3: index.ts wire-up + SIGTERM/SIGINT graceful shutdown + lifecycle smoke test ✓ 2026-05-14
 
+### Phase 10.2: HistoryGraphs polish + right-column equalize + XP fix (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 10, Phase 10.1
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd-plan-phase 10.2 to break down)
+
 ### Phase 11: Harden & Deploy
 **Goal:** The owner and a small group of friends can hit a public URL and use the tool for a full day of tournament viewing without crashes, quota exhaustion, or manual restarts.
 **Depends on:** Phase 2, Phase 3, Phase 4, Phase 5, Phase 6, Phase 7, Phase 8, Phase 9, Phase 10

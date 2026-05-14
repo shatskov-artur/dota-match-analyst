@@ -102,14 +102,15 @@ None.
 ### Roadmap Evolution
 
 - Phase 10.1 inserted after Phase 10: background-history-sampler — server-side setInterval(30s) polls GetLiveLeagueGames so any viewer joining mid-game sees gold/XP history from minute 0 (URGENT — Phase 10 only sampled while a viewer's request hit /api/live/games).
+- Phase 10.2 inserted after Phase 10.1: HistoryGraphs polish + right-column equalize + XP fix (URGENT — live UAT feedback 2026-05-14: XP graph stuck at 0.0k, charts hard to read at a glance, right-column blocks have uneven heights). Sketch 001 winner = variant C captured in `.claude/skills/sketch-findings-dota-stats/`.
 
 ## Session Continuity
 
-- Last session: 2026-05-14 — Phase 10.1 plan 03 complete (Wave 3: index.ts wire-up + SIGTERM/SIGINT graceful shutdown + lifecycle smoke test; full server suite 100/100 GREEN)
-- Next action: Execute Phase 11 (Harden & Deploy) — rate-limit queues, error boundaries, 429 backoff, deploy to Vercel + Railway
+- Last session: 2026-05-14 — Phase 10.2 inserted after Phase 10.1 (UAT feedback); sketch 001 winner = variant C (line + soft fill + static peak labels) wrapped into project skill
+- Next action: `/gsd-plan-phase 10.2` (sketch winner + scope already captured; can plan without discuss)
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
 
 **Completed Phase:** 10.1 (background-history-sampler) — all 3 plans done — 2026-05-14
 
-**Next Phase:** 11 (Harden & Deploy) — TBD plans
+**Next Phase:** 10.2 (HistoryGraphs polish + right-column equalize + XP fix) — TBD plans
