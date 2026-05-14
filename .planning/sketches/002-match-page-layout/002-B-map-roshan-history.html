@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Sketch 002-B — Row 2: Map | Roshan | HistoryGraphs</title>
+<link rel="stylesheet" href="_shared.css" />
+</head>
+<body>
+  <div class="page" id="root"></div>
+  <div class="caption">002-B · Row 2: Map | Roshan | HistoryGraphs · Buildings full-width below</div>
+  <script src="_shared.js"></script>
+  <script>
+    document.getElementById('root').innerHTML = `
+      ${pageTop()}
+      ${row1()}
+      <div class="row">
+        ${mapBlock()}
+        ${roshanBlock()}
+        ${historyBlock()}
+      </div>
+      <div class="row">
+        ${buildingsBlock()}
+      </div>
+    `;
+  </script>
+</body>
+</html>

@@ -1,0 +1,198 @@
+/* Shared block-mockup styles for sketch 002 variants */
+:root {
+  --bg: #0a0a0a;
+  --panel: #0f0f0f;
+  --panel-border: #161616;
+  --fg: #d8d8d8;
+  --fg-muted: #888;
+  --fg-dim: #555;
+  --radiant: #4ade80;
+  --dire: #ef4444;
+  --grid: #1a1a1a;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  padding: 24px;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+.page {
+  max-width: 1700px;
+  margin: 0 auto;
+}
+.section-title {
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin: 0 0 12px;
+}
+.h1 {
+  font-size: 36px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 16px;
+  letter-spacing: -0.02em;
+}
+.scoreheader, .winprob {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  padding: 14px 18px;
+  font-size: 13px;
+  color: var(--fg-muted);
+  margin-bottom: 16px;
+  text-align: center;
+}
+.scoreheader { font-size: 22px; color: #fff; padding: 24px; }
+
+.row { display: flex; gap: 24px; align-items: stretch; }
+.row + .row { margin-top: 24px; }
+
+.block {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  border-radius: 4px;
+  padding: 18px 20px;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.block-label {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--fg-muted);
+  margin: 0 0 12px;
+}
+.row-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--grid);
+  font-size: 12px;
+  color: var(--fg);
+}
+.row-item:last-child { border-bottom: 0; }
+.row-item .hero {
+  width: 28px; height: 16px;
+  background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+  border-radius: 2px;
+  flex: 0 0 28px;
+}
+.row-item .name { flex: 1; }
+.row-item .kda { font-size: 11px; color: var(--fg-dim); font-variant-numeric: tabular-nums; min-width: 60px; text-align: right; }
+.row-item.radiant .hero { background: linear-gradient(135deg, #1a3a26, #0f2a18); }
+.row-item.dire    .hero { background: linear-gradient(135deg, #3a1a1a, #2a0f0f); }
+
+.team-label {
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin: 12px 0 6px;
+}
+.team-label.r { color: var(--radiant); }
+.team-label.d { color: var(--dire); }
+.team-label:first-of-type { margin-top: 0; }
+
+.items-row { display: flex; gap: 4px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--grid); }
+.items-row:last-child { border-bottom: 0; }
+.items-row .nw { font-size: 10px; color: var(--fg-dim); min-width: 36px; font-variant-numeric: tabular-nums; }
+.items-row .item-slot { width: 22px; height: 16px; background: #1a1a1a; border-radius: 2px; flex: 0 0 22px; }
+.items-row .item-slot.filled-r { background: linear-gradient(135deg, #2a4a36, #1a3a26); }
+.items-row .item-slot.filled-d { background: linear-gradient(135deg, #4a2a2a, #3a1a1a); }
+
+.cooldown-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 0; border-bottom: 1px solid var(--grid);
+  font-size: 11px;
+}
+.cooldown-row:last-child { border-bottom: 0; }
+.cooldown-row .ult-icon { width: 22px; height: 22px; background: linear-gradient(135deg, #1a3a26, #0f2a18); border-radius: 2px; flex: 0 0 22px; }
+.cooldown-row.dire .ult-icon { background: linear-gradient(135deg, #3a1a1a, #2a0f0f); }
+.cooldown-row .ult-hero { width: 22px; height: 22px; background: #2a2a2a; border-radius: 2px; flex: 0 0 22px; }
+.cooldown-row .ult-name { flex: 1; color: var(--fg-muted); font-size: 11px; }
+.cooldown-row .ready { color: var(--radiant); font-weight: 600; font-size: 11px; }
+.cooldown-row .cd-time { color: var(--fg); font-variant-numeric: tabular-nums; font-size: 11px; }
+
+.minimap {
+  aspect-ratio: 1 / 1;
+  background: radial-gradient(circle at 30% 30%, #1a4d2a 0%, #0f1a14 60%, #0a0f0a 100%);
+  border-radius: 4px;
+  margin: 0 auto;
+  width: 100%;
+  max-width: 100%;
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+}
+.minimap::before {
+  content: 'DOTA MAP';
+  font-size: 10px; letter-spacing: 0.3em;
+  color: rgba(216, 216, 216, 0.35);
+}
+
+.roshan-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  border-radius: 4px;
+  padding: 8px 12px;
+  font-size: 11px; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--radiant);
+  margin-bottom: 12px;
+}
+.roshan-loot { display: flex; gap: 6px; }
+.roshan-loot .loot { width: 28px; height: 28px; background: #2a2a2a; border-radius: 2px; }
+
+.buildings-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+  font-size: 11px; color: var(--fg-muted);
+}
+.buildings-grid .team-col { display: flex; flex-direction: column; gap: 8px; }
+.buildings-grid .lane-row { display: flex; align-items: center; gap: 4px; }
+.buildings-grid .tower { width: 10px; height: 10px; border-radius: 50%; }
+.buildings-grid .tower.up { background: #2a2a2a; }
+.buildings-grid .tower.down { background: transparent; border: 1px dashed #555; }
+
+.history-chart {
+  position: relative;
+  height: 100%;
+  display: flex; flex-direction: column; gap: 12px;
+  font-size: 11px;
+}
+.history-chart .chart-section {
+  position: relative;
+  flex: 1; min-height: 80px;
+  background: linear-gradient(180deg, rgba(74, 222, 128, 0.06) 0%, rgba(74, 222, 128, 0.0) 50%, rgba(239, 68, 68, 0.0) 50%, rgba(239, 68, 68, 0.06) 100%);
+  border-bottom: 1px solid var(--grid);
+}
+.history-chart .chart-section::before {
+  content: ''; position: absolute; left: 0; right: 0; top: 50%;
+  border-top: 1px solid #2a2a2a;
+}
+.history-chart .chart-line {
+  position: absolute; left: 0; right: 0; top: 30%; height: 1px;
+  background: var(--radiant);
+  transform: skewY(-3deg);
+}
+.history-chart .chart-line.xp { top: 50%; background: var(--dire); transform: skewY(2deg); }
+.history-chart .chart-headline {
+  position: absolute; top: 4px; right: 6px;
+  font-size: 11px; color: var(--radiant); font-variant-numeric: tabular-nums;
+}
+
+.empty-slot {
+  display: flex; align-items: center; justify-content: center;
+  color: var(--fg-dim); font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+  font-style: italic;
+  border: 1px dashed #1a1a1a;
+}
+
+.caption {
+  position: fixed; bottom: 12px; left: 24px;
+  font-size: 10px; color: var(--fg-dim); letter-spacing: 0.2em; text-transform: uppercase;
+}

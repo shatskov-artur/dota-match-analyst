@@ -19,3 +19,4 @@ Tight dark UI (#0a0a0a / #0f0f0f panels), tabular-numeric data over white headin
 | # | Topic | Variants | Winner | Tags |
 |---|-------|----------|--------|------|
 | 001 | HistoryGraphs (Dota-style gold/XP lead) | A: broadcast canonical · B: gradient intensity · C: line + soft fill + static labels | **C** | `#chart` `#data-viz` `#phase-10.2` |
+| 002 | Match page layout restructure (Row 1 = heroes \| items \| cooldowns) | A: Map·Roshan·Buildings · B: Map·Roshan·History · C: 2+2 pairs | TBD | `#layout` `#match-page` `#phase-10.3` |
