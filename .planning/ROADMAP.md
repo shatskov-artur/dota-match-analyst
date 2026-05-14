@@ -293,13 +293,14 @@ Plans:
 
 ### Phase 10.3: Match page layout restructure (INSERTED)
 
-**Goal:** [Urgent work - to be planned]
-**Requirements**: TBD
+**Goal:** Three-row match-page structure per sketch 002-C: Row 1 = HeroPlayerGrid | ItemsBlock | CooldownsBlock (flex-1 equal-height); Row 2 = DotaMapView | RoshanBlock (50/50); Row 3 = BuildingsSection | HistoryGraphs (50/50).
+**Requirements:** UAT-LAYOUT-10.3-01..07 (synthetic — UAT feedback)
 **Depends on:** Phase 10, Phase 10.2
-**Plans:** 0 plans
+**Plans:** 2 plans
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 10.3 to break down)
+- [ ] 10.3-01-PLAN.md — Wave 1: MatchPage.tsx in-game JSX restructure (3 rows, flex-1 slots)
+- [ ] 10.3-02-PLAN.md — Wave 2: per-component sanity sweep (RoshanBlock / CooldownsBlock / BuildingsSection / HistoryGraphs at new widths)
 
 ### Phase 11: Harden & Deploy
 **Goal:** The owner and a small group of friends can hit a public URL and use the tool for a full day of tournament viewing without crashes, quota exhaustion, or manual restarts.
