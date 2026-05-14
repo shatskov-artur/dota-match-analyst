@@ -109,30 +109,48 @@ export default function MatchPage() {
         </div>
       )}
 
-      {/* In-game row: HeroPlayerGrid | ItemsBlock | (Map + Cooldowns stacked).
-          Right stack does NOT depend on buildings.unavailable — Cooldowns + hero positions
-          come from scoreboard players, not tower_state. DotaMapView with unavailable=true
-          still renders lane art + hero rings. BuildingsSection (below) remains buildings-gated. */}
+      {/* In-game three-row layout (sketch 002-C).
+          Row 1 (3×flex-1, items-stretch): HeroPlayerGrid | ItemsBlock | CooldownsBlock — equal width and height.
+          Row 2 (2×flex-1, items-stretch): DotaMapView | RoshanBlock — 50/50 split.
+          Row 3 (2×flex-1, items-stretch): BuildingsSection | HistoryGraphs — 50/50 split.
+            When buildings.unavailable, a transparent placeholder div holds the left slot so HistoryGraphs
+            still occupies the right half (preserves 50% chart width across pre/post tower-state availability).
+          DotaMapView responsive SVG (10.2-03) carries over unchanged.
+          CooldownsBlock root (`flex flex-col flex-1 min-h-0 overflow-y-auto`, 10.2-03) carries over unchanged.
+          RoshanBlock root (`flex flex-col flex-1`) carries over unchanged. */}
       {match?.game_state === 5 && radiantPlayers.length > 0 && (
-        <div className="mt-12 flex gap-12 items-stretch">
-          <HeroPlayerGrid
-            radiantPlayers={radiantPlayers}
-            direPlayers={direPlayers}
-            isLoading={isLoading}
-            playerIntelMap={playerIntelMap}
-          />
-
-          <div className="w-fit flex flex-col">
-            <ItemsBlock
-              players={[
-                ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
-                ...direPlayers.map(p => ({ ...p, team: 'dire' as const })),
-              ].sort((a, b) => ((b.net_worth as number | undefined) ?? 0) - ((a.net_worth as number | undefined) ?? 0))}
-            />
+        <div className="mt-12 flex flex-col gap-12">
+          {/* Row 1 — heroes / items / cooldowns */}
+          <div className="flex gap-8 items-stretch">
+            <div className="flex-1 min-w-0">
+              <HeroPlayerGrid
+                radiantPlayers={radiantPlayers}
+                direPlayers={direPlayers}
+                isLoading={isLoading}
+                playerIntelMap={playerIntelMap}
+              />
+            </div>
+            <div className="flex-1 min-w-0 flex flex-col">
+              <ItemsBlock
+                players={[
+                  ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
+                  ...direPlayers.map(p => ({ ...p, team: 'dire' as const })),
+                ].sort((a, b) => ((b.net_worth as number | undefined) ?? 0) - ((a.net_worth as number | undefined) ?? 0))}
+              />
+            </div>
+            <div className="flex-1 min-w-0 flex flex-col">
+              <CooldownsBlock
+                players={[
+                  ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
+                  ...direPlayers.map(p => ({ ...p, team: 'dire' as const })),
+                ]}
+              />
+            </div>
           </div>
 
-          <div className="flex flex-col gap-8 shrink-0 w-[320px] h-full">
-            <div className="flex-1 min-h-0 flex items-start justify-center">
+          {/* Row 2 — map / roshan */}
+          <div className="flex gap-8 items-stretch">
+            <div className="flex-1 min-w-0 flex items-start justify-center">
               <DotaMapView
                 buildings={buildings}
                 heroPositions={[
@@ -155,32 +173,30 @@ export default function MatchPage() {
                 ]}
               />
             </div>
-            <RoshanBlock roshan={match?.roshan ?? null} />
-            <CooldownsBlock
-              players={[
-                ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
-                ...direPlayers.map(p => ({ ...p, team: 'dire' as const })),
-              ]}
-            />
+            <div className="flex-1 min-w-0 flex flex-col">
+              <RoshanBlock roshan={match?.roshan ?? null} />
+            </div>
+          </div>
+
+          {/* Row 3 — buildings / history */}
+          <div className="flex gap-8 items-stretch">
+            <div className="flex-1 min-w-0 flex flex-col">
+              {!buildings.unavailable ? (
+                <BuildingsSection buildings={buildings} />
+              ) : (
+                <div aria-hidden="true" />
+              )}
+            </div>
+            <div className="flex-1 min-w-0 flex flex-col">
+              <HistoryGraphs
+                history={history}
+                gameDuration={match?.duration}
+                gameState={match?.game_state}
+              />
+            </div>
           </div>
         </div>
       )}
-
-      {/* BuildingsSection — full-width row below the two-column block (UI-SPEC) */}
-      {!buildings.unavailable && (
-        <div className="mt-12">
-          <BuildingsSection buildings={buildings} />
-        </div>
-      )}
-
-      {/* Phase 10: historical graphs — self-gates internally (skeleton when history.length < 2) */}
-      <section style={{ marginTop: 16 }}>
-        <HistoryGraphs
-          history={history}
-          gameDuration={match?.duration}
-          gameState={match?.game_state}
-        />
-      </section>
     </div>
   )
 }
