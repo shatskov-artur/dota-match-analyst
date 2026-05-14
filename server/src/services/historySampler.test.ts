@@ -157,6 +157,46 @@ describe('buildSample — pure aggregator (D-07, D-08, D-15..D-18)', () => {
     expect(result!.xp).toBe(6000)
   })
 
+  it('consumes Valve canonical field name xp_per_min (UAT-XP-01)', () => {
+    // Raw Valve scoreboard ships xp_per_min, not xpm — see server/src/routes/live.ts:89.
+    // duration=600 → factor 10. Radiant total xp_per_min 1000 → 10_000 xp.
+    // Dire total xp_per_min 600 → 6_000 xp. Diff = +4000 (Radiant-positive).
+    const result = buildSample({
+      game_state: 5,
+      duration: 600,
+      scoreboard: {
+        radiant: { players: [{ net_worth: 0, xp_per_min: 1000 }] },
+        dire:    { players: [{ net_worth: 0, xp_per_min: 600 }] },
+      },
+    } as never)
+    expect(result).not.toBeNull()
+    expect(result!.xp).toBe(4000)
+  })
+
+  it('treats NaN / Infinity xp_per_min as 0 (defensive hardening)', () => {
+    // Number.isFinite guard prevents NaN propagation into the chart.
+    const result = buildSample({
+      game_state: 5,
+      duration: 600,
+      scoreboard: {
+        radiant: {
+          players: [
+            { net_worth: 0, xp_per_min: Number.NaN },
+            { net_worth: 0, xp_per_min: 600 },
+          ],
+        },
+        dire: {
+          players: [{ net_worth: 0, xp_per_min: Number.POSITIVE_INFINITY }],
+        },
+      },
+    } as never)
+    expect(result).not.toBeNull()
+    expect(Number.isFinite(result!.xp)).toBe(true)
+    expect(Number.isNaN(result!.xp)).toBe(false)
+    // Radiant: 0 + (600 * 600 / 60) = 6000. Dire: NaN/Inf → 0. Diff = +6000.
+    expect(result!.xp).toBe(6000)
+  })
+
   it('t equals floor(duration) (D-07)', () => {
     const result = buildSample({
       game_state: 5,
