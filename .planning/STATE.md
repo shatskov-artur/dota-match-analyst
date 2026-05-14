@@ -2,8 +2,8 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Phase 10.2 in progress — Wave 1 (XP fix) landed
-last_updated: "2026-05-15T00:15:00.000Z"
+status: Phase 10.2 in progress — Wave 2 (HistoryGraphs sketch-001-C rewrite) landed
+last_updated: "2026-05-15T00:20:00.000Z"
 progress:
   total_phases: 12
   completed_phases: 11
@@ -16,7 +16,7 @@ progress:
 
 ## Current Status
 
-Phase: Phase 10.2 in progress — Wave 1 (10.2-01) XP source fix landed; 102/102 server tests GREEN
+Phase: Phase 10.2 in progress — Wave 2 (10.2-02) HistoryGraphs sketch-001-C rewrite landed; 105/105 client tests GREEN, 102/102 server tests GREEN
 Last updated: 2026-05-15
 
 ## Project Reference
@@ -41,15 +41,15 @@ See: .planning/PROJECT.md
 | 9 | Roshan Tracker | Complete — all 6 plans done 2026-05-04; 35/35 phase tests GREEN; manual UAT deferred |
 | 10 | Historical Graphs | Complete — all 4 plans done 2026-05-09; verifier 5/5 success criteria MET; live UAT deferred |
 | 10.1 | background-history-sampler | Complete — all 3 plans done 2026-05-14; 100/100 server tests GREEN; SIGTERM/SIGINT graceful drain wired |
-| 10.2 | HistoryGraphs polish + XP fix | In progress — Wave 1 (10.2-01) XP source fix landed 2026-05-15; 102/102 server tests GREEN; Waves 2-3 pending |
+| 10.2 | HistoryGraphs polish + XP fix | In progress — Waves 1 + 2 landed 2026-05-15; 102/102 server + 105/105 client tests GREEN; Wave 3 (right-column equalize) pending |
 
 ## Current Position
 
 Phase: 10.2 (HistoryGraphs polish + XP fix) — IN PROGRESS
-Plans: 1 of 3
+Plans: 2 of 3
 
-- **Phase:** 10.2 Wave 1 complete — buildSample now reads `xp_per_min ?? xpm` with `Number.isFinite` hardening; ValveLiveGame type widened in historySamplerJob.ts
-- **Status:** Awaiting Wave 2 (HistoryGraphs.tsx sketch 001-C rewrite) + Wave 3 (right-column equalize)
+- **Phase:** 10.2 Waves 1 + 2 complete — XP source fix + HistoryGraphs rewritten per sketch 001-C (line + soft fill + static peak labels, no hover; 13 UAT-CHART tests green)
+- **Status:** Awaiting Wave 3 (right-column equalize — h-full + shrink-0 + min-h-0 overflow-y-auto)
 - **Progress:** [██████████] 98%
 
 ## Performance Metrics
@@ -107,11 +107,11 @@ None.
 
 ## Session Continuity
 
-- Last session: 2026-05-15 — Phase 10.2 Wave 1 (10.2-01 XP source fix) executed; 102/102 server tests GREEN; commits bc370e4 (RED) + ad547d7 (GREEN)
-- Next action: execute Phase 10.2 Wave 2 (10.2-02 — HistoryGraphs.tsx sketch 001-C rewrite)
+- Last session: 2026-05-15 — Phase 10.2 Wave 2 (10.2-02 HistoryGraphs sketch-001-C rewrite) executed; 105/105 client + 102/102 server tests GREEN; commits 5359a79 (refactor) + af37d2d (test)
+- Next action: execute Phase 10.2 Wave 3 (10.2-03 — right-column equalize)
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
 
 **Completed Phase:** 10.1 (background-history-sampler) — all 3 plans done — 2026-05-14
 
-**Current Phase:** 10.2 (HistoryGraphs polish + right-column equalize + XP fix) — 1/3 plans done (10.2-01 ✓ 2026-05-15)
+**Current Phase:** 10.2 (HistoryGraphs polish + right-column equalize + XP fix) — 2/3 plans done (10.2-01 ✓ 2026-05-15, 10.2-02 ✓ 2026-05-15)

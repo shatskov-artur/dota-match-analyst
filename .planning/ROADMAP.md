@@ -288,7 +288,7 @@ Plans:
 
 Plans:
 - [x] 10.2-01-PLAN.md — Wave 1: XP source fix — alias xp_per_min ?? xpm in historySampler.ts + finite-number hardening + new RED test ✓ 2026-05-15
-- [ ] 10.2-02-PLAN.md — Wave 2: HistoryGraphs.tsx rewrite per sketch 001-C (line + soft fill + static peak labels, no hover) + test rewrite
+- [x] 10.2-02-PLAN.md — Wave 2: HistoryGraphs.tsx rewrite per sketch 001-C (line + soft fill + static peak labels, no hover) + test rewrite ✓ 2026-05-15
 - [ ] 10.2-03-PLAN.md — Wave 3: Right-column equalize (h-full + shrink-0 on MatchPage column wrapper) + defensive min-h-0 overflow-y-auto on CooldownsBlock
 
 ### Phase 11: Harden & Deploy
@@ -318,7 +318,7 @@ Plans:
 | 9. Roshan Tracker | 0/6 | Planned | - |
 | 10. Historical Graphs | 4/4 | Complete | 2026-05-09 |
 | 10.1. background-history-sampler | 3/3 | Complete | 2026-05-14 |
-| 10.2. HistoryGraphs polish + XP fix | 1/3 | In progress | - |
+| 10.2. HistoryGraphs polish + XP fix | 2/3 | In progress | - |
 | 11. Harden & Deploy | 0/? | Not started | - |
 
 ## Coverage Validation
