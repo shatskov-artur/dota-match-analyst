@@ -132,27 +132,29 @@ export default function MatchPage() {
           </div>
 
           <div className="flex flex-col gap-8 shrink-0 w-[320px] h-full">
-            <DotaMapView
-              buildings={buildings}
-              heroPositions={[
-                ...radiantPlayers
-                  .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
-                  .map(p => ({
-                    hero_id: p.hero_id as number,
-                    team: 'radiant' as const,
-                    position_x: p.position_x as number,
-                    position_y: p.position_y as number,
-                  })),
-                ...direPlayers
-                  .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
-                  .map(p => ({
-                    hero_id: p.hero_id as number,
-                    team: 'dire' as const,
-                    position_x: p.position_x as number,
-                    position_y: p.position_y as number,
-                  })),
-              ]}
-            />
+            <div className="flex-1 min-h-0 flex items-start justify-center">
+              <DotaMapView
+                buildings={buildings}
+                heroPositions={[
+                  ...radiantPlayers
+                    .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
+                    .map(p => ({
+                      hero_id: p.hero_id as number,
+                      team: 'radiant' as const,
+                      position_x: p.position_x as number,
+                      position_y: p.position_y as number,
+                    })),
+                  ...direPlayers
+                    .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
+                    .map(p => ({
+                      hero_id: p.hero_id as number,
+                      team: 'dire' as const,
+                      position_x: p.position_x as number,
+                      position_y: p.position_y as number,
+                    })),
+                ]}
+              />
+            </div>
             <RoshanBlock roshan={match?.roshan ?? null} />
             <CooldownsBlock
               players={[

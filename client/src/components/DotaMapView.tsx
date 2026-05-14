@@ -34,8 +34,10 @@ export default function DotaMapView({ buildings: b, heroPositions }: Props) {
 
   return (
     <svg
-      width={S} height={S} viewBox={`0 0 ${S} ${S}`}
-      style={{ borderRadius: 6, display: 'block' }}
+      viewBox={`0 0 ${S} ${S}`}
+      preserveAspectRatio="xMidYMid meet"
+      className="block aspect-square max-w-full max-h-full"
+      style={{ borderRadius: 6, width: '100%', height: '100%' }}
     >
       {/* Solid backdrop — visible only if /minimap.jpg fails to load */}
       <rect width={S} height={S} fill="#07100a" rx={6} />
