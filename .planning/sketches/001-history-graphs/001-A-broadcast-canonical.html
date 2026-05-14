@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Sketch 001-A — Broadcast Canonical</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --panel: #0f0f0f;
+    --fg: #d8d8d8;
+    --fg-muted: #888;
+    --fg-dim: #555;
+    --radiant: #4ade80;
+    --dire: #ef4444;
+    --axis: #2a2a2a;
+    --grid: #1a1a1a;
+    --hover: #d8d8d8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 48px 24px;
+    background: var(--bg); color: var(--fg);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .frame {
+    max-width: 1100px; margin: 0 auto;
+    background: var(--panel);
+    border: 1px solid #161616;
+    border-radius: 4px;
+    padding: 24px 28px 28px;
+  }
+  .frame-title {
+    font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--fg-muted); margin: 0 0 18px;
+  }
+  .section { position: relative; margin-top: 12px; }
+  .section:first-of-type { margin-top: 0; }
+  .section-label {
+    position: absolute; top: 6px; left: 6px;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--fg-muted); pointer-events: none;
+  }
+  .section-value {
+    position: absolute; top: 6px; right: 6px;
+    font-size: 12px; color: var(--fg);
+    font-variant-numeric: tabular-nums; pointer-events: none;
+  }
+  svg { display: block; width: 100%; height: 180px; }
+  .x-axis { font-size: 10px; fill: var(--fg-dim); }
+  .y-axis { font-size: 10px; fill: var(--fg-dim); }
+  .zero-line { stroke: var(--axis); stroke-width: 1; }
+  .grid-line { stroke: var(--grid); stroke-width: 1; stroke-dasharray: 2 4; }
+  .radiant-area { fill: var(--radiant); fill-opacity: 0.55; }
+  .dire-area    { fill: var(--dire);    fill-opacity: 0.55; }
+  .radiant-line { stroke: var(--radiant); stroke-width: 1.5; fill: none; }
+  .dire-line    { stroke: var(--dire);    stroke-width: 1.5; fill: none; }
+  .hover-line   { stroke: var(--hover); stroke-width: 1; opacity: 0; pointer-events: none; }
+  .tooltip {
+    position: absolute;
+    background: #111;
+    border: 1px solid #1a1a1a;
+    padding: 8px 10px;
+    font-size: 11px;
+    font-variant-numeric: tabular-nums;
+    color: var(--fg);
+    border-radius: 2px;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 100ms ease;
+    white-space: nowrap;
+  }
+  .tooltip .t-label { color: var(--fg-muted); }
+  .tooltip .r-val { color: var(--radiant); }
+  .tooltip .d-val { color: var(--dire); }
+  .legend {
+    display: flex; gap: 24px; font-size: 11px;
+    color: var(--fg-muted); margin-top: 14px;
+    text-transform: uppercase; letter-spacing: 0.2em;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .legend .swatch {
+    width: 10px; height: 10px; border-radius: 2px;
+  }
+  .legend .r-swatch { background: var(--radiant); }
+  .legend .d-swatch { background: var(--dire); }
+  .caption {
+    position: fixed; bottom: 12px; left: 24px;
+    font-size: 10px; color: var(--fg-dim); letter-spacing: 0.2em; text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <p class="frame-title">Историческая динамика</p>
+
+    <div class="section" id="goldSection">
+      <span class="section-label">Gold lead</span>
+      <span class="section-value" id="goldHeadline">Radiant +3.4k</span>
+      <svg viewBox="0 0 1000 180" preserveAspectRatio="none" id="goldSvg"></svg>
+      <div class="tooltip" id="goldTip"></div>
+    </div>
+
+    <div class="section" id="xpSection">
+      <span class="section-label">XP lead</span>
+      <span class="section-value" id="xpHeadline">Radiant +0.8k</span>
+      <svg viewBox="0 0 1000 180" preserveAspectRatio="none" id="xpSvg"></svg>
+      <div class="tooltip" id="xpTip"></div>
+    </div>
+
+    <div class="legend">
+      <span><span class="swatch r-swatch"></span>Radiant ahead</span>
+      <span><span class="swatch d-swatch"></span>Dire ahead</span>
+    </div>
+  </div>
+
+  <div class="caption">001-A · Broadcast canonical · symmetric fill · hover tooltip</div>
+
+<script>
+  // Mock 20-min match: 40 samples @ 30s. Realistic-ish swing.
+  const data = (() => {
+    const pts = [];
+    for (let i = 0; i <= 40; i++) {
+      const t = i * 30;            // seconds
+      const m = t / 60;            // minutes
+      // gold: noise → radiant climbs → dire takeover → big radiant comeback
+      let g = 0;
+      if (m < 4)         g = (Math.sin(m * 1.6) * 200);
+      else if (m < 9)    g = 200 + (m - 4) * 280 + Math.sin(m * 2.1) * 150;
+      else if (m < 14)   g = 1600 - (m - 9) * 720 + Math.sin(m * 1.4) * 220;
+      else               g = -2000 + (m - 14) * 950 + Math.cos(m * 1.1) * 280;
+      // xp: similar curve, lagged + dampened, ends ~+800
+      let x = 0;
+      if (m < 5)         x = (Math.sin(m * 1.4) * 120);
+      else if (m < 10)   x = 100 + (m - 5) * 160 + Math.sin(m * 1.9) * 100;
+      else if (m < 15)   x = 900 - (m - 10) * 380 + Math.cos(m * 1.5) * 140;
+      else               x = -1000 + (m - 15) * 420 + Math.sin(m * 1.2) * 160;
+      pts.push({ t, gold: Math.round(g), xp: Math.round(x) });
+    }
+    return pts;
+  })();
+
+  function renderRegion(svgEl, headlineEl, tooltipEl, key, unit) {
+    const W = 1000, H = 180, padX = 0, padTop = 26, padBottom = 20;
+    const innerW = W - padX * 2;
+    const innerH = H - padTop - padBottom;
+    const midY = padTop + innerH / 2;
+
+    const tMin = data[0].t, tMax = data[data.length - 1].t;
+    const vals = data.map(d => d[key]);
+    const peak = Math.max(...vals.map(Math.abs)) * 1.15 || 1;
+
+    const x = t => padX + ((t - tMin) / (tMax - tMin)) * innerW;
+    const y = v => midY - (v / peak) * (innerH / 2);
+
+    // Build polygons split at zero crossings
+    function buildAreas() {
+      const radiantPoly = [];
+      const direPoly = [];
+      // Top (positive) region path
+      let radPath = `M ${x(tMin)} ${midY} `;
+      data.forEach(d => {
+        const yv = Math.max(0, d[key]);
+        radPath += `L ${x(d.t)} ${y(yv)} `;
+      });
+      radPath += `L ${x(tMax)} ${midY} Z`;
+      // Bottom (negative) region
+      let dirPath = `M ${x(tMin)} ${midY} `;
+      data.forEach(d => {
+        const yv = Math.min(0, d[key]);
+        dirPath += `L ${x(d.t)} ${y(yv)} `;
+      });
+      dirPath += `L ${x(tMax)} ${midY} Z`;
+      return { radPath, dirPath };
+    }
+    const { radPath, dirPath } = buildAreas();
+
+    // Outlines
+    const radiantOutline = data.map(d => `${x(d.t)},${y(Math.max(0, d[key]))}`).join(' ');
+    const direOutline    = data.map(d => `${x(d.t)},${y(Math.min(0, d[key]))}`).join(' ');
+
+    // Gridlines (every 5 min)
+    const xTicks = [0, 5, 10, 15, 20].map(m => ({ m, x: x(m * 60) }));
+    const yTicks = [-1, -0.5, 0, 0.5, 1].map(f => ({ v: f * peak, y: midY - f * (innerH / 2) }));
+
+    let svg = '';
+    // Grid (vertical at minute ticks)
+    xTicks.forEach(tk => {
+      svg += `<line class="grid-line" x1="${tk.x}" y1="${padTop}" x2="${tk.x}" y2="${padTop + innerH}" />`;
+    });
+    // Zero line
+    svg += `<line class="zero-line" x1="${padX}" y1="${midY}" x2="${padX + innerW}" y2="${midY}" />`;
+    // Areas
+    svg += `<path class="radiant-area" d="${radPath}" />`;
+    svg += `<path class="dire-area"    d="${dirPath}" />`;
+    // Outlines
+    svg += `<polyline class="radiant-line" points="${radiantOutline}" />`;
+    svg += `<polyline class="dire-line"    points="${direOutline}" />`;
+    // X-axis labels (minutes)
+    xTicks.forEach(tk => {
+      svg += `<text class="x-axis" x="${tk.x}" y="${H - 4}" text-anchor="middle">${tk.m}m</text>`;
+    });
+    // Y-axis peak labels (right edge)
+    svg += `<text class="y-axis" x="${W - 6}" y="${padTop + 10}" text-anchor="end">+${(peak/1000).toFixed(1)}k</text>`;
+    svg += `<text class="y-axis" x="${W - 6}" y="${padTop + innerH - 2}" text-anchor="end">−${(peak/1000).toFixed(1)}k</text>`;
+
+    // Hover infrastructure
+    svg += `<line class="hover-line" id="${svgEl.id}-hover" y1="${padTop}" y2="${padTop + innerH}" />`;
+    svg += `<rect x="0" y="0" width="${W}" height="${H}" fill="transparent" id="${svgEl.id}-cap" />`;
+
+    svgEl.innerHTML = svg;
+
+    // Interactivity
+    const hoverLine = svgEl.querySelector(`#${svgEl.id}-hover`);
+    const capture = svgEl.querySelector(`#${svgEl.id}-cap`);
+    capture.addEventListener('mousemove', e => {
+      const rect = svgEl.getBoundingClientRect();
+      const ratio = (e.clientX - rect.left) / rect.width;
+      const xPx = ratio * W;
+      // nearest sample
+      let nearest = data[0], bestDx = Infinity;
+      for (const d of data) {
+        const dx = Math.abs(x(d.t) - xPx);
+        if (dx < bestDx) { bestDx = dx; nearest = d; }
+      }
+      hoverLine.setAttribute('x1', x(nearest.t));
+      hoverLine.setAttribute('x2', x(nearest.t));
+      hoverLine.style.opacity = 1;
+      // tooltip
+      const v = nearest[key];
+      const sign = v >= 0 ? 'r' : 'd';
+      const label = (v >= 0 ? 'Radiant +' : 'Dire +') + Math.abs(v).toLocaleString();
+      const mm = Math.floor(nearest.t / 60);
+      const ss = (nearest.t % 60).toString().padStart(2, '0');
+      tooltipEl.innerHTML = `<span class="t-label">${mm}:${ss}</span> · <span class="${sign}-val">${label}${unit}</span>`;
+      tooltipEl.style.opacity = 1;
+      const xPosPct = (x(nearest.t) / W) * 100;
+      tooltipEl.style.left = `calc(${xPosPct}% + 4px)`;
+      tooltipEl.style.top = `${padTop + 6}px`;
+    });
+    capture.addEventListener('mouseleave', () => {
+      hoverLine.style.opacity = 0;
+      tooltipEl.style.opacity = 0;
+    });
+
+    // Headline = last value
+    const last = data[data.length - 1][key];
+    const sign = last >= 0 ? 'Radiant +' : 'Dire +';
+    headlineEl.textContent = `${sign}${(Math.abs(last) / 1000).toFixed(1)}k`;
+    headlineEl.style.color = last >= 0 ? 'var(--radiant)' : 'var(--dire)';
+  }
+
+  renderRegion(document.getElementById('goldSvg'), document.getElementById('goldHeadline'), document.getElementById('goldTip'), 'gold', '');
+  renderRegion(document.getElementById('xpSvg'),   document.getElementById('xpHeadline'),   document.getElementById('xpTip'),   'xp',   '');
+</script>
+</body>
+</html>

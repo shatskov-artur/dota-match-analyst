@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Sketch 001-C — Line + Soft Fill + Static Labels</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --panel: #0f0f0f;
+    --fg: #d8d8d8;
+    --fg-muted: #888;
+    --fg-dim: #555;
+    --radiant: #4ade80;
+    --dire: #ef4444;
+    --axis: #2a2a2a;
+    --grid: #1a1a1a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 48px 24px;
+    background: var(--bg); color: var(--fg);
+    font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  .frame {
+    max-width: 1100px; margin: 0 auto;
+    background: var(--panel);
+    border: 1px solid #161616;
+    border-radius: 4px;
+    padding: 24px 28px 28px;
+  }
+  .frame-title {
+    font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--fg-muted); margin: 0 0 18px;
+  }
+  .section { position: relative; margin-top: 16px; }
+  .section:first-of-type { margin-top: 0; }
+  .section-label {
+    position: absolute; top: 6px; left: 6px;
+    font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase;
+    color: var(--fg-muted); pointer-events: none;
+  }
+  .section-value {
+    position: absolute; top: 6px; right: 6px;
+    font-size: 12px; font-variant-numeric: tabular-nums; pointer-events: none;
+  }
+  svg { display: block; width: 100%; height: 200px; }
+  .x-axis, .y-axis, .pk-label { font-size: 10px; fill: var(--fg-dim); }
+  .pk-label { font-weight: 600; font-variant-numeric: tabular-nums; }
+  .pk-radiant { fill: var(--radiant); }
+  .pk-dire    { fill: var(--dire); }
+  .zero-line { stroke: var(--axis); stroke-width: 1; }
+  .grid-line { stroke: var(--grid); stroke-width: 1; stroke-dasharray: 2 4; }
+  .radiant-area { fill: var(--radiant); fill-opacity: 0.15; }
+  .dire-area    { fill: var(--dire);    fill-opacity: 0.15; }
+  .radiant-line { stroke: var(--radiant); stroke-width: 2; fill: none; }
+  .dire-line    { stroke: var(--dire);    stroke-width: 2; fill: none; }
+  .pk-dot-r { fill: var(--radiant); }
+  .pk-dot-d { fill: var(--dire); }
+  .legend {
+    display: flex; gap: 24px; font-size: 11px;
+    color: var(--fg-muted); margin-top: 14px;
+    text-transform: uppercase; letter-spacing: 0.2em;
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 8px; }
+  .legend .swatch { width: 10px; height: 10px; border-radius: 2px; }
+  .legend .r-swatch { background: var(--radiant); opacity: 0.6; }
+  .legend .d-swatch { background: var(--dire); opacity: 0.6; }
+  .caption {
+    position: fixed; bottom: 12px; left: 24px;
+    font-size: 10px; color: var(--fg-dim); letter-spacing: 0.2em; text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+  <div class="frame">
+    <p class="frame-title">Историческая динамика</p>
+
+    <div class="section" id="goldSection">
+      <span class="section-label">Gold lead</span>
+      <span class="section-value" id="goldHeadline">Radiant +3.4k</span>
+      <svg viewBox="0 0 1000 200" preserveAspectRatio="none" id="goldSvg"></svg>
+    </div>
+
+    <div class="section" id="xpSection">
+      <span class="section-label">XP lead</span>
+      <span class="section-value" id="xpHeadline">Radiant +0.8k</span>
+      <svg viewBox="0 0 1000 200" preserveAspectRatio="none" id="xpSvg"></svg>
+    </div>
+
+    <div class="legend">
+      <span><span class="swatch r-swatch"></span>Radiant ahead</span>
+      <span><span class="swatch d-swatch"></span>Dire ahead</span>
+      <span style="margin-left:auto;color:var(--fg-dim)">peaks labeled · no hover needed</span>
+    </div>
+  </div>
+
+  <div class="caption">001-C · Line + soft fill · static peak labels · zero interactivity</div>
+
+<script>
+  const data = (() => {
+    const pts = [];
+    for (let i = 0; i <= 40; i++) {
+      const t = i * 30, m = t / 60;
+      let g = 0;
+      if (m < 4)       g = (Math.sin(m * 1.6) * 200);
+      else if (m < 9)  g = 200 + (m - 4) * 280 + Math.sin(m * 2.1) * 150;
+      else if (m < 14) g = 1600 - (m - 9) * 720 + Math.sin(m * 1.4) * 220;
+      else             g = -2000 + (m - 14) * 950 + Math.cos(m * 1.1) * 280;
+      let x = 0;
+      if (m < 5)       x = (Math.sin(m * 1.4) * 120);
+      else if (m < 10) x = 100 + (m - 5) * 160 + Math.sin(m * 1.9) * 100;
+      else if (m < 15) x = 900 - (m - 10) * 380 + Math.cos(m * 1.5) * 140;
+      else             x = -1000 + (m - 15) * 420 + Math.sin(m * 1.2) * 160;
+      pts.push({ t, gold: Math.round(g), xp: Math.round(x) });
+    }
+    return pts;
+  })();
+
+  function fmtTime(t) {
+    const mm = Math.floor(t / 60);
+    const ss = (t % 60).toString().padStart(2, '0');
+    return `${mm}:${ss}`;
+  }
+  function fmtVal(v) {
+    const k = Math.abs(v) >= 1000 ? `${(v/1000).toFixed(1)}k` : `${v}`;
+    return v >= 0 ? `+${k}` : `${k}`;
+  }
+
+  function renderRegion(svgEl, headlineEl, key) {
+    const W = 1000, H = 200, padTop = 28, padBottom = 22;
+    const innerH = H - padTop - padBottom;
+    const midY = padTop + innerH / 2;
+    const tMin = data[0].t, tMax = data[data.length - 1].t;
+    const peak = Math.max(...data.map(d => Math.abs(d[key]))) * 1.20 || 1;
+    const x = t => ((t - tMin) / (tMax - tMin)) * W;
+    const y = v => midY - (v / peak) * (innerH / 2);
+
+    let radPath = `M ${x(tMin)} ${midY} `;
+    data.forEach(d => { radPath += `L ${x(d.t)} ${y(Math.max(0, d[key]))} `; });
+    radPath += `L ${x(tMax)} ${midY} Z`;
+    let dirPath = `M ${x(tMin)} ${midY} `;
+    data.forEach(d => { dirPath += `L ${x(d.t)} ${y(Math.min(0, d[key]))} `; });
+    dirPath += `L ${x(tMax)} ${midY} Z`;
+
+    const radiantOutline = data.map(d => `${x(d.t)},${y(Math.max(0, d[key]))}`).join(' ');
+    const direOutline    = data.map(d => `${x(d.t)},${y(Math.min(0, d[key]))}`).join(' ');
+
+    // Find Radiant peak (max positive) and Dire peak (max negative)
+    let rPeak = { v: 0, t: 0 }, dPeak = { v: 0, t: 0 };
+    for (const d of data) {
+      if (d[key] > rPeak.v) rPeak = { v: d[key], t: d.t };
+      if (d[key] < dPeak.v) dPeak = { v: d[key], t: d.t };
+    }
+
+    const xTicks = [0, 5, 10, 15, 20].map(m => ({ m, x: x(m * 60) }));
+
+    let svg = '';
+    xTicks.forEach(tk => {
+      svg += `<line class="grid-line" x1="${tk.x}" y1="${padTop}" x2="${tk.x}" y2="${padTop + innerH}" />`;
+    });
+    svg += `<line class="zero-line" x1="0" y1="${midY}" x2="${W}" y2="${midY}" />`;
+    svg += `<path class="radiant-area" d="${radPath}" />`;
+    svg += `<path class="dire-area"    d="${dirPath}" />`;
+    svg += `<polyline class="radiant-line" points="${radiantOutline}" />`;
+    svg += `<polyline class="dire-line"    points="${direOutline}" />`;
+
+    // Peak markers + labels
+    if (rPeak.v > 0) {
+      const px = x(rPeak.t), py = y(rPeak.v);
+      svg += `<circle class="pk-dot-r" cx="${px}" cy="${py}" r="3.5" />`;
+      // anchor label so it doesn't clip edges
+      const anchor = px < 80 ? 'start' : px > W - 80 ? 'end' : 'middle';
+      svg += `<text class="pk-label pk-radiant" x="${px}" y="${Math.max(padTop + 12, py - 8)}" text-anchor="${anchor}">${fmtVal(rPeak.v)} @ ${fmtTime(rPeak.t)}</text>`;
+    }
+    if (dPeak.v < 0) {
+      const px = x(dPeak.t), py = y(dPeak.v);
+      svg += `<circle class="pk-dot-d" cx="${px}" cy="${py}" r="3.5" />`;
+      const anchor = px < 80 ? 'start' : px > W - 80 ? 'end' : 'middle';
+      svg += `<text class="pk-label pk-dire" x="${px}" y="${Math.min(padTop + innerH - 4, py + 14)}" text-anchor="${anchor}">${fmtVal(dPeak.v)} @ ${fmtTime(dPeak.t)}</text>`;
+    }
+
+    xTicks.forEach(tk => {
+      svg += `<text class="x-axis" x="${tk.x}" y="${H - 4}" text-anchor="middle">${tk.m}m</text>`;
+    });
+
+    svgEl.innerHTML = svg;
+
+    const last = data[data.length - 1][key];
+    const sign = last >= 0 ? 'Radiant +' : 'Dire +';
+    headlineEl.textContent = `${sign}${(Math.abs(last) / 1000).toFixed(1)}k`;
+    headlineEl.style.color = last >= 0 ? 'var(--radiant)' : 'var(--dire)';
+  }
+
+  renderRegion(document.getElementById('goldSvg'), document.getElementById('goldHeadline'), 'gold');
+  renderRegion(document.getElementById('xpSvg'),   document.getElementById('xpHeadline'),   'xp');
+</script>
+</body>
+</html>
