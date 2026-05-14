@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: Phase 10 complete — awaiting Phase 11 (Harden & Deploy)
-last_updated: "2026-05-09T15:40:00.000Z"
+status: Awaiting Phase 11 (Harden & Deploy)
+last_updated: "2026-05-14T21:05:59.173Z"
 progress:
-  total_phases: 11
+  total_phases: 12
   completed_phases: 10
-  total_plans: 54
-  completed_plans: 50
-  percent: 91
+  total_plans: 53
+  completed_plans: 51
+  percent: 96
 ---
 
 # Project State
@@ -48,7 +48,7 @@ Plans: 4 of 4
 
 - **Phase:** 10 code complete — server sampler + BFF wiring + HistoryGraphs SVG + MatchPage mount (option B, below BuildingsSection)
 - **Status:** Awaiting Phase 11 (Harden & Deploy)
-- **Progress:** [██████████] 100%
+- **Progress:** [██████████] 96%
 
 ## Performance Metrics
 
@@ -98,14 +98,18 @@ Plans: 4 of 4
 
 None.
 
+### Roadmap Evolution
+
+- Phase 10.1 inserted after Phase 10: background-history-sampler — server-side setInterval(30s) polls GetLiveLeagueGames so any viewer joining mid-game sees gold/XP history from minute 0 (URGENT — Phase 10 only sampled while a viewer's request hit /api/live/games).
+
 ## Session Continuity
 
-- Last session: 2026-04-28 — Phase 7 plan 01 complete (items.json + RED test stubs)
-- Next action: Execute 07-02 (itemMapper GREEN implementation)
+- Last session: 2026-05-14 — Phase 10.1 plan 01 complete (Wave 1: historySamplerJob skeleton + 5 RED tests)
+- Next action: Execute 10.1-02 (Wave 2 GREEN — fill runOnce/startSampler/stopSampler bodies)
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
 
 **Completed Phase:** 6 (Win Probability) — all 5 plans done — 2026-04-26
 **In Progress:** Phase 7 (In-Game Item Intel) — 1/4 plans done — 2026-04-28
 
-**Planned Phase:** 10 (Historical Graphs) — 4 plans — 2026-05-09T12:24:49.238Z
+**Planned Phase:** 10.1 (background-history-sampler) — 3 plans — 1/3 complete (Wave 1 RED+skeleton — 2026-05-14)

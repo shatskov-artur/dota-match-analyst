@@ -267,6 +267,18 @@ Plans:
 - [ ] 10-04-PLAN.md — Hook surfacing and MatchPage mount (autonomous: false, layout-preservation checkpoint)
 **UI hint:** yes
 
+### Phase 10.1: background-history-sampler — server-side setInterval(30s) that polls GetLiveLeagueGames and runs tryWriteSample for every active tournament match independent of user requests, so anyone joining mid-game sees gold/XP history from minute 0 instead of from their join time. NX gate already prevents duplicate writes from this job and from the existing /api/live/games piggyback. (INSERTED)
+
+**Goal:** A server-side setInterval(30s) polls getLiveLeagueGames and runs tryWriteSample/deleteHistory for every active tournament match independent of user requests, so anyone joining mid-game sees gold/XP history accumulated from minute 0; SIGTERM/SIGINT drain in-flight ticks before exit.
+**Requirements:** None (operational/infrastructure phase)
+**Depends on:** Phase 10
+**Plans:** 3 plans
+
+Plans:
+- [x] 10.1-01-PLAN.md — Wave 1: RED tests + module skeleton (historySamplerJob.ts + historySamplerJob.test.ts) ✓ 2026-05-14
+- [ ] 10.1-02-PLAN.md — Wave 2: GREEN implementation of runOnce + startSampler + stopSampler
+- [ ] 10.1-03-PLAN.md — Wave 3: index.ts wire-up + SIGTERM/SIGINT graceful shutdown + lifecycle smoke test
+
 ### Phase 11: Harden & Deploy
 **Goal:** The owner and a small group of friends can hit a public URL and use the tool for a full day of tournament viewing without crashes, quota exhaustion, or manual restarts.
 **Depends on:** Phase 2, Phase 3, Phase 4, Phase 5, Phase 6, Phase 7, Phase 8, Phase 9, Phase 10
