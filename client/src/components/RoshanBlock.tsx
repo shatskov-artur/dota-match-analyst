@@ -89,48 +89,50 @@ export default function RoshanBlock({ roshan }: RoshanBlockProps) {
 
   return (
     <div className="flex flex-col flex-1">
-      {roshan.alive ? (
-        <>
-          <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-3" style={{ color: '#555555' }}>
-            Roshan #{nextKillNumber}
-          </p>
-          <div className="flex items-center gap-2 mb-4">
-            {nextKillLoot.map((id, i) => <LootIcon key={`next-${i}`} itemId={id} size={32} />)}
-          </div>
-        </>
-      ) : (
-        <>
-          <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-2 text-center" style={{ color: '#555555' }}>
-            Respawn
-          </p>
-          <div
-            className="text-center mb-3"
-            style={{
-              fontSize: 28,
-              fontWeight: 700,
-              fontVariantNumeric: 'tabular-nums',
-              color: '#e8e8e8',
-              letterSpacing: '0.05em',
-            }}
-          >
-            {formatMmSs(remaining)}
-          </div>
-          <div className="flex items-center justify-center gap-2 mb-4">
-            {nextKillLoot.map((id, i) => <LootIcon key={`next-dim-${i}`} itemId={id} size={28} dimmed />)}
-          </div>
-        </>
-      )}
+      <div className="max-w-[360px] mx-auto w-full">
+        {roshan.alive ? (
+          <>
+            <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-3" style={{ color: '#555555' }}>
+              Roshan #{nextKillNumber}
+            </p>
+            <div className="flex items-center gap-2 mb-4">
+              {nextKillLoot.map((id, i) => <LootIcon key={`next-${i}`} itemId={id} size={32} />)}
+            </div>
+          </>
+        ) : (
+          <>
+            <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-2 text-center" style={{ color: '#555555' }}>
+              Respawn
+            </p>
+            <div
+              className="text-center mb-3"
+              style={{
+                fontSize: 28,
+                fontWeight: 700,
+                fontVariantNumeric: 'tabular-nums',
+                color: '#e8e8e8',
+                letterSpacing: '0.05em',
+              }}
+            >
+              {formatMmSs(remaining)}
+            </div>
+            <div className="flex items-center justify-center gap-2 mb-4">
+              {nextKillLoot.map((id, i) => <LootIcon key={`next-dim-${i}`} itemId={id} size={28} dimmed />)}
+            </div>
+          </>
+        )}
 
-      {roshan.killCount >= 1 && roshan.lastKillLoot && (
-        <div className="flex flex-col gap-1 mt-2 pt-3 border-t" style={{ borderColor: '#1e1e1e' }}>
-          <p className="text-[9px] uppercase tracking-[0.25em]" style={{ color: '#555555' }}>
-            Last Drop
-          </p>
-          <div className="flex items-center gap-1">
-            {roshan.lastKillLoot.map((id, i) => <LootIcon key={`last-${i}`} itemId={id} size={20} />)}
+        {roshan.killCount >= 1 && roshan.lastKillLoot && (
+          <div className="flex flex-col gap-1 mt-2 pt-3 border-t" style={{ borderColor: '#1e1e1e' }}>
+            <p className="text-[9px] uppercase tracking-[0.25em]" style={{ color: '#555555' }}>
+              Last Drop
+            </p>
+            <div className="flex items-center gap-1">
+              {roshan.lastKillLoot.map((id, i) => <LootIcon key={`last-${i}`} itemId={id} size={20} />)}
+            </div>
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }
