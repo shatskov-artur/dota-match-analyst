@@ -1,39 +1,26 @@
-import { useEffect, useRef, useState } from 'react'
-import type { CSSProperties, MouseEvent as ReactMouseEvent } from 'react'
+import { useEffect, useState } from 'react'
+import type { CSSProperties } from 'react'
 
-// Phase 10 Plan 03 — HistoryGraphs
-// Self-gating dual-SVG panel rendering Radiant-positive gold/xp leads over game-clock time.
-// Mirrors DotaMapView (SVG primitives) + WinProbBar (self-gate) + IntelTooltip (anchored
-// hover) + RoshanBlock (1Hz client tick). NO chart library imports allowed (D-25).
+// Phase 10.2 Plan 02 — HistoryGraphs (rewrite per sketch 001 winner C).
+// Line + soft fill + static peak labels. No hover. Two stacked sections (gold, xp).
+// NO chart library imports (D-25). Pure SVG primitives.
+// Canonical spec: .claude/skills/sketch-findings-dota-stats/references/charts-data-viz.md
 
 const RADIANT_GREEN = '#4ade80'
 const DIRE_RED      = '#ef4444'
 const PANEL_BG      = '#0f0f0f'
-const PRIMARY_FG    = '#d8d8d8'
+const PANEL_BORDER  = '#161616'
 const SECONDARY_FG  = '#888888'
+const TERTIARY_FG   = '#555555'
 const ZERO_AXIS     = '#2a2a2a'
-const HOVER_LINE    = '#d8d8d8'
-const TOOLTIP_BG    = '#111111'
-const TOOLTIP_BORDER = '#1a1a1a'
+const GRID_LINE     = '#1a1a1a'
 
-const W = 640
-const H = 160
-const PAD_L = 40
-const PAD_R = 12
-const PAD_T = 12
-const PAD_B = 24
-
-function formatMmSs(seconds: number): string {
-  const safe = Math.max(0, Math.floor(seconds))
-  const m = Math.floor(safe / 60)
-  const s = safe % 60
-  return `${m}:${s.toString().padStart(2, '0')}`
-}
-
-function formatK(value: number): string {
-  // 12345 → "12.3" (caller appends "k")
-  return (value / 1000).toFixed(1)
-}
+const W = 1000
+const H = 200
+const PAD_TOP = 28
+const PAD_BOTTOM = 22
+const INNER_H = H - PAD_TOP - PAD_BOTTOM // 150
+const MID_Y = PAD_TOP + INNER_H / 2       // 103
 
 export interface HistoryGraphsProps {
   history: Array<{ t: number; gold: number; xp: number }>
@@ -41,173 +28,22 @@ export interface HistoryGraphsProps {
   gameState: number | undefined
 }
 
-interface ChartGeometry {
-  pointsStr: string
-  fillD: string
-  yMid: number
-  projected: Array<{ x: number; y: number; t: number; value: number }>
-  maxAbs: number
-  tMin: number
-  tMax: number
+function fmtMmSs(seconds: number): string {
+  const safe = Math.max(0, Math.floor(seconds))
+  const m = Math.floor(safe / 60)
+  const s = safe % 60
+  return `${m}:${s.toString().padStart(2, '0')}`
 }
 
-function computeChart(samples: HistoryGraphsProps['history'], pick: 'gold' | 'xp'): ChartGeometry {
-  const tMin = samples[0].t
-  const tMax = samples[samples.length - 1].t
-  const span = Math.max(1, tMax - tMin)
-  const maxAbs = Math.max(1, ...samples.map(s => Math.abs(s[pick])))
-  const yMid = (H - PAD_T - PAD_B) / 2 + PAD_T
-  const usableY = yMid - PAD_T
-
-  const projected = samples.map(s => {
-    const x = PAD_L + ((s.t - tMin) / span) * (W - PAD_L - PAD_R)
-    const y = yMid - (s[pick] / maxAbs) * usableY
-    return { x, y, t: s.t, value: s[pick] }
-  })
-
-  const pointsStr = projected.map(p => `${p.x.toFixed(2)},${p.y.toFixed(2)}`).join(' ')
-  const first = projected[0]
-  const last = projected[projected.length - 1]
-  const fillD = `M${first.x.toFixed(2)},${yMid.toFixed(2)} L${pointsStr.replace(/ /g, ' L')} L${last.x.toFixed(2)},${yMid.toFixed(2)} Z`
-
-  return { pointsStr, fillD, yMid, projected, maxAbs, tMin, tMax }
-}
-
-interface HoverState {
-  cursorXSvg: number
-  nearestIndex: number
-}
-
-interface ChartProps {
-  geom: ChartGeometry
-  clipIdRadiant: string
-  clipIdDire: string
-  hover: HoverState | null
-  onMouseMove: (e: ReactMouseEvent<SVGSVGElement>) => void
-  onMouseLeave: () => void
-  axisLabelTop: string
-  axisLabelBottom: string
-}
-
-function Chart({
-  geom,
-  clipIdRadiant,
-  clipIdDire,
-  hover,
-  onMouseMove,
-  onMouseLeave,
-  axisLabelTop,
-  axisLabelBottom,
-}: ChartProps) {
-  const { yMid, fillD, pointsStr, tMin, tMax } = geom
-
-  // X-axis ticks every 5 min starting at next multiple of 300 >= tMin.
-  const tickStart = Math.ceil(tMin / 300) * 300
-  const ticks: number[] = []
-  for (let t = tickStart; t <= tMax; t += 300) ticks.push(t)
-  const xForT = (t: number) => {
-    const span = Math.max(1, tMax - tMin)
-    return PAD_L + ((t - tMin) / span) * (W - PAD_L - PAD_R)
-  }
-
-  return (
-    <svg
-      width="100%"
-      height={H}
-      viewBox={`0 0 ${W} ${H}`}
-      onMouseMove={onMouseMove}
-      onMouseLeave={onMouseLeave}
-      style={{ display: 'block', borderRadius: 4 }}
-    >
-      <defs>
-        <clipPath id={clipIdRadiant}>
-          <rect x={0} y={0} width={W} height={yMid} />
-        </clipPath>
-        <clipPath id={clipIdDire}>
-          <rect x={0} y={yMid} width={W} height={H - yMid} />
-        </clipPath>
-      </defs>
-
-      <rect width={W} height={H} fill={PANEL_BG} rx={6} />
-
-      {/* zero axis */}
-      <line
-        x1={PAD_L}
-        y1={yMid}
-        x2={W - PAD_R}
-        y2={yMid}
-        stroke={ZERO_AXIS}
-        strokeWidth={1}
-      />
-
-      {/* Filled areas — same path, clipped above/below midline */}
-      <path d={fillD} fill={RADIANT_GREEN} fillOpacity={0.15} clipPath={`url(#${clipIdRadiant})`} />
-      <path d={fillD} fill={DIRE_RED} fillOpacity={0.15} clipPath={`url(#${clipIdDire})`} />
-
-      {/* Line on top */}
-      <polyline
-        points={pointsStr}
-        fill="none"
-        stroke={PRIMARY_FG}
-        strokeWidth={1.5}
-      />
-
-      {/* Y-axis labels — top (Radiant max) and bottom (Dire max) */}
-      <text
-        x={PAD_L - 4}
-        y={PAD_T + 8}
-        fontSize={10}
-        fill={SECONDARY_FG}
-        fontFamily="monospace"
-        textAnchor="end"
-      >
-        {axisLabelTop}
-      </text>
-      <text
-        x={PAD_L - 4}
-        y={H - PAD_B + 10}
-        fontSize={10}
-        fill={SECONDARY_FG}
-        fontFamily="monospace"
-        textAnchor="end"
-      >
-        {axisLabelBottom}
-      </text>
-
-      {/* X-axis tick labels every 5 min */}
-      {ticks.map(t => (
-        <text
-          key={t}
-          x={xForT(t)}
-          y={H - 6}
-          fontSize={10}
-          fill={SECONDARY_FG}
-          fontFamily="monospace"
-          textAnchor="middle"
-        >
-          {formatMmSs(t)}
-        </text>
-      ))}
-
-      {/* Hover crosshair */}
-      {hover && (
-        <line
-          x1={hover.cursorXSvg}
-          x2={hover.cursorXSvg}
-          y1={PAD_T}
-          y2={H - PAD_B}
-          stroke={HOVER_LINE}
-          strokeWidth={1}
-          strokeDasharray="3 3"
-          pointerEvents="none"
-        />
-      )}
-    </svg>
-  )
+// "+3.4k" / "-1.2k" — leading sign always present; "k" only when |v| >= 1000.
+function fmtVal(v: number): string {
+  const abs = Math.abs(v)
+  const body = abs >= 1000 ? `${(abs / 1000).toFixed(1)}k` : `${Math.round(abs)}`
+  return v >= 0 ? `+${body}` : `-${body}`
 }
 
 function SkeletonHistoryBlock({ gameDuration }: { gameDuration: number | undefined }) {
-  // 1Hz tick (RoshanBlock pattern). Counter ticks client-side via setInterval — no React Query.
+  // 1Hz tick (RoshanBlock pattern). Preserves existing behavior.
   const [, setTick] = useState(0)
   useEffect(() => {
     const id = setInterval(() => setTick(t => t + 1), 1000)
@@ -235,152 +71,221 @@ function SkeletonHistoryBlock({ gameDuration }: { gameDuration: number | undefin
   )
 }
 
-export default function HistoryGraphs({ history, gameDuration, gameState: _gameState }: HistoryGraphsProps) {
-  // Hooks MUST be declared before any early return (rules-of-hooks).
-  const wrapperRef = useRef<HTMLElement | null>(null)
-  const [hover, setHover] = useState<{
-    chart: 'gold' | 'xp'
-    cursorXSvg: number
-    nearestIndex: number
-    tooltipLeftPx: number
-    tooltipTopPx: number
-  } | null>(null)
+function ChartSection({
+  samples,
+  pick,
+  label,
+}: {
+  samples: HistoryGraphsProps['history']
+  pick: 'gold' | 'xp'
+  label: string
+}) {
+  const tMin = samples[0].t
+  const tMax = samples[samples.length - 1].t
+  const span = Math.max(1, tMax - tMin)
+  const rawPeak = Math.max(...samples.map(s => Math.abs(s[pick])))
+  const peak = (rawPeak * 1.20) || 1
 
-  // D-23, D-24: skeleton when fewer than 2 samples (single-point edge case stays in skeleton).
+  const xOf = (t: number) => ((t - tMin) / span) * W
+  const yOf = (v: number) => MID_Y - (v / peak) * (INNER_H / 2)
+
+  // Radiant fill: closed area between midline and max(0, v) curve.
+  let radPath = `M ${xOf(tMin).toFixed(2)} ${MID_Y.toFixed(2)} `
+  samples.forEach(d => {
+    radPath += `L ${xOf(d.t).toFixed(2)} ${yOf(Math.max(0, d[pick])).toFixed(2)} `
+  })
+  radPath += `L ${xOf(tMax).toFixed(2)} ${MID_Y.toFixed(2)} Z`
+
+  // Dire fill: same shape, reflected to negative side.
+  let direPath = `M ${xOf(tMin).toFixed(2)} ${MID_Y.toFixed(2)} `
+  samples.forEach(d => {
+    direPath += `L ${xOf(d.t).toFixed(2)} ${yOf(Math.min(0, d[pick])).toFixed(2)} `
+  })
+  direPath += `L ${xOf(tMax).toFixed(2)} ${MID_Y.toFixed(2)} Z`
+
+  // Outline polylines — separated radiant/dire (clipped to half-plane via clamping).
+  const radiantOutline = samples
+    .map(d => `${xOf(d.t).toFixed(2)},${yOf(Math.max(0, d[pick])).toFixed(2)}`)
+    .join(' ')
+  const direOutline = samples
+    .map(d => `${xOf(d.t).toFixed(2)},${yOf(Math.min(0, d[pick])).toFixed(2)}`)
+    .join(' ')
+
+  // Peak detection
+  let rPeak = { v: 0, t: 0 }
+  let dPeak = { v: 0, t: 0 }
+  for (const d of samples) {
+    if (d[pick] > rPeak.v) rPeak = { v: d[pick], t: d.t }
+    if (d[pick] < dPeak.v) dPeak = { v: d[pick], t: d.t }
+  }
+
+  // X-axis minute ticks every 300s within [tMin, tMax]
+  const tickStart = Math.ceil(tMin / 300) * 300
+  const ticks: number[] = []
+  for (let t = tickStart; t <= tMax; t += 300) ticks.push(t)
+
+  // Headline value (latest sample, colored by side)
+  const last = samples[samples.length - 1][pick]
+  const headlineColor = last >= 0 ? RADIANT_GREEN : DIRE_RED
+  const headlineText = `${last >= 0 ? 'Radiant +' : 'Dire +'}${(Math.abs(last) / 1000).toFixed(1)}k`
+
+  // Edge-anchor helper
+  const anchorFor = (px: number): 'start' | 'middle' | 'end' =>
+    px < 80 ? 'start' : px > W - 80 ? 'end' : 'middle'
+
+  const sectionStyle: CSSProperties = { position: 'relative', marginTop: 16 }
+
+  return (
+    <div style={sectionStyle}>
+      <span
+        style={{
+          position: 'absolute',
+          top: 6,
+          left: 6,
+          fontSize: 11,
+          letterSpacing: '0.18em',
+          textTransform: 'uppercase',
+          color: SECONDARY_FG,
+          pointerEvents: 'none',
+        }}
+      >
+        {label}
+      </span>
+      <span
+        style={{
+          position: 'absolute',
+          top: 6,
+          right: 6,
+          fontSize: 12,
+          fontVariantNumeric: 'tabular-nums',
+          color: headlineColor,
+          pointerEvents: 'none',
+        }}
+      >
+        {headlineText}
+      </span>
+      <svg
+        viewBox={`0 0 ${W} ${H}`}
+        preserveAspectRatio="none"
+        style={{ display: 'block', width: '100%', height: 200 }}
+      >
+        {/* 1. Gridlines */}
+        {ticks.map(t => (
+          <line
+            key={`grid-${t}`}
+            x1={xOf(t)}
+            x2={xOf(t)}
+            y1={PAD_TOP}
+            y2={PAD_TOP + INNER_H}
+            stroke={GRID_LINE}
+            strokeWidth={1}
+            strokeDasharray="2 4"
+          />
+        ))}
+
+        {/* 2. Zero line */}
+        <line x1={0} x2={W} y1={MID_Y} y2={MID_Y} stroke={ZERO_AXIS} strokeWidth={1} />
+
+        {/* 3 + 4. Fills */}
+        <path d={radPath} fill={RADIANT_GREEN} fillOpacity={0.15} />
+        <path d={direPath} fill={DIRE_RED} fillOpacity={0.15} />
+
+        {/* 5 + 6. Outlines */}
+        <polyline points={radiantOutline} fill="none" stroke={RADIANT_GREEN} strokeWidth={2} />
+        <polyline points={direOutline} fill="none" stroke={DIRE_RED} strokeWidth={2} />
+
+        {/* 7. Radiant peak */}
+        {rPeak.v > 0 && (() => {
+          const px = xOf(rPeak.t)
+          const py = yOf(rPeak.v)
+          const ly = Math.max(PAD_TOP + 12, py - 8)
+          return (
+            <g key="r-peak">
+              <circle cx={px} cy={py} r={3.5} fill={RADIANT_GREEN} />
+              <text
+                x={px}
+                y={ly}
+                fontSize={10}
+                fontWeight={600}
+                fill={RADIANT_GREEN}
+                textAnchor={anchorFor(px)}
+                style={{ fontVariantNumeric: 'tabular-nums' }}
+              >
+                {`${fmtVal(rPeak.v)} @ ${fmtMmSs(rPeak.t)}`}
+              </text>
+            </g>
+          )
+        })()}
+
+        {/* 8. Dire peak */}
+        {dPeak.v < 0 && (() => {
+          const px = xOf(dPeak.t)
+          const py = yOf(dPeak.v)
+          const ly = Math.min(PAD_TOP + INNER_H - 4, py + 14)
+          return (
+            <g key="d-peak">
+              <circle cx={px} cy={py} r={3.5} fill={DIRE_RED} />
+              <text
+                x={px}
+                y={ly}
+                fontSize={10}
+                fontWeight={600}
+                fill={DIRE_RED}
+                textAnchor={anchorFor(px)}
+                style={{ fontVariantNumeric: 'tabular-nums' }}
+              >
+                {`${fmtVal(dPeak.v)} @ ${fmtMmSs(dPeak.t)}`}
+              </text>
+            </g>
+          )
+        })()}
+
+        {/* 9. X-axis labels */}
+        {ticks.map(t => (
+          <text
+            key={`xlabel-${t}`}
+            x={xOf(t)}
+            y={H - 4}
+            fontSize={10}
+            fill={TERTIARY_FG}
+            textAnchor="middle"
+          >
+            {`${Math.round(t / 60)}m`}
+          </text>
+        ))}
+      </svg>
+    </div>
+  )
+}
+
+export default function HistoryGraphs({ history, gameDuration, gameState: _gameState }: HistoryGraphsProps) {
+  // D-23, D-24: skeleton when fewer than 2 samples.
   if (history.length < 2) {
     return <SkeletonHistoryBlock gameDuration={gameDuration} />
   }
 
-  const goldGeom = computeChart(history, 'gold')
-  const xpGeom = computeChart(history, 'xp')
-
-  function makeMouseMove(chart: 'gold' | 'xp', geom: ChartGeometry) {
-    return (e: ReactMouseEvent<SVGSVGElement>) => {
-      const svg = e.currentTarget
-      const rect = svg.getBoundingClientRect()
-      const cursorPxX = e.clientX - rect.left
-      const cursorPxY = e.clientY - rect.top
-      const cursorXSvg = (cursorPxX / Math.max(1, rect.width)) * W
-
-      // Find nearest sample by SVG x.
-      let nearestIndex = 0
-      let bestDist = Infinity
-      for (let i = 0; i < geom.projected.length; i++) {
-        const d = Math.abs(geom.projected[i].x - cursorXSvg)
-        if (d < bestDist) {
-          bestDist = d
-          nearestIndex = i
-        }
-      }
-
-      const wrapper = wrapperRef.current
-      let tooltipLeftPx = cursorPxX + 12
-      let tooltipTopPx = cursorPxY + 12
-      if (wrapper) {
-        const wrapperRect = wrapper.getBoundingClientRect()
-        const svgOffsetLeft = rect.left - wrapperRect.left
-        const svgOffsetTop = rect.top - wrapperRect.top
-        const TOOLTIP_W_EST = 240
-        tooltipLeftPx = svgOffsetLeft + cursorPxX + 12
-        tooltipTopPx = svgOffsetTop + cursorPxY + 12
-        tooltipLeftPx = Math.max(0, Math.min(wrapperRect.width - TOOLTIP_W_EST, tooltipLeftPx))
-      }
-
-      setHover({ chart, cursorXSvg, nearestIndex, tooltipLeftPx, tooltipTopPx })
-    }
-  }
-
-  function onMouseLeave() {
-    setHover(null)
-  }
-
-  // Tooltip text — uses gold sign for prefix word so a single combined tooltip remains
-  // unambiguous (CONTEXT D-22 sign-convention rule).
-  const tooltipText = (() => {
-    if (!hover) return null
-    const sample = history[hover.nearestIndex]
-    if (!sample) return null
-    const prefix = sample.gold >= 0 ? 'Radiant' : 'Dire'
-    const goldStr = formatK(Math.abs(sample.gold))
-    const xpStr = formatK(Math.abs(sample.xp))
-    return `${formatMmSs(sample.t)} — ${prefix} +${goldStr}k gold, +${xpStr}k xp`
-  })()
-
-  const goldAxisLabel = `${formatK(goldGeom.maxAbs)}k`
-  const xpAxisLabel = `${formatK(xpGeom.maxAbs)}k`
-
-  // Wrapper MUST be position:relative AND MUST NOT have overflow:hidden (Phase 5 IntelTooltip pitfall).
-  const wrapperStyle: CSSProperties = {
-    position: 'relative',
+  const panelStyle: CSSProperties = {
     background: PANEL_BG,
-    borderRadius: 6,
-    padding: 12,
+    border: `1px solid ${PANEL_BORDER}`,
+    borderRadius: 4,
+    padding: '24px 28px 28px',
   }
 
   return (
-    <section ref={wrapperRef} style={wrapperStyle}>
-      <h3
+    <section style={panelStyle}>
+      <p
         style={{
-          color: PRIMARY_FG,
-          fontSize: 14,
-          fontWeight: 700,
+          color: SECONDARY_FG,
+          fontSize: 11,
+          letterSpacing: '0.25em',
+          textTransform: 'uppercase',
           margin: 0,
-          marginBottom: 8,
         }}
       >
         Историческая динамика
-      </h3>
-
-      <div style={{ marginBottom: 4 }}>
-        <span style={{ color: SECONDARY_FG, fontSize: 11 }}>Gold lead</span>
-      </div>
-      <Chart
-        geom={goldGeom}
-        clipIdRadiant="historyGraphs-radiantFillGold"
-        clipIdDire="historyGraphs-direFillGold"
-        hover={hover && hover.chart === 'gold' ? { cursorXSvg: hover.cursorXSvg, nearestIndex: hover.nearestIndex } : null}
-        onMouseMove={makeMouseMove('gold', goldGeom)}
-        onMouseLeave={onMouseLeave}
-        axisLabelTop={goldAxisLabel}
-        axisLabelBottom={goldAxisLabel}
-      />
-
-      <div style={{ marginBottom: 4, marginTop: 8 }}>
-        <span style={{ color: SECONDARY_FG, fontSize: 11 }}>XP lead (approx.)</span>
-      </div>
-      <Chart
-        geom={xpGeom}
-        clipIdRadiant="historyGraphs-radiantFillXp"
-        clipIdDire="historyGraphs-direFillXp"
-        hover={hover && hover.chart === 'xp' ? { cursorXSvg: hover.cursorXSvg, nearestIndex: hover.nearestIndex } : null}
-        onMouseMove={makeMouseMove('xp', xpGeom)}
-        onMouseLeave={onMouseLeave}
-        axisLabelTop={xpAxisLabel}
-        axisLabelBottom={xpAxisLabel}
-      />
-
-      {hover && tooltipText && (
-        <div
-          style={{
-            position: 'absolute',
-            zIndex: 50,
-            left: hover.tooltipLeftPx,
-            top: hover.tooltipTopPx,
-            background: TOOLTIP_BG,
-            border: `1px solid ${TOOLTIP_BORDER}`,
-            borderRadius: 4,
-            padding: 8,
-            boxShadow: '0 4px 16px rgba(0,0,0,0.6)',
-            pointerEvents: 'none',
-            color: PRIMARY_FG,
-            fontSize: 11,
-            fontWeight: 600,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          {tooltipText}
-        </div>
-      )}
+      </p>
+      <ChartSection samples={history} pick="gold" label="Gold lead" />
+      <ChartSection samples={history} pick="xp" label="XP lead" />
     </section>
   )
 }
