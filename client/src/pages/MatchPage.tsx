@@ -148,39 +148,37 @@ export default function MatchPage() {
             </div>
           </div>
 
-          {/* Row 2 — two columns, each stacks two blocks.
-              Left col: Map (shrunk to max-w-[450px] aspect-square, centered) + HistoryGraphs.
-              Right col: RoshanBlock + BuildingsSection. */}
+          {/* Row 2 — three columns: HistoryGraphs | Map (fixed 420px) | Roshan+Buildings stack */}
           <div className="flex gap-8 items-start">
-            <div className="flex-1 min-w-0 flex flex-col gap-8">
-              <div className="flex justify-start">
-                <DotaMapView
-                  size={420}
-                  buildings={buildings}
-                  heroPositions={[
-                    ...radiantPlayers
-                      .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
-                      .map(p => ({
-                        hero_id: p.hero_id as number,
-                        team: 'radiant' as const,
-                        position_x: p.position_x as number,
-                        position_y: p.position_y as number,
-                      })),
-                    ...direPlayers
-                      .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
-                      .map(p => ({
-                        hero_id: p.hero_id as number,
-                        team: 'dire' as const,
-                        position_x: p.position_x as number,
-                        position_y: p.position_y as number,
-                      })),
-                  ]}
-                />
-              </div>
+            <div className="flex-1 min-w-0 flex flex-col">
               <HistoryGraphs
                 history={history}
                 gameDuration={match?.duration}
                 gameState={match?.game_state}
+              />
+            </div>
+            <div className="shrink-0">
+              <DotaMapView
+                size={420}
+                buildings={buildings}
+                heroPositions={[
+                  ...radiantPlayers
+                    .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
+                    .map(p => ({
+                      hero_id: p.hero_id as number,
+                      team: 'radiant' as const,
+                      position_x: p.position_x as number,
+                      position_y: p.position_y as number,
+                    })),
+                  ...direPlayers
+                    .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
+                    .map(p => ({
+                      hero_id: p.hero_id as number,
+                      team: 'dire' as const,
+                      position_x: p.position_x as number,
+                      position_y: p.position_y as number,
+                    })),
+                ]}
               />
             </div>
             <div className="flex-1 min-w-0 flex flex-col gap-8">
