@@ -12,6 +12,12 @@ interface HeroPosition {
 interface Props {
   buildings: BuildingState
   heroPositions?: HeroPosition[]
+  /**
+   * Rendered SVG size in pixels (square). ViewBox stays at 320×320, so all
+   * hardcoded tower/building dot coordinates scale uniformly. Defaults to 420
+   * (matches MatchPage Row 2 left-column allocation post-2026-05-15 UAT).
+   */
+  size?: number
 }
 
 const S = 320
@@ -28,16 +34,18 @@ function Dot({
   return <circle cx={x} cy={y} r={r} fill={color} style={{ filter: alive ? `drop-shadow(${shadow})` : 'none' }} />
 }
 
-export default function DotaMapView({ buildings: b, heroPositions }: Props) {
+export default function DotaMapView({ buildings: b, heroPositions, size = 420 }: Props) {
   const r = b.radiant
   const d = b.dire
 
   return (
     <svg
+      width={size}
+      height={size}
       viewBox={`0 0 ${S} ${S}`}
       preserveAspectRatio="xMidYMid meet"
-      className="block aspect-square max-w-full max-h-full"
-      style={{ borderRadius: 6, width: '100%', height: '100%' }}
+      className="block"
+      style={{ borderRadius: 6 }}
     >
       {/* Solid backdrop — visible only if /minimap.jpg fails to load */}
       <rect width={S} height={S} fill="#07100a" rx={6} />
