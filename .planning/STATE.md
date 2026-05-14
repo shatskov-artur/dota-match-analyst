@@ -104,12 +104,12 @@ None.
 
 ## Session Continuity
 
-- Last session: 2026-05-14 — Phase 10.1 plan 01 complete (Wave 1: historySamplerJob skeleton + 5 RED tests)
-- Next action: Execute 10.1-02 (Wave 2 GREEN — fill runOnce/startSampler/stopSampler bodies)
+- Last session: 2026-05-14 — Phase 10.1 plan 02 complete (Wave 2 GREEN: runOnce + startSampler + stopSampler implemented; all 5 sampler-job tests GREEN; full server suite 97/97 GREEN)
+- Next action: Execute 10.1-03 (Wave 3: index.ts wire-up + SIGTERM/SIGINT graceful shutdown + lifecycle smoke test)
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
 
 **Completed Phase:** 6 (Win Probability) — all 5 plans done — 2026-04-26
 **In Progress:** Phase 7 (In-Game Item Intel) — 1/4 plans done — 2026-04-28
 
-**Planned Phase:** 10.1 (background-history-sampler) — 3 plans — 1/3 complete (Wave 1 RED+skeleton — 2026-05-14)
+**Planned Phase:** 10.1 (background-history-sampler) — 3 plans — 2/3 complete (Wave 1 RED+skeleton + Wave 2 GREEN impl — 2026-05-14)

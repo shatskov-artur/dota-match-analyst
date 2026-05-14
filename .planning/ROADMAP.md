@@ -276,7 +276,7 @@ Plans:
 
 Plans:
 - [x] 10.1-01-PLAN.md — Wave 1: RED tests + module skeleton (historySamplerJob.ts + historySamplerJob.test.ts) ✓ 2026-05-14
-- [ ] 10.1-02-PLAN.md — Wave 2: GREEN implementation of runOnce + startSampler + stopSampler
+- [x] 10.1-02-PLAN.md — Wave 2: GREEN implementation of runOnce + startSampler + stopSampler ✓ 2026-05-14
 - [ ] 10.1-03-PLAN.md — Wave 3: index.ts wire-up + SIGTERM/SIGINT graceful shutdown + lifecycle smoke test
 
 ### Phase 11: Harden & Deploy
