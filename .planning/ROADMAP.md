@@ -33,6 +33,7 @@
 - [x] **Phase 8: Ability Cooldowns & Map** - Ultimates on cooldown block + hero positions on minimap, updating every 30s ✓ 2026-04-29
 - [x] **Phase 9: Roshan Tracker** - Kill counter (Redis), loot prediction by kill number, respawn countdown ✓ 2026-05-04 (manual UAT deferred)
 - [x] **Phase 10: Historical Graphs** - Gold diff and XP diff line charts accumulated server-side in Redis every 30s ✓ 2026-05-09
+- [ ] **Phase 10.4: Visual redesign (Tactical Slate) + responsive** - Full restyle to Tactical Slate theme via design tokens + responsive across phone/tablet/laptop/desktop (sketches 003-B / 004-B)
 - [ ] **Phase 11: Harden & Deploy** - Rate-limit queues, error boundaries, 429 backoff, deploy to Vercel + Railway
 
 ## Phase Details
@@ -302,6 +303,32 @@ Plans:
 - [x] 10.3-01-PLAN.md — Wave 1: MatchPage.tsx in-game JSX restructure (3 rows, flex-1 slots) ✓ 2026-05-15
 - [x] 10.3-02-PLAN.md — Wave 2: per-component sanity sweep (RoshanBlock clamp / CooldownsBlock no-op / BuildingsSection justify-center / HistoryGraphs label +2) ✓ 2026-05-15
 
+### Phase 10.4: Visual redesign and responsive
+
+_Inserted 2026-06-06._
+
+**Goal:** Restyle the entire app to the "Tactical Slate" dark theme (warm charcoal, muted gold + steel-blue, soft-shadow rounded cards) via a shared design-token system, AND make every screen responsive across phone / tablet / laptop / desktop. Layout structure (block order) carries over from 10.3 — this changes the visual skin and adds breakpoints, not the information architecture.
+**Requirements:** UI-01, UI-02, UI-03
+**Depends on:** Phase 10.3 (current layout), all feature phases (restyles their components)
+**Design source:** sketches 003 (Home, winner B) + 004 (Match page, winner B); theme tokens in `.planning/sketches/themes/tactical-slate.css`
+**Success criteria** (what must be TRUE):
+  1. A shared design-token layer (CSS variables / Tailwind theme) defines the Tactical Slate palette, and Home + Match components consume tokens instead of hardcoded `#0a0a0a`/`#4ade80`-style literals
+  2. Home (header, league accordion, match rows) matches sketch 003-B visually
+  3. Match page (score header, win-prob, heroes/items/cooldowns row, history/roshan/buildings/map row) matches sketch 004-B visually, with real hero portraits / item slots / cooldown icons intact
+  4. All screens adapt at phone (~375px), tablet (~768px), laptop (~1280px), desktop (~1536px+) — no horizontal scroll, no overlap/clipping; dense match grid reflows multi-column → stacked on narrow viewports
+  5. Existing client test suite stays green; tsc + build green
+**Plans:** 8 plans
+Plans:
+- [ ] 10.4-01-PLAN.md — Wave 0: full @theme Tactical Slate token layer in index.css + Inter/JetBrains Mono fonts + HistoryGraphs test/const softened-color fix
+- [ ] 10.4-02-PLAN.md — Wave 1: Home retoken + responsive (HomePage shell/header/states, LeagueAccordion, MatchRow CSS hover + phone 2-row collapse, StatusTag, SkeletonRow, ErrorBanner)
+- [ ] 10.4-03-PLAN.md — Wave 1: Match score region (ScoreHeader 56/44/40 + phone stack, WinProbBar team-token three-bar panel)
+- [ ] 10.4-04-PLAN.md — Wave 2: Match Row-1 dense panels (HeroPlayerGrid/PlayerRow, SkeletonPlayerRow, ItemsBlock, CooldownsBlock) CSS hover + legibility floors
+- [ ] 10.4-05-PLAN.md — Wave 2: Match Row-2 visuals (DotaMapView var()+fluid, HistoryGraphs panel retoken, BuildingsSection, RoshanBlock)
+- [ ] 10.4-06-PLAN.md — Wave 2: Draft section + IntelTooltip retoken (ember→gold active accents, IA preserved)
+- [ ] 10.4-07-PLAN.md — Wave 3: MatchPage assembly retoken + responsive grid reflow (Row 1 + Row 2 stack at 1180px, fluid map)
+- [ ] 10.4-08-PLAN.md — Wave 4: phase gate — no-hex sweep + suite/build green + manual UAT at 375/768/1280/1536 (human checkpoint)
+**UI hint:** yes
+
 ### Phase 11: Harden & Deploy
 **Goal:** The owner and a small group of friends can hit a public URL and use the tool for a full day of tournament viewing without crashes, quota exhaustion, or manual restarts.
 **Depends on:** Phase 2, Phase 3, Phase 4, Phase 5, Phase 6, Phase 7, Phase 8, Phase 9, Phase 10
@@ -331,6 +358,7 @@ Plans:
 | 10.1. background-history-sampler | 3/3 | Complete | 2026-05-14 |
 | 10.2. HistoryGraphs polish + XP fix | 3/3 | Complete | 2026-05-15 |
 | 10.3. Match page layout restructure | 2/2 | Complete | 2026-05-15 |
+| 10.4. Visual redesign (Tactical Slate) + responsive | 0/8 | Planned | - |
 | 11. Harden & Deploy | 0/? | Not started | - |
 
 ## Coverage Validation
