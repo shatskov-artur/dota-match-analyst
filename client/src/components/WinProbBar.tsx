@@ -24,15 +24,15 @@ function SingleBar({ label, radiantProb, prefersReducedMotion }: SingleBarProps)
     <div className="flex items-center gap-3 mb-3">
       {/* Source label */}
       <span
-        className="text-[10px] font-bold uppercase tracking-[0.12em] shrink-0"
-        style={{ color: '#888888', minWidth: 36, textAlign: 'right' }}
+        className="text-[10px] font-bold uppercase tracking-[0.12em] shrink-0 text-text-muted"
+        style={{ minWidth: 36, textAlign: 'right' }}
       >
         {label}
       </span>
       {/* Left: Radiant percentage */}
       <span
-        className="text-xs font-bold tabular-nums shrink-0"
-        style={{ color: '#4ade80', minWidth: 32, textAlign: 'right' }}
+        className="text-xs font-bold tabular-nums shrink-0 font-mono"
+        style={{ color: 'var(--color-radiant)', minWidth: 32, textAlign: 'right' }}
       >
         {radiantPct}%
       </span>
@@ -43,19 +43,19 @@ function SingleBar({ label, radiantProb, prefersReducedMotion }: SingleBarProps)
         aria-valuemin={0}
         aria-valuemax={100}
         aria-label={`${label} Radiant win probability`}
-        className="relative flex-1 overflow-hidden"
+        className="relative flex-1 min-w-[120px] overflow-hidden"
         style={{
           height: 8,
           borderRadius: 4,
-          backgroundColor: '#0f0f0f',
-          background: `linear-gradient(to right, #4ade80 ${radiantPct}%, #ef4444 ${radiantPct}%)`,
+          backgroundColor: 'var(--color-dire-soft)',
+          background: `linear-gradient(to right, var(--color-radiant) ${radiantPct}%, var(--color-dire) ${radiantPct}%)`,
           transition: prefersReducedMotion ? 'none' : 'background 500ms ease',
         }}
       />
       {/* Right: Dire percentage */}
       <span
-        className="text-xs font-bold tabular-nums shrink-0"
-        style={{ color: '#ef4444', minWidth: 32, textAlign: 'left' }}
+        className="text-xs font-bold tabular-nums shrink-0 font-mono"
+        style={{ color: 'var(--color-dire)', minWidth: 32, textAlign: 'left' }}
       >
         {direPct}%
       </span>
@@ -81,10 +81,7 @@ export default function WinProbBar({ stratz, gold, estimate, gameDuration, gameS
     window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
   return (
-    <div
-      className="w-full py-4"
-      style={{ borderBottom: '1px solid #1a1a1a' }}
-    >
+    <div className="w-full py-4 border-b border-border">
       {/* Stratz bar — only when Stratz has data for this match */}
       {stratz !== null && (
         <SingleBar label="Stratz" radiantProb={stratz} prefersReducedMotion={prefersReducedMotion} />
