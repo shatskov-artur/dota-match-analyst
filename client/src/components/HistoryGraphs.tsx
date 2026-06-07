@@ -6,14 +6,17 @@ import type { CSSProperties } from 'react'
 // NO chart library imports (D-25). Pure SVG primitives.
 // Canonical spec: .claude/skills/sketch-findings-dota-stats/references/charts-data-viz.md
 
+// Team color consts stay LITERAL softened hex — HistoryGraphs.test.tsx asserts these
+// fills directly, and jsdom does not resolve CSS var() in SVG attributes.
 const RADIANT_GREEN = '#6bcf8a'
 const DIRE_RED      = '#e06a72'
-const PANEL_BG      = '#0f0f0f'
-const PANEL_BORDER  = '#161616'
-const SECONDARY_FG  = '#888888'
-const TERTIARY_FG   = '#555555'
-const ZERO_AXIS     = '#2a2a2a'
-const GRID_LINE     = '#1a1a1a'
+// Chrome consts use runtime var() tokens (not test-asserted).
+const PANEL_BG      = 'var(--card-bg-grad)'
+const PANEL_BORDER  = 'var(--color-border)'
+const SECONDARY_FG  = 'var(--color-text-muted)'
+const TERTIARY_FG   = 'var(--color-text-dim)'
+const ZERO_AXIS     = 'var(--color-border)'
+const GRID_LINE     = 'var(--color-border)'
 
 const W = 1000
 const H = 200
@@ -267,7 +270,7 @@ export default function HistoryGraphs({ history, gameDuration, gameState: _gameS
   const panelStyle: CSSProperties = {
     background: PANEL_BG,
     border: `1px solid ${PANEL_BORDER}`,
-    borderRadius: 4,
+    borderRadius: 'var(--radius-lg)',
     padding: '24px 28px 28px',
   }
 
