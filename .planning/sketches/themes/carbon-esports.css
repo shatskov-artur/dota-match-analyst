@@ -1,0 +1,49 @@
+/* Theme C — Carbon Esports
+   Very dark textured carbon, sharp angular clipped-corner cards, aggressive
+   HUD feel, amber/electric-blue accents, monospace numerics. Hard tournament HUD. */
+:root {
+  /* Colors */
+  --color-bg: #060606;
+  --color-bg-elev: #0a0a0b;
+  --color-surface: #0e0f11;
+  --color-surface-2: #141518;
+  --color-border: #20232a;
+  --color-border-glow: #ffb020;
+  --color-text: #f2f3f5;
+  --color-text-muted: #898d96;
+  --color-text-dim: #4d525c;
+
+  --color-primary: #ffb020;        /* amber */
+  --color-primary-soft: rgba(255,176,32,0.12);
+  --color-accent: #2f81f7;         /* electric blue */
+  --color-accent-soft: rgba(47,129,247,0.12);
+
+  --color-radiant: #4ade80;
+  --color-radiant-soft: rgba(74,222,128,0.10);
+  --color-dire: #ef4444;
+  --color-dire-soft: rgba(239,68,68,0.10);
+  --color-gold: #ffb020;
+  --color-danger: #ef4444;
+
+  /* Typography */
+  --font-sans: 'Chakra Petch', 'Inter', system-ui, sans-serif;
+  --font-display: 'Chakra Petch', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --tracking-label: 0.25em;
+
+  /* Shapes — angular, minimal rounding */
+  --radius-sm: 0px;
+  --radius-md: 2px;
+  --radius-lg: 3px;
+  --radius-full: 9999px;
+
+  /* Effects */
+  --glow-primary: 0 0 0 1px rgba(255,176,32,0.40);
+  --glow-accent: 0 0 0 1px rgba(47,129,247,0.40);
+  --shadow-card: 0 4px 16px rgba(0,0,0,0.6);
+  --card-bg-grad:
+    linear-gradient(180deg, #111316 0%, #0b0c0e 100%);
+  --carbon-texture:
+    repeating-linear-gradient(45deg, rgba(255,255,255,0.012) 0 2px, transparent 2px 4px);
+  --clip-corner: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px));
+}

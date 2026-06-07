@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sketch 003 — Home Redesign (dark esports)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500;600;700&family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<!-- Theme is swapped live by the toolbar -->
+<link id="theme-link" rel="stylesheet" href="../themes/broadcast-neon.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    padding-bottom: 80px;
+  }
+
+  /* ===== Toolbar ===== */
+  .toolbar {
+    position: sticky; top: 0; z-index: 50;
+    display: flex; align-items: center; gap: 16px;
+    padding: 10px 20px;
+    background: rgba(0,0,0,0.7); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--color-border);
+    font-family: 'Inter', sans-serif; font-size: 13px;
+  }
+  .toolbar strong { color: var(--color-primary); letter-spacing: 0.04em; }
+  .toolbar select {
+    background: var(--color-surface); color: var(--color-text);
+    border: 1px solid var(--color-border); border-radius: 6px;
+    padding: 5px 10px; font-size: 13px;
+  }
+  .toolbar .spacer { flex: 1; }
+  .toolbar .hint { color: var(--color-text-dim); font-size: 12px; }
+
+  /* ===== App shell ===== */
+  .page { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+  /* Header / hero band */
+  .topbar {
+    display: flex; align-items: center; gap: 18px;
+    padding: 28px 0 20px;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .logo-mark {
+    width: 42px; height: 42px; border-radius: var(--radius-md);
+    background: var(--card-bg-grad); box-shadow: var(--glow-primary);
+    display: grid; place-items: center;
+    font-family: var(--font-display); font-weight: 700; font-size: 22px;
+    color: var(--color-primary);
+  }
+  .brand { font-family: var(--font-display); font-weight: 700; font-size: 26px; letter-spacing: 0.02em; }
+  .brand .sub { display:block; font-size: 11px; font-weight: 500; letter-spacing: var(--tracking-label);
+    text-transform: uppercase; color: var(--color-text-dim); margin-top: 2px; }
+  .live-pill {
+    margin-left: auto; display: flex; align-items: center; gap: 8px;
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.14em;
+    color: var(--color-text-muted);
+    padding: 7px 14px; border-radius: var(--radius-full);
+    border: 1px solid var(--color-border); background: var(--color-surface);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-dire);
+    box-shadow: 0 0 0 4px var(--color-dire-soft); animation: pulse 1.6s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+  .section-label {
+    font-size: 12px; text-transform: uppercase; letter-spacing: var(--tracking-label);
+    color: var(--color-text-dim); margin: 30px 0 14px; font-weight: 600;
+  }
+
+  /* League group card */
+  .league {
+    background: var(--card-bg-grad);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-card);
+    margin-bottom: 18px; overflow: hidden;
+  }
+  .league-head {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 20px; cursor: pointer;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .league-tier {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+    padding: 3px 8px; border-radius: var(--radius-sm);
+    color: var(--color-primary); background: var(--color-primary-soft);
+    border: 1px solid var(--color-border);
+  }
+  .league-name { font-family: var(--font-display); font-weight: 600; font-size: 16px; }
+  .league-count { margin-left: auto; font-size: 12px; color: var(--color-text-dim);
+    font-variant-numeric: tabular-nums; }
+
+  /* Match row */
+  .match {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    align-items: center; gap: 20px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--color-border);
+    cursor: pointer; position: relative;
+    transition: background 140ms ease;
+  }
+  .match:last-child { border-bottom: none; }
+  .match:hover { background: var(--color-surface-2); }
+  .match::before {
+    content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: transparent; transition: background 140ms ease;
+  }
+  .match:hover::before { background: var(--color-primary); box-shadow: var(--glow-primary); }
+
+  .teams { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .team { display: flex; align-items: center; gap: 9px; min-width: 0; }
+  .team-logo { width: 26px; height: 26px; border-radius: var(--radius-sm); flex: none;
+    display: grid; place-items: center; font-size: 11px; font-weight: 700;
+    font-family: var(--font-mono); }
+  .team-logo.r { background: var(--color-radiant-soft); color: var(--color-radiant);
+    border: 1px solid var(--color-radiant); }
+  .team-logo.d { background: var(--color-dire-soft); color: var(--color-dire);
+    border: 1px solid var(--color-dire); }
+  .team-name { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vs { color: var(--color-text-dim); font-size: 12px; font-weight: 500; }
+
+  .kills { font-family: var(--font-mono); font-variant-numeric: tabular-nums;
+    font-size: 17px; font-weight: 700; white-space: nowrap; }
+  .kills .r { color: var(--color-radiant); }
+  .kills .d { color: var(--color-dire); }
+  .kills .sep { color: var(--color-text-dim); margin: 0 6px; }
+
+  .series { font-size: 11px; color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums; letter-spacing: 0.06em; white-space: nowrap; }
+
+  .status {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.16em; text-transform: uppercase;
+    padding: 4px 10px; border-radius: var(--radius-sm); white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .status.live { color: var(--color-dire); background: var(--color-dire-soft); border: 1px solid var(--color-dire); }
+  .status.draft { color: var(--color-primary); background: var(--color-primary-soft); border: 1px solid var(--color-border); }
+  .status .d { width: 6px; height: 6px; border-radius: 50%; background: currentColor; animation: pulse 1.6s infinite; }
+  .clock { font-family: var(--font-mono); font-size: 12px; color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums; }
+
+  /* ===== Theme-specific overrides applied via body[data-variant] ===== */
+  /* Carbon: angular clipped cards + texture */
+  body[data-variant="carbon-esports"] .league {
+    clip-path: var(--clip-corner);
+    background: var(--card-bg-grad), var(--carbon-texture);
+    border-radius: 0;
+  }
+  body[data-variant="carbon-esports"] .league-tier,
+  body[data-variant="carbon-esports"] .status { border-radius: 0; }
+  body[data-variant="carbon-esports"] .match:hover::before { box-shadow: none; }
+
+  /* Tactical: softer, roomier, no glow on hover bar */
+  body[data-variant="tactical-slate"] .match:hover::before { box-shadow: none; }
+  body[data-variant="tactical-slate"] .match { padding: 16px 22px; }
+
+  /* Blood Dire: angular clipped cards + faint texture */
+  body[data-variant="blood-dire"] .league {
+    clip-path: var(--clip-corner);
+    background: var(--card-bg-grad), var(--carbon-texture);
+    border-radius: 0;
+  }
+  body[data-variant="blood-dire"] .league-tier,
+  body[data-variant="blood-dire"] .status { border-radius: 0; }
+
+  /* Mono Noir: zero rounding, pure hairline, no glow, mono everywhere */
+  body[data-variant="mono-noir"] .match:hover::before { box-shadow: none; background: #fff; }
+  body[data-variant="mono-noir"] .team-name,
+  body[data-variant="mono-noir"] .league-name { letter-spacing: 0.02em; }
+
+  /* Aurora Frost: glassmorphism — frosted translucent panels */
+  body[data-variant="aurora-frost"] body { }
+  body[data-variant="aurora-frost"] .league {
+    backdrop-filter: var(--frost-blur);
+    -webkit-backdrop-filter: var(--frost-blur);
+    border: 1px solid var(--color-border);
+  }
+  body[data-variant="aurora-frost"] .match:hover { background: rgba(255,255,255,0.05); }
+  body[data-variant="aurora-frost"] .match:hover::before { box-shadow: none; }
+
+  /* Aurora Frost: add an aurora gradient glow behind the page */
+  body[data-variant="aurora-frost"] {
+    background:
+      radial-gradient(900px 500px at 15% -10%, rgba(94,234,212,0.10), transparent 60%),
+      radial-gradient(900px 500px at 85% 0%, rgba(129,140,248,0.10), transparent 60%),
+      var(--color-bg);
+  }
+
+  /* Molten Gold: subtle warm vignette */
+  body[data-variant="molten-gold"] {
+    background:
+      radial-gradient(1000px 400px at 50% -10%, rgba(240,180,41,0.06), transparent 60%),
+      var(--color-bg);
+  }
+</style>
+</head>
+<body data-variant="broadcast-neon">
+
+<div class="toolbar">
+  <strong>SKETCH 003</strong> · Home redesign
+  <span class="hint">— same screen, three dark esports themes</span>
+  <span class="spacer"></span>
+  <label class="hint" for="theme-link-select">Theme</label>
+  <select id="theme-link-select" onchange="setTheme(this.value)">
+    <option value="broadcast-neon">A — Broadcast Neon</option>
+    <option value="tactical-slate">B — Tactical Slate</option>
+    <option value="carbon-esports">C — Carbon Esports</option>
+    <option value="cyber-purple">D — Cyber Purple</option>
+    <option value="midnight-blue">E — Midnight Blue</option>
+    <option value="blood-dire">F — Blood Dire</option>
+    <option value="emerald-radiant">G — Emerald Radiant</option>
+    <option value="mono-noir">H — Mono Noir</option>
+    <option value="aurora-frost">I — Aurora Frost</option>
+    <option value="molten-gold">J — Molten Gold</option>
+  </select>
+  <button onclick="cycleTheme()" style="background:var(--color-surface);color:var(--color-text);border:1px solid var(--color-border);border-radius:6px;padding:5px 12px;cursor:pointer;font-size:13px;">Next ▸</button>
+</div>
+
+<div class="page">
+  <div class="topbar">
+    <div class="logo-mark">D2</div>
+    <div class="brand">Match Analyst<span class="sub">Live pro tournaments</span></div>
+    <div class="live-pill"><span class="dot"></span> 7 live now</div>
+  </div>
+
+  <div class="section-label">Live matches</div>
+
+  <!-- League group 1 -->
+  <div class="league">
+    <div class="league-head">
+      <span class="league-tier">Premium</span>
+      <span class="league-name">The International 2025</span>
+      <span class="league-count">3 matches</span>
+    </div>
+
+    <div class="match">
+      <div class="teams">
+        <div class="team"><div class="team-logo r">TS</div><div class="team-name">Team Spirit</div></div>
+        <span class="vs">vs</span>
+        <div class="team"><div class="team-logo d">GG</div><div class="team-name">Gaimin Gladiators</div></div>
+      </div>
+      <div class="kills"><span class="r">24</span><span class="sep">:</span><span class="d">18</span></div>
+      <div class="series">1–1 · Bo3</div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span class="status live"><span class="d"></span> Live</span>
+        <span class="clock">32:14</span>
+      </div>
+    </div>
+
+    <div class="match">
+      <div class="teams">
+        <div class="team"><div class="team-logo r">LGD</div><div class="team-name">PSG.LGD</div></div>
+        <span class="vs">vs</span>
+        <div class="team"><div class="team-logo d">EG</div><div class="team-name">Evil Geniuses</div></div>
+      </div>
+      <div class="kills"><span class="r">6</span><span class="sep">:</span><span class="d">9</span></div>
+      <div class="series">0–0 · Bo5</div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span class="status live"><span class="d"></span> Live</span>
+        <span class="clock">11:48</span>
+      </div>
+    </div>
+
+    <div class="match">
+      <div class="teams">
+        <div class="team"><div class="team-logo r">TL</div><div class="team-name">Team Liquid</div></div>
+        <span class="vs">vs</span>
+        <div class="team"><div class="team-logo d">BB</div><div class="team-name">BetBoom Team</div></div>
+      </div>
+      <div class="kills"><span class="r">0</span><span class="sep">:</span><span class="d">0</span></div>
+      <div class="series">2–1 · Bo5</div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span class="status draft"><span class="d"></span> Draft</span>
+        <span class="clock">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- League group 2 -->
+  <div class="league">
+    <div class="league-head">
+      <span class="league-tier" style="color:var(--color-accent);background:var(--color-accent-soft)">Pro</span>
+      <span class="league-name">ESL Pro League Season 20</span>
+      <span class="league-count">2 matches</span>
+    </div>
+
+    <div class="match">
+      <div class="teams">
+        <div class="team"><div class="team-logo r">OG</div><div class="team-name">OG</div></div>
+        <span class="vs">vs</span>
+        <div class="team"><div class="team-logo d">TUN</div><div class="team-name">Tundra Esports</div></div>
+      </div>
+      <div class="kills"><span class="r">41</span><span class="sep">:</span><span class="d">37</span></div>
+      <div class="series">1–0 · Bo3</div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span class="status live"><span class="d"></span> Live</span>
+        <span class="clock">48:02</span>
+      </div>
+    </div>
+
+    <div class="match">
+      <div class="teams">
+        <div class="team"><div class="team-logo r">XG</div><div class="team-name">Xtreme Gaming</div></div>
+        <span class="vs">vs</span>
+        <div class="team"><div class="team-logo d">AR</div><div class="team-name">Aurora Gaming</div></div>
+      </div>
+      <div class="kills"><span class="r">15</span><span class="sep">:</span><span class="d">12</span></div>
+      <div class="series">0–1 · Bo3</div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <span class="status live"><span class="d"></span> Live</span>
+        <span class="clock">23:55</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const THEMES = ['broadcast-neon','tactical-slate','carbon-esports','cyber-purple','midnight-blue','blood-dire','emerald-radiant','mono-noir','aurora-frost','molten-gold'];
+  function setTheme(name) {
+    document.getElementById('theme-link').href = '../themes/' + name + '.css';
+    document.body.setAttribute('data-variant', name);
+    document.getElementById('theme-link-select').value = name;
+  }
+  function cycleTheme() {
+    const cur = document.body.getAttribute('data-variant');
+    const next = THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length];
+    setTheme(next);
+  }
+  // keyboard: left/right arrows cycle themes
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') cycleTheme();
+    if (e.key === 'ArrowLeft') {
+      const cur = document.body.getAttribute('data-variant');
+      const prev = THEMES[(THEMES.indexOf(cur) - 1 + THEMES.length) % THEMES.length];
+      setTheme(prev);
+    }
+  });
+</script>
+</body>
+</html>

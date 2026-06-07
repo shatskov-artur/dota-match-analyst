@@ -1,0 +1,38 @@
+/* Theme E — Midnight Blue
+   Calm deep navy, single ice-blue accent, restrained and professional.
+   The "quiet pro broadcast" — easy on the eyes for long sessions. */
+:root {
+  --color-bg: #0a0f1a;
+  --color-bg-elev: #0e1422;
+  --color-surface: #121a2c;
+  --color-surface-2: #182238;
+  --color-border: #213049;
+  --color-border-glow: #4f8fff;
+  --color-text: #e4ecf7;
+  --color-text-muted: #8ba0bf;
+  --color-text-dim: #566481;
+
+  --color-primary: #4f8fff;        /* ice blue */
+  --color-primary-soft: rgba(79,143,255,0.12);
+  --color-accent: #38bdf8;
+  --color-accent-soft: rgba(56,189,248,0.12);
+
+  --color-radiant: #57d98a;
+  --color-radiant-soft: rgba(87,217,138,0.12);
+  --color-dire: #f0596a;
+  --color-dire-soft: rgba(240,89,106,0.12);
+  --color-gold: #f3c969;
+  --color-danger: #f0596a;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --tracking-label: 0.16em;
+
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 14px; --radius-full: 9999px;
+
+  --glow-primary: 0 0 0 1px rgba(79,143,255,0.30);
+  --glow-accent: 0 0 0 1px rgba(56,189,248,0.30);
+  --shadow-card: 0 6px 22px rgba(0,0,0,0.4);
+  --card-bg-grad: linear-gradient(180deg, #141d31 0%, #0f1626 100%);
+}

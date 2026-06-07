@@ -1,0 +1,38 @@
+/* Theme G — Emerald Radiant
+   Deep forest-black with emerald accent, organic + clean, jade glow.
+   The "radiant side" counterpart — fresh, growth, momentum. */
+:root {
+  --color-bg: #07120d;
+  --color-bg-elev: #0a1711;
+  --color-surface: #0e1d15;
+  --color-surface-2: #13261b;
+  --color-border: #1d3a2a;
+  --color-border-glow: #34d399;
+  --color-text: #e6f4ec;
+  --color-text-muted: #8db5a0;
+  --color-text-dim: #557064;
+
+  --color-primary: #34d399;        /* emerald */
+  --color-primary-soft: rgba(52,211,153,0.13);
+  --color-accent: #a3e635;         /* lime */
+  --color-accent-soft: rgba(163,230,53,0.13);
+
+  --color-radiant: #4ade80;
+  --color-radiant-soft: rgba(74,222,128,0.12);
+  --color-dire: #f87171;
+  --color-dire-soft: rgba(248,113,113,0.12);
+  --color-gold: #facc15;
+  --color-danger: #f87171;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Rajdhani', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --tracking-label: 0.18em;
+
+  --radius-sm: 5px; --radius-md: 10px; --radius-lg: 16px; --radius-full: 9999px;
+
+  --glow-primary: 0 0 0 1px rgba(52,211,153,0.35), 0 0 20px rgba(52,211,153,0.16);
+  --glow-accent: 0 0 0 1px rgba(163,230,53,0.30);
+  --shadow-card: 0 6px 24px rgba(0,20,10,0.45);
+  --card-bg-grad: linear-gradient(180deg, #112619 0%, #0a1610 100%);
+}

@@ -1,0 +1,38 @@
+/* Theme J — Molten Gold
+   Rich espresso-black with warm gold/bronze accents, luxe tournament feel.
+   Premium "Aegis / championship" energy without being loud. */
+:root {
+  --color-bg: #0d0b07;
+  --color-bg-elev: #13100a;
+  --color-surface: #18140c;
+  --color-surface-2: #201a10;
+  --color-border: #322713;
+  --color-border-glow: #f0b429;
+  --color-text: #f6efe2;
+  --color-text-muted: #b6a584;
+  --color-text-dim: #6f5f44;
+
+  --color-primary: #f0b429;        /* molten gold */
+  --color-primary-soft: rgba(240,180,41,0.13);
+  --color-accent: #e8843c;         /* bronze-orange */
+  --color-accent-soft: rgba(232,132,60,0.13);
+
+  --color-radiant: #5fd98a;
+  --color-radiant-soft: rgba(95,217,138,0.12);
+  --color-dire: #e8615b;
+  --color-dire-soft: rgba(232,97,91,0.12);
+  --color-gold: #f0b429;
+  --color-danger: #e8615b;
+
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Rajdhani', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --tracking-label: 0.18em;
+
+  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 14px; --radius-full: 9999px;
+
+  --glow-primary: 0 0 0 1px rgba(240,180,41,0.35), 0 0 18px rgba(240,180,41,0.14);
+  --glow-accent: 0 0 0 1px rgba(232,132,60,0.30);
+  --shadow-card: 0 6px 24px rgba(0,0,0,0.5);
+  --card-bg-grad: linear-gradient(180deg, #1c170d 0%, #120e08 100%);
+}

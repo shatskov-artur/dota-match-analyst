@@ -20,3 +20,5 @@ Tight dark UI (#0a0a0a / #0f0f0f panels), tabular-numeric data over white headin
 |---|-------|----------|--------|------|
 | 001 | HistoryGraphs (Dota-style gold/XP lead) | A: broadcast canonical · B: gradient intensity · C: line + soft fill + static labels | **C** | `#chart` `#data-viz` `#phase-10.2` |
 | 002 | Match page layout restructure (Row 1 = heroes \| items \| cooldowns) | A: Map·Roshan·Buildings · B: Map·Roshan·History · C: 2+2 pairs | **C** | `#layout` `#match-page` `#phase-10.3` |
+| 003 | Home redesign — full dark esports restyle | 10 themes: A neon · **B slate** · C carbon · D purple · E midnight · F blood · G emerald · H mono · I frost · J gold | **B** | `#theme` `#home` `#redesign` `#full-restyle` |
+| 004 | Match page in Tactical Slate (dense screen stress-test) | B slate (default) + A/E/J compare | **B** | `#theme` `#match-page` `#redesign` `#full-restyle` |

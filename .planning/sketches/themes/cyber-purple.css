@@ -1,0 +1,38 @@
+/* Theme D — Cyber Purple
+   Deep violet/indigo base, vaporwave purple+teal accents, neon glow.
+   Synthwave esports vibe. */
+:root {
+  --color-bg: #0c0814;
+  --color-bg-elev: #120c1f;
+  --color-surface: #181029;
+  --color-surface-2: #1f1636;
+  --color-border: #2c2046;
+  --color-border-glow: #a855f7;
+  --color-text: #ede9fb;
+  --color-text-muted: #a497c4;
+  --color-text-dim: #6b5d87;
+
+  --color-primary: #a855f7;        /* violet */
+  --color-primary-soft: rgba(168,85,247,0.14);
+  --color-accent: #22d3ee;         /* teal */
+  --color-accent-soft: rgba(34,211,238,0.14);
+
+  --color-radiant: #5eead4;
+  --color-radiant-soft: rgba(94,234,212,0.12);
+  --color-dire: #fb6f92;
+  --color-dire-soft: rgba(251,111,146,0.12);
+  --color-gold: #fbbf24;
+  --color-danger: #fb6f92;
+
+  --font-sans: 'Rajdhani', 'Inter', system-ui, sans-serif;
+  --font-display: 'Rajdhani', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --tracking-label: 0.22em;
+
+  --radius-sm: 4px; --radius-md: 10px; --radius-lg: 16px; --radius-full: 9999px;
+
+  --glow-primary: 0 0 0 1px rgba(168,85,247,0.45), 0 0 26px rgba(168,85,247,0.22);
+  --glow-accent: 0 0 0 1px rgba(34,211,238,0.40), 0 0 22px rgba(34,211,238,0.18);
+  --shadow-card: 0 8px 34px rgba(40,0,80,0.5);
+  --card-bg-grad: linear-gradient(160deg, #1c1235 0%, #110b1f 100%);
+}

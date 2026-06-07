@@ -39,6 +39,12 @@
 - [x] **PLAYER-02
 **: Hidden-profile players (Steam account_id = 4294967295) show the player name from Valve but no OpenDota stats, without crashing the UI
 
+### UI — Visual Redesign & Responsiveness (added 2026-06-06)
+
+- [ ] **UI-01**: Entire app is restyled to the "Tactical Slate" dark theme (warm charcoal base, muted gold + steel-blue accents, soft-shadow rounded cards) via a shared design-token system — palette captured in sketches 003/004
+- [ ] **UI-02**: All screens (Home + Match) adapt responsively across four target widths: phone (~375px), tablet (~768px), laptop (~1280px), desktop (~1536px+) — no horizontal scroll, no overlapping/clipped content at any breakpoint
+- [ ] **UI-03**: Dense Match-page panel grid reflows on narrow viewports (multi-column → stacked) while preserving all data and readability; hero portraits, item slots, and cooldown icons remain legible on phone
+
 ---
 
 ## v2 Requirements (Deferred)
@@ -56,7 +62,7 @@
 
 - Public matchmaking (pub) matches — Valve API only covers league matches with valid `league_id`
 - User accounts / authentication — personal + small group tool; no auth needed for v1
-- Mobile-responsive layout — desktop-first for v1
+- ~~Mobile-responsive layout — desktop-first for v1~~ → **moved into scope 2026-06-06** (see UI-02/UI-03)
 - Post-match replay / deep analysis — link out to OpenDota instead
 - Embedded Twitch stream — users already have the stream open
 - Betting odds integration — ToS minefield; permanently excluded

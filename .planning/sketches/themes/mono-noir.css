@@ -1,0 +1,40 @@
+/* Theme H — Mono Noir
+   Pure grayscale, zero hue except team red/green. Brutalist terminal,
+   hairline borders, maximum data density. "Infosec terminal" taken all the way. */
+:root {
+  --color-bg: #000000;
+  --color-bg-elev: #050505;
+  --color-surface: #0a0a0a;
+  --color-surface-2: #111111;
+  --color-border: #222222;
+  --color-border-glow: #ffffff;
+  --color-text: #f5f5f5;
+  --color-text-muted: #999999;
+  --color-text-dim: #555555;
+
+  --color-primary: #ffffff;        /* white = the only "accent" */
+  --color-primary-soft: rgba(255,255,255,0.08);
+  --color-accent: #cccccc;
+  --color-accent-soft: rgba(255,255,255,0.06);
+
+  --color-radiant: #4ade80;
+  --color-radiant-soft: rgba(74,222,128,0.10);
+  --color-dire: #ef4444;
+  --color-dire-soft: rgba(239,68,68,0.10);
+  --color-gold: #e5e5e5;
+  --color-danger: #ef4444;
+
+  --font-sans: 'JetBrains Mono', ui-monospace, monospace;
+  --font-display: 'JetBrains Mono', ui-monospace, monospace;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  --tracking-label: 0.20em;
+
+  --radius-sm: 0px; --radius-md: 0px; --radius-lg: 0px; --radius-full: 9999px;
+
+  --glow-primary: 0 0 0 1px rgba(255,255,255,0.25);
+  --glow-accent: 0 0 0 1px rgba(255,255,255,0.15);
+  --shadow-card: none;
+  --card-bg-grad: #0a0a0a;
+  --carbon-texture: none;
+  --clip-corner: none;
+}
