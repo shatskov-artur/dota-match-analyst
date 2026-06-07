@@ -1,8 +1,16 @@
 export default function ErrorBanner() {
   return (
-    <div className="p-4 bg-red-950 border border-red-800 text-red-300">
+    <div
+      className="p-4 border rounded-md text-sm"
+      style={{
+        background: 'var(--color-dire-soft)',
+        borderColor: 'var(--color-danger)',
+        color: 'var(--color-danger)',
+      }}
+    >
       {/* UI-SPEC copywriting contract: exact error state copy */}
-      Could not load live matches — Valve API unreachable. Retrying in 30 seconds.
+      <p className="font-semibold">Couldn't load live matches.</p>
+      <p className="mt-1">We'll keep retrying automatically. Check your connection if this persists.</p>
     </div>
   )
 }

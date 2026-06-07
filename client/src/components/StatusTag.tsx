@@ -4,15 +4,18 @@ interface StatusTagProps {
   status: Status
 }
 
-const styleMap: Record<Status, { dot: string; text: string; glow?: string; pulse?: boolean }> = {
-  'Live':      { dot: '#b03030', text: '#c04040', glow: '#b03030' },
-  'Draft':     { dot: '#b08c20', text: '#c8a830', glow: '#b08c20', pulse: true },
-  'Strategy':  { dot: '#2060b0', text: '#3080d0', glow: '#2060b0', pulse: true },
-  'Starting':  { dot: '#206030', text: '#30a050', glow: '#206030', pulse: true },
-  'Waiting':   { dot: '#383838', text: '#555555' },
-  'Break':     { dot: '#503020', text: '#806040' },
-  'Post-game': { dot: '#303030', text: '#484848' },
-  'Unknown':   { dot: '#252525', text: '#383838' },
+// Token-driven status styling — all colors resolve to Tactical Slate var(--...) props.
+//   Live → Dire-red, Draft → gold (primary), Strategy → steel (accent), Starting → radiant.
+//   Glow applies only where a status calls for it (gold for Draft, steel for Strategy).
+const styleMap: Record<Status, { color: string; glow?: string; pulse?: boolean }> = {
+  'Live':      { color: 'var(--color-dire)' },
+  'Draft':     { color: 'var(--color-primary)', glow: 'var(--glow-primary)', pulse: true },
+  'Strategy':  { color: 'var(--color-accent)', glow: 'var(--glow-accent)', pulse: true },
+  'Starting':  { color: 'var(--color-radiant)', pulse: true },
+  'Waiting':   { color: 'var(--color-text-dim)' },
+  'Break':     { color: 'var(--color-text-dim)' },
+  'Post-game': { color: 'var(--color-text-dim)' },
+  'Unknown':   { color: 'var(--color-text-dim)' },
 }
 
 export default function StatusTag({ status }: StatusTagProps) {
@@ -20,15 +23,15 @@ export default function StatusTag({ status }: StatusTagProps) {
   return (
     <span
       className="inline-flex items-center gap-1.5"
-      style={{ color: s.text }}
+      style={{ color: s.color }}
     >
       <span
         className={`shrink-0 rounded-full${s.pulse ? ' animate-pulse' : ''}`}
         style={{
           width: 5,
           height: 5,
-          background: s.dot,
-          boxShadow: s.glow ? `0 0 6px ${s.glow}` : 'none',
+          background: s.color,
+          boxShadow: s.glow ?? 'none',
         }}
       />
       <span className="text-[10px] uppercase tracking-[0.18em] font-medium">
