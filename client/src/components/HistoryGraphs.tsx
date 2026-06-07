@@ -6,8 +6,8 @@ import type { CSSProperties } from 'react'
 // NO chart library imports (D-25). Pure SVG primitives.
 // Canonical spec: .claude/skills/sketch-findings-dota-stats/references/charts-data-viz.md
 
-const RADIANT_GREEN = '#4ade80'
-const DIRE_RED      = '#ef4444'
+const RADIANT_GREEN = '#6bcf8a'
+const DIRE_RED      = '#e06a72'
 const PANEL_BG      = '#0f0f0f'
 const PANEL_BORDER  = '#161616'
 const SECONDARY_FG  = '#888888'
