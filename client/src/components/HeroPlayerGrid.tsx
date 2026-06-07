@@ -1,5 +1,6 @@
 import PlayerRow from './PlayerRow'
 import SkeletonPlayerRow from './SkeletonPlayerRow'
+import type { PlayerIntel } from '../hooks/useMatchIntel'
 
 interface HeroPlayerGridProps {
   radiantPlayers: Array<{
@@ -13,6 +14,7 @@ interface HeroPlayerGridProps {
     respawn_timer?: number; level?: number; gpm?: number; xpm?: number; lh?: number; dn?: number
   }>
   isLoading: boolean
+  playerIntelMap?: Record<number, PlayerIntel>  // heroId → intel; tooltip on portrait hover (all stages)
 }
 
 function ColHeaders({ hasGpm, hasXpm, hasLhDn }: { hasGpm: boolean; hasXpm: boolean; hasLhDn: boolean }) {
@@ -42,7 +44,7 @@ function ColHeaders({ hasGpm, hasXpm, hasLhDn }: { hasGpm: boolean; hasXpm: bool
   )
 }
 
-export default function HeroPlayerGrid({ radiantPlayers, direPlayers, isLoading }: HeroPlayerGridProps) {
+export default function HeroPlayerGrid({ radiantPlayers, direPlayers, isLoading, playerIntelMap }: HeroPlayerGridProps) {
   const allPlayers = [...radiantPlayers, ...direPlayers]
   const hasGpm = allPlayers.some((p) => p.gpm !== undefined)
   const hasXpm = allPlayers.some((p) => p.xpm !== undefined)
@@ -65,7 +67,7 @@ export default function HeroPlayerGrid({ radiantPlayers, direPlayers, isLoading 
          style={{ color: '#4ade80' }}>Radiant</p>
       <ColHeaders hasGpm={hasGpm} hasXpm={hasXpm} hasLhDn={hasLhDn} />
       {radiantPlayers.map((p) => (
-        <PlayerRow key={p.account_id ?? p.hero_id ?? p.name} player={p} hasGpm={hasGpm} hasXpm={hasXpm} hasLhDn={hasLhDn} />
+        <PlayerRow key={p.account_id ?? p.hero_id ?? p.name} player={p} hasGpm={hasGpm} hasXpm={hasXpm} hasLhDn={hasLhDn} playerIntel={p.hero_id !== undefined ? playerIntelMap?.[p.hero_id] : undefined} />
       ))}
 
       {/* Dire group */}
@@ -73,7 +75,7 @@ export default function HeroPlayerGrid({ radiantPlayers, direPlayers, isLoading 
          style={{ color: '#ef4444' }}>Dire</p>
       <ColHeaders hasGpm={hasGpm} hasXpm={hasXpm} hasLhDn={hasLhDn} />
       {direPlayers.map((p) => (
-        <PlayerRow key={p.account_id ?? p.hero_id ?? p.name} player={p} hasGpm={hasGpm} hasXpm={hasXpm} hasLhDn={hasLhDn} />
+        <PlayerRow key={p.account_id ?? p.hero_id ?? p.name} player={p} hasGpm={hasGpm} hasXpm={hasXpm} hasLhDn={hasLhDn} playerIntel={p.hero_id !== undefined ? playerIntelMap?.[p.hero_id] : undefined} />
       ))}
     </div>
   )

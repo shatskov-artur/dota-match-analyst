@@ -1,5 +1,8 @@
+import { useRef, useState } from 'react'
 import { heroMapper } from '../utils/heroMapper'
 import { hiddenProfile } from '@shared/hiddenProfile'
+import IntelTooltip from './IntelTooltip'
+import type { PlayerIntel } from '../hooks/useMatchIntel'
 
 interface PlayerRowProps {
   player: {
@@ -21,10 +24,14 @@ interface PlayerRowProps {
   hasGpm: boolean        // controlled at grid level — show GPM column for all rows or none
   hasXpm: boolean        // controlled at grid level
   hasLhDn: boolean       // controlled at grid level
+  playerIntel?: PlayerIntel  // counterpick + player stats; tooltip on portrait hover (all match stages)
 }
 
-export default function PlayerRow({ player, hasGpm, hasXpm, hasLhDn }: PlayerRowProps) {
+export default function PlayerRow({ player, hasGpm, hasXpm, hasLhDn, playerIntel }: PlayerRowProps) {
   const heroInfo = player.hero_id !== undefined ? heroMapper(player.hero_id) : null
+  const portraitRef = useRef<HTMLDivElement>(null)
+  const [showTooltip, setShowTooltip] = useState(false)
+  const canShowTooltip = !!heroInfo && !!playerIntel
   // isDraftSlot: hero_id is explicitly absent (undefined), not an unknown ID
   const isDraftSlot = player.hero_id === undefined
   // isDead: respawn_timer > 0 means dead with countdown; 0 means alive; undefined = treat as alive
@@ -41,8 +48,15 @@ export default function PlayerRow({ player, hasGpm, hasXpm, hasLhDn }: PlayerRow
       onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = '#0f0f0f')}
       onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
     >
-      {/* Portrait column — 48px fixed, dead overlay, respawn countdown */}
-      <div className="relative shrink-0" style={{ width: 48 }}>
+      {/* Portrait column — 48px fixed, dead overlay, respawn countdown.
+          Phase 5 follow-up: hover surfaces IntelTooltip (counterpicks + player stats) at all match stages. */}
+      <div
+        ref={portraitRef}
+        className="relative shrink-0"
+        style={{ width: 48 }}
+        onMouseEnter={() => canShowTooltip && setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+      >
         {heroInfo ? (
           <img
             src={heroInfo.portrait}
@@ -60,6 +74,14 @@ export default function PlayerRow({ player, hasGpm, hasXpm, hasLhDn }: PlayerRow
           >
             {player.respawn_timer}s
           </span>
+        )}
+        {showTooltip && canShowTooltip && playerIntel && heroInfo && (
+          <IntelTooltip
+            playerIntel={playerIntel}
+            heroName={heroInfo.name}
+            anchorRef={portraitRef}
+            isLoading={false}
+          />
         )}
       </div>
 

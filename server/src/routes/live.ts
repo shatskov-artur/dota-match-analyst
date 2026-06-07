@@ -328,15 +328,17 @@ liveRoutes.get('/intel/:matchId', async (c) => {
       const direPicks = game.scoreboard?.dire?.picks ?? []
       const allPicks = [...radiantPicks, ...direPicks]
 
-      // Unique hero IDs across all picks (for matchup fetching)
-      const uniqueHeroIds = [...new Set(
-        allPicks.map(p => p.hero_id).filter((id): id is number => id !== undefined)
-      )]
-
       // Players list from Valve payload — team 0 = Radiant, team 1 = Dire
       const players = (game.players ?? []).filter(
         p => p.team === 0 || p.team === 1
       )
+
+      // Unique hero IDs — combine scoreboard picks with players[].hero_id so counters
+      // remain available post-draft (Valve sometimes evicts scoreboard.*.picks after game_state→5).
+      const uniqueHeroIds = [...new Set([
+        ...allPicks.map(p => p.hero_id).filter((id): id is number => id !== undefined),
+        ...players.map(p => p.hero_id).filter((id): id is number => id !== undefined && id > 0),
+      ])]
 
       // Batch fetch: all hero matchups + all player full hero histories concurrently
       const [matchupResults, playerResults] = await Promise.all([
