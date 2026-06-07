@@ -60,8 +60,8 @@ export default function DraftPortrait({
       <div
         className={`w-14 h-14 shrink-0 rounded-sm${isActive ? ' animate-pulse' : ''}`}
         style={{
-          background: '#141414',
-          border: isActive ? '1px solid #b03030' : '1px solid #1e1e1e',
+          background: 'var(--color-surface)',
+          border: isActive ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
         }}
       />
     )
@@ -90,7 +90,7 @@ export default function DraftPortrait({
             viewBox="0 0 24 24"
             aria-hidden="true"
             style={{
-              color: '#ef4444',
+              color: 'var(--color-dire)',
               opacity: 0.75,
               filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.7))',
             }}
@@ -123,7 +123,7 @@ export default function DraftPortrait({
               {Math.round(heroStats.win_rate * 100)}%
             </span>
             {/* pick_rate is raw pro_pick count — show with "P" suffix to distinguish from percentage */}
-            <span style={{ color: '#888888' }}>
+            <span style={{ color: 'var(--color-text-muted)' }}>
               {' '}{'·'}{' '}{heroStats.pick_rate}P
             </span>
           </div>
@@ -141,7 +141,7 @@ export default function DraftPortrait({
             fontSize: 9,
             lineHeight: 1,
             fontWeight: 700,
-            color: '#888',
+            color: 'var(--color-text-muted)',
             letterSpacing: '0.05em',
             textShadow: '0 1px 2px rgba(0,0,0,0.8)',
             fontVariantNumeric: 'tabular-nums',

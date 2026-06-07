@@ -29,9 +29,9 @@ export default function DraftTimeline({ slots, gameState, heroStatsMap, playerIn
       {/* Row labels */}
       <div className="flex flex-col shrink-0 mr-2" style={{ paddingTop: 10 }}>
         <div className="flex items-center text-[8px] font-bold uppercase tracking-widest"
-          style={{ height: 48, color: '#4ade80' }}>R</div>
+          style={{ height: 48, color: 'var(--color-radiant)' }}>R</div>
         <div className="flex items-center text-[8px] font-bold uppercase tracking-widest"
-          style={{ height: 48, color: '#ef4444' }}>D</div>
+          style={{ height: 48, color: 'var(--color-dire)' }}>D</div>
       </div>
 
       {/* 24 columns — one per CM step */}
@@ -51,8 +51,8 @@ export default function DraftTimeline({ slots, gameState, heroStatsMap, playerIn
               ref={(el) => { portraitRefs.current[slot.step] = el }}
               className={`w-12 h-12 shrink-0 rounded-sm overflow-hidden${isActiveEmpty ? ' animate-pulse' : ''}`}
               style={{
-                background: '#141414',
-                border: isActiveEmpty ? '1px solid rgba(176,48,48,0.8)' : '1px solid #1e1e1e',
+                background: 'var(--color-surface)',
+                border: isActiveEmpty ? '1px solid var(--color-primary)' : '1px solid var(--color-border)',
                 position: 'relative',
               }}
             >
@@ -61,7 +61,7 @@ export default function DraftTimeline({ slots, gameState, heroStatsMap, playerIn
                   <img src={heroInfo.portrait} alt={heroInfo.name} className="w-full h-full object-cover" />
                   {slot.action === 'ban' && (
                     <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 24 24" aria-hidden="true"
-                      style={{ color: '#ef4444', opacity: 0.75, filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.7))' }}>
+                      style={{ color: 'var(--color-dire)', opacity: 0.75, filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.7))' }}>
                       <path d="M4 4 L20 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
                       <path d="M20 4 L4 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
                     </svg>
@@ -94,11 +94,11 @@ export default function DraftTimeline({ slots, gameState, heroStatsMap, playerIn
               onMouseLeave={() => setHoveredStep(null)}
             >
               {showDivider && (
-                <div style={{ position: 'absolute', left: -4, top: 0, bottom: 0, width: 1, background: '#2a2a2a' }} />
+                <div style={{ position: 'absolute', left: -4, top: 0, bottom: 0, width: 1, background: 'var(--color-border)' }} />
               )}
 
               {/* Step number — always at top, small */}
-              <span style={{ fontSize: 8, lineHeight: 1, color: '#444', fontVariantNumeric: 'tabular-nums',
+              <span style={{ fontSize: 8, lineHeight: 1, color: 'var(--color-text-dim)', fontVariantNumeric: 'tabular-nums',
                 letterSpacing: '0.02em', marginBottom: 2 }}>
                 {slot.step + 1}
               </span>
