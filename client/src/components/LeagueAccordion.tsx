@@ -28,40 +28,27 @@ export default function LeagueAccordion({ leagueName, matches }: LeagueAccordion
         type="button"
         onClick={() => setIsOpen(prev => !prev)}
         aria-expanded={isOpen}
-        className="w-full flex items-center justify-between px-8 py-4 cursor-pointer group"
-        style={{ background: 'transparent' }}
+        className="w-full flex items-center justify-between px-4 md:px-8 py-4 min-h-[44px] cursor-pointer group bg-transparent"
       >
         {/* Left: section label */}
         <span className="flex items-center gap-4">
-          <span
-            className="text-[10px] uppercase tracking-[0.3em] font-bold"
-            style={{ color: '#ffffff' }}
-          >
+          <span className="text-text text-[10px] uppercase tracking-[0.3em] font-bold">
             Tournament
           </span>
-          <span
-            className="h-px flex-1 w-12"
-            style={{ background: '#1e1e1e' }}
-          />
-          <span
-            className="text-sm font-semibold tracking-tight"
-            style={{ color: '#b8b8b8', transition: 'color 160ms ease' }}
-          >
+          <span className="h-px flex-1 w-12 bg-border" />
+          <span className="text-text-muted text-sm font-semibold tracking-tight transition-colors duration-150 group-hover:text-text">
             {leagueName}
           </span>
         </span>
 
         {/* Right: match count + toggle */}
         <span className="flex items-center gap-4">
-          <span
-            className="text-[10px] tabular-nums"
-            style={{ color: '#303030' }}
-          >
+          <span className="text-text-dim text-[10px] tabular-nums">
             {matches.length} {matches.length === 1 ? 'match' : 'matches'}
           </span>
           <span
-            className="text-[#282828] text-[10px]"
-            style={{ transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 200ms ease', display: 'block' }}
+            className="text-text-dim text-[10px] block"
+            style={{ transform: isOpen ? 'rotate(0deg)' : 'rotate(-90deg)', transition: 'transform 200ms ease' }}
           >
             ▾
           </span>
@@ -69,7 +56,7 @@ export default function LeagueAccordion({ leagueName, matches }: LeagueAccordion
       </button>
 
       {/* Thin separator */}
-      <div style={{ height: 1, background: '#141414', margin: '0 2rem' }} />
+      <div className="h-px bg-border mx-8" />
 
       {isOpen && (
         <div className="relative">
