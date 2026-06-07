@@ -31,41 +31,35 @@ export default function MatchPage() {
     : undefined
 
   return (
-    <div
-      className="min-h-screen p-8 relative"
-      style={{ background: '#0a0a0a', color: '#d8d8d8' }}
-    >
-      {/* Ambient top glow — copy verbatim from MatchPlaceholder */}
+    <div className="min-h-screen relative bg-bg text-text font-sans px-4 md:px-6 lg:px-8 py-8">
+      <div className="max-w-[1320px] mx-auto">
+      {/* Ambient top glow — retinted from red to neutral gold per UI-SPEC */}
       <div
         className="absolute pointer-events-none"
         style={{
           top: 0, left: 0, right: 0, height: 300,
-          background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(176,48,48,0.03) 0%, transparent 100%)',
+          background: 'radial-gradient(ellipse 60% 40% at 50% 0%, var(--color-primary-soft) 0%, transparent 100%)',
         }}
       />
 
       {/* Back nav */}
       <Link
         to="/"
-        className="inline-flex items-center gap-2 mb-10 text-[11px] uppercase tracking-[0.25em]"
-        style={{ color: '#666666', transition: 'color 160ms ease' }}
-        onMouseEnter={e => ((e.currentTarget as HTMLElement).style.color = '#e05050')}
-        onMouseLeave={e => ((e.currentTarget as HTMLElement).style.color = '#666666')}
+        className="inline-flex items-center gap-2 mb-10 text-[11px] uppercase tracking-[0.25em] text-text-dim transition-colors duration-150 hover:text-primary"
       >
         ← Back to matches
       </Link>
 
-      {/* Match title h1 */}
+      {/* Match title h1 — Display clamp per UI-SPEC */}
       <h1
-        className="font-bold leading-none tracking-tight mb-8"
+        className="font-bold leading-none tracking-tight mb-8 text-text"
         style={{
-          fontSize: 'clamp(1.8rem, 5vw, 3.5rem)',
-          color: '#ffffff',
+          fontSize: 'clamp(1.8rem, 4vw, 2.8rem)',
           letterSpacing: '-0.02em',
         }}
       >
         {match?.radiant_team?.team_name ?? 'TBD'}
-        <span style={{ color: '#3a3a3a' }}> vs </span>
+        <span style={{ color: 'var(--color-text-dim)' }}> vs </span>
         {match?.dire_team?.team_name ?? 'TBD'}
       </h1>
 
@@ -120,9 +114,9 @@ export default function MatchPage() {
           RoshanBlock root (`flex flex-col flex-1`) carries over unchanged. */}
       {match?.game_state === 5 && radiantPlayers.length > 0 && (
         <div className="mt-12 flex flex-col gap-12">
-          {/* Row 1 — heroes / items / cooldowns */}
-          <div className="flex gap-8 items-stretch">
-            <div className="flex-1 min-w-0">
+          {/* Row 1 — heroes / items / cooldowns. Mobile-first: stacked below 1180px, 3-col at/above. */}
+          <div className="flex flex-col gap-6 stack:flex-row stack:gap-8 stack:items-stretch">
+            <div className="min-w-0 stack:flex-1">
               <HeroPlayerGrid
                 radiantPlayers={radiantPlayers}
                 direPlayers={direPlayers}
@@ -130,7 +124,7 @@ export default function MatchPage() {
                 playerIntelMap={playerIntelMap}
               />
             </div>
-            <div className="flex-1 min-w-0 flex flex-col">
+            <div className="min-w-0 stack:flex-1 flex flex-col">
               <ItemsBlock
                 players={[
                   ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
@@ -138,7 +132,7 @@ export default function MatchPage() {
                 ].sort((a, b) => ((b.net_worth as number | undefined) ?? 0) - ((a.net_worth as number | undefined) ?? 0))}
               />
             </div>
-            <div className="flex-1 min-w-0 flex flex-col">
+            <div className="min-w-0 stack:flex-1 flex flex-col">
               <CooldownsBlock
                 players={[
                   ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
@@ -148,22 +142,23 @@ export default function MatchPage() {
             </div>
           </div>
 
-          {/* Row 2 — three columns: HistoryGraphs | Roshan+Buildings stack | Map (fixed 420px) */}
-          <div className="flex gap-8 items-start">
-            <div className="flex-1 min-w-0 flex flex-col">
+          {/* Row 2 — HistoryGraphs | Roshan+Buildings (320px) | Map (fluid, 420px cap).
+              Mobile-first: stacked below 1180px, 3-col at/above; map fluid + centered when stacked. */}
+          <div className="flex flex-col gap-8 stack:flex-row stack:items-start">
+            <div className="min-w-0 stack:flex-1 flex flex-col">
               <HistoryGraphs
                 history={history}
                 gameDuration={match?.duration}
                 gameState={match?.game_state}
               />
             </div>
-            <div className="shrink-0 w-[320px] flex flex-col gap-8">
+            <div className="w-full stack:w-[320px] stack:shrink-0 flex flex-col gap-8">
               <RoshanBlock roshan={match?.roshan ?? null} />
               {!buildings.unavailable && (
                 <BuildingsSection buildings={buildings} />
               )}
             </div>
-            <div className="shrink-0">
+            <div className="w-full stack:w-auto stack:shrink-0 flex justify-center">
               <DotaMapView
                 size={420}
                 buildings={buildings}
@@ -190,6 +185,7 @@ export default function MatchPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   )
 }
