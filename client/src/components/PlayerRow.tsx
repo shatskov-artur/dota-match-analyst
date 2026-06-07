@@ -43,10 +43,8 @@ export default function PlayerRow({ player, hasGpm, hasXpm, hasLhDn, playerIntel
 
   return (
     <div
-      className="flex items-center gap-4 px-0 border-b"
-      style={{ minHeight: 52, borderColor: '#1e1e1e', transition: 'background 160ms ease' }}
-      onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = '#0f0f0f')}
-      onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
+      className="flex items-center gap-4 px-0 border-b border-border transition-colors duration-150 hover:bg-surface-2"
+      style={{ minHeight: 52 }}
     >
       {/* Portrait column — 48px fixed, dead overlay, respawn countdown.
           Phase 5 follow-up: hover surfaces IntelTooltip (counterpicks + player stats) at all match stages. */}
@@ -62,15 +60,17 @@ export default function PlayerRow({ player, hasGpm, hasXpm, hasLhDn, playerIntel
             src={heroInfo.portrait}
             alt={heroInfo.name}
             className="w-12 h-12 object-cover rounded-sm"
-            style={{ opacity: isDead ? 0.3 : 1 }}
+            style={{
+              opacity: isDead ? 0.3 : 1,
+              boxShadow: `inset 0 0 0 1.5px ${player.team === 1 ? 'var(--color-dire)' : 'var(--color-radiant)'}`,
+            }}
           />
         ) : (
-          <div className="w-12 h-12 rounded-sm" style={{ background: '#141414' }} />
+          <div className="w-12 h-12 rounded-sm bg-surface" />
         )}
         {isDead && (
           <span
-            className="absolute bottom-0 left-0 right-0 text-[10px] text-center"
-            style={{ color: '#585858' }}
+            className="absolute bottom-0 left-0 right-0 text-[10px] text-center text-text-dim"
           >
             {player.respawn_timer}s
           </span>
@@ -87,52 +87,52 @@ export default function PlayerRow({ player, hasGpm, hasXpm, hasLhDn, playerIntel
 
       {/* Name column — flex-1, two lines: player name + hero name */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm leading-none truncate" style={{ color: '#e8e8e8' }}>
+        <p className="text-sm leading-none truncate text-text">
           {isDraftSlot ? '—' : (player.name ?? '—')}
         </p>
         {heroInfo && !isDraftSlot && (
-          <p className="text-[10px] leading-none mt-0.5 truncate" style={{ color: '#666666' }}>
+          <p className="text-[10px] leading-none mt-0.5 truncate text-text-dim">
             {heroInfo.name}
           </p>
         )}
       </div>
 
       {/* LVL column — 28px */}
-      <span className="text-[12px] tabular-nums shrink-0 text-right" style={{ width: 28, color: '#888888' }}>
+      <span className="text-[12px] tabular-nums shrink-0 text-right text-text-muted" style={{ width: 28 }}>
         {isDraftSlot ? '—' : (player.level ?? '—')}
       </span>
 
       {/* K/D/A column — 64px */}
       <span className="text-[12px] font-mono tabular-nums shrink-0" style={{ width: 64 }}>
-        <span style={{ color: '#e8e8e8' }}>{isDraftSlot ? '—' : (player.kills ?? '—')}</span>
-        <span style={{ color: '#444444' }}>/</span>
-        <span style={{ color: '#ef4444' }}>{isDraftSlot ? '—' : (player.death ?? '—')}</span>
-        <span style={{ color: '#444444' }}>/</span>
-        <span style={{ color: '#e8e8e8' }}>{isDraftSlot ? '—' : (player.assists ?? '—')}</span>
+        <span className="text-text">{isDraftSlot ? '—' : (player.kills ?? '—')}</span>
+        <span className="text-text-dim">/</span>
+        <span style={{ color: 'var(--color-dire)' }}>{isDraftSlot ? '—' : (player.death ?? '—')}</span>
+        <span className="text-text-dim">/</span>
+        <span className="text-text">{isDraftSlot ? '—' : (player.assists ?? '—')}</span>
       </span>
 
-      {/* NW column — 56px */}
-      <span className="text-[12px] tabular-nums shrink-0 text-right" style={{ width: 56, color: '#e8e8e8' }}>
+      {/* NW column — 56px, gold mono per UI-SPEC */}
+      <span className="text-[12px] font-mono tabular-nums shrink-0 text-right" style={{ width: 56, color: 'var(--color-gold)' }}>
         {isDraftSlot ? '—' : (player.net_worth !== undefined ? player.net_worth.toLocaleString() : '—')}
       </span>
 
       {/* Optional GPM column — 40px */}
       {hasGpm && (
-        <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ width: 40, color: '#888888' }}>
+        <span className="text-[10px] tabular-nums shrink-0 text-right text-text-muted" style={{ width: 40 }}>
           {isDraftSlot ? '—' : (player.gpm ?? '—')}
         </span>
       )}
 
       {/* Optional XPM column — 40px */}
       {hasXpm && (
-        <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ width: 40, color: '#888888' }}>
+        <span className="text-[10px] tabular-nums shrink-0 text-right text-text-muted" style={{ width: 40 }}>
           {isDraftSlot ? '—' : (player.xpm ?? '—')}
         </span>
       )}
 
       {/* Optional LH/DN column — 48px */}
       {hasLhDn && (
-        <span className="text-[10px] tabular-nums shrink-0 text-right" style={{ width: 48, color: '#888888' }}>
+        <span className="text-[10px] tabular-nums shrink-0 text-right text-text-muted" style={{ width: 48 }}>
           {isDraftSlot ? '—' : (player.lh !== undefined ? `${player.lh} / ${player.dn ?? '—'}` : '—')}
         </span>
       )}

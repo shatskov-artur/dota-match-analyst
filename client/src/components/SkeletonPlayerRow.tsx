@@ -1,14 +1,14 @@
 export default function SkeletonPlayerRow() {
   return (
     <div
-      className="flex items-center gap-4 px-0 border-b"
-      style={{ minHeight: 52, borderColor: '#1e1e1e' }}
+      className="flex items-center gap-4 px-0 border-b border-border"
+      style={{ minHeight: 52 }}
     >
       {/* Portrait skeleton — 48px wide to match PlayerRow portrait column */}
       <div
         className="w-12 h-[1px] rounded-full shrink-0"
         style={{
-          background: 'linear-gradient(90deg, #181818 0%, #222222 50%, #181818 100%)',
+          background: 'linear-gradient(90deg, var(--color-surface) 0%, var(--color-surface-2) 50%, var(--color-surface) 100%)',
           animation: 'skshimmer 2.4s ease-in-out infinite',
         }}
       />
@@ -16,7 +16,7 @@ export default function SkeletonPlayerRow() {
       <div
         className="flex-1 h-[1px] rounded-full"
         style={{
-          background: 'linear-gradient(90deg, #181818 0%, #222222 50%, #181818 100%)',
+          background: 'linear-gradient(90deg, var(--color-surface) 0%, var(--color-surface-2) 50%, var(--color-surface) 100%)',
           animation: 'skshimmer 2.4s ease-in-out infinite 0.2s',
         }}
       />
@@ -24,7 +24,7 @@ export default function SkeletonPlayerRow() {
       <div
         className="w-32 h-[1px] rounded-full shrink-0"
         style={{
-          background: '#181818',
+          background: 'var(--color-surface)',
           animation: 'skshimmer 2.4s ease-in-out infinite 0.4s',
         }}
       />
