@@ -35,16 +35,21 @@ function ItemSlot({ itemId, variant = 'main' }: { itemId?: number; variant?: 'ma
   }
 
   const neutralStyle: React.CSSProperties =
-    variant === 'neutral' ? { opacity: 0.75, border: '1px solid #888866' } : {}
+    variant === 'neutral' ? { opacity: 0.75, border: '1px solid var(--color-primary)' } : {}
 
   if (isEmpty) {
     return (
       <div
-        style={{ ...baseStyle, background: '#1a1a1a', border: '1px solid #2a2a2a', ...neutralStyle }}
+        className="bg-surface-2"
+        style={{ ...baseStyle, borderWidth: 1, borderStyle: 'solid', borderColor: 'var(--color-border)', ...neutralStyle }}
         aria-label="Empty item slot"
       />
     )
   }
+
+  // Filled main slots get a subtle gold-tint highlight (UI-SPEC).
+  const filledHighlight: React.CSSProperties =
+    variant === 'main' ? { boxShadow: 'inset 0 0 0 1px var(--color-primary-soft)' } : {}
 
   return (
     <img
@@ -52,7 +57,7 @@ function ItemSlot({ itemId, variant = 'main' }: { itemId?: number; variant?: 'ma
       alt={name}
       width={32}
       height={32}
-      style={{ ...baseStyle, ...neutralStyle, display: 'block', objectFit: 'cover' }}
+      style={{ ...baseStyle, ...neutralStyle, ...filledHighlight, display: 'block', objectFit: 'cover' }}
       onError={() => setImgError(true)}
     />
   )
@@ -64,17 +69,14 @@ export default function ItemsBlock({ players }: ItemsBlockProps) {
   return (
     <div className="flex flex-col flex-1">
       {/* Section header — matches HeroPlayerGrid label style */}
-      <p
-        className="text-[10px] uppercase tracking-[0.3em] font-bold mb-4"
-        style={{ color: '#555555' }}
-      >
+      <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-4 text-text-dim">
         Items
       </p>
 
       <div className="flex flex-col justify-between flex-1">
       {players.map((player, index) => {
         const heroInfo = player.hero_id != null ? heroMapper(player.hero_id) : null
-        const rankColor = player.team === 'radiant' ? '#4ade80' : '#ef4444'
+        const rankColor = player.team === 'radiant' ? 'var(--color-radiant)' : 'var(--color-dire)'
 
         // Main slots: item0-item5 (always rendered, 6 slots)
         const mainSlots = [
@@ -91,15 +93,11 @@ export default function ItemsBlock({ players }: ItemsBlockProps) {
         return (
           <div
             key={player.account_id ?? player.hero_id ?? index}
-            className="flex items-center border-b"
+            className="flex items-center border-b border-border transition-colors duration-150 hover:bg-surface-2 min-w-0"
             style={{
               minHeight: 52,
-              borderColor: '#1e1e1e',
               gap: 8,
-              transition: 'background 160ms ease',
             }}
-            onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = '#0f0f0f')}
-            onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
           >
             {/* Rank number — 24px fixed width, team-colored */}
             <div
@@ -125,18 +123,19 @@ export default function ItemsBlock({ players }: ItemsBlockProps) {
                   className="w-12 h-12 object-cover rounded-sm"
                 />
               ) : (
-                <div className="w-12 h-12 rounded-sm" style={{ background: '#141414' }} />
+                <div className="w-12 h-12 rounded-sm bg-surface" />
               )}
             </div>
 
-            {/* Net worth value — 56px, tabular nums */}
+            {/* Net worth value — 56px, gold mono per UI-SPEC */}
             <div
+              className="font-mono"
               style={{
                 width: 56,
                 flexShrink: 0,
                 fontSize: 12,
                 fontVariantNumeric: 'tabular-nums',
-                color: '#e8e8e8',
+                color: 'var(--color-gold)',
               }}
             >
               {formatNW(player.net_worth)}

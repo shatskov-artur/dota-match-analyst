@@ -15,15 +15,19 @@ interface CooldownsBlockProps {
   players: CooldownPlayer[]
 }
 
-function UltSlot({ heroId }: { heroId?: number }) {
+function UltSlot({ heroId, team }: { heroId?: number; team?: 'radiant' | 'dire' }) {
   const url = heroId != null ? heroUltimateIconUrl(heroId) : null
   const [imgError, setImgError] = useState(false)
   const isEmpty = !url || imgError
+  const ring = team === 'dire'
+    ? 'inset 0 0 0 1.5px var(--color-dire)'
+    : 'inset 0 0 0 1.5px var(--color-radiant)'
 
   if (isEmpty) {
     return (
       <div
-        style={{ width: 32, height: 32, borderRadius: 4, background: '#1a1a1a', border: '1px solid #2a2a2a', flexShrink: 0 }}
+        className="bg-surface-2"
+        style={{ width: 32, height: 32, borderRadius: 4, borderWidth: 1, borderStyle: 'solid', borderColor: 'var(--color-border)', flexShrink: 0 }}
         aria-label="Empty ability slot"
       />
     )
@@ -35,7 +39,7 @@ function UltSlot({ heroId }: { heroId?: number }) {
       alt="ultimate"
       width={32}
       height={32}
-      style={{ width: 32, height: 32, borderRadius: 4, display: 'block', objectFit: 'cover', flexShrink: 0 }}
+      style={{ width: 32, height: 32, borderRadius: 4, display: 'block', objectFit: 'cover', flexShrink: 0, boxShadow: ring }}
       onError={() => setImgError(true)}
     />
   )
@@ -85,10 +89,7 @@ export default function CooldownsBlock({ players }: CooldownsBlockProps) {
 
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-y-auto">
-      <p
-        className="text-[10px] uppercase tracking-[0.3em] font-bold mb-4"
-        style={{ color: '#555555' }}
-      >
+      <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-4 text-text-dim">
         Cooldowns
       </p>
 
@@ -98,15 +99,11 @@ export default function CooldownsBlock({ players }: CooldownsBlockProps) {
           return (
             <div
               key={p.account_id ?? p.hero_id ?? index}
-              className="flex items-center border-b"
+              className="flex items-center border-b border-border transition-colors duration-150 hover:bg-surface-2"
               style={{
                 minHeight: 44,
-                borderColor: '#1e1e1e',
                 gap: 8,
-                transition: 'background 160ms ease',
               }}
-              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = '#0f0f0f')}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = 'transparent')}
             >
               {heroInfo ? (
                 <img
@@ -117,18 +114,18 @@ export default function CooldownsBlock({ players }: CooldownsBlockProps) {
                   style={{ width: 32, height: 32, borderRadius: 4, objectFit: 'cover', flexShrink: 0 }}
                 />
               ) : (
-                <div style={{ width: 32, height: 32, borderRadius: 4, background: '#141414', flexShrink: 0 }} />
+                <div className="bg-surface" style={{ width: 32, height: 32, borderRadius: 4, flexShrink: 0 }} />
               )}
 
-              <UltSlot heroId={p.hero_id} />
+              <UltSlot heroId={p.hero_id} team={p.team} />
 
               {p._remaining > 0 ? (
-                <div style={{ fontSize: 14, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: '#e8e8e8' }}>
+                <div className="font-mono" style={{ fontSize: 15, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: 'var(--color-accent)' }}>
                   {Math.round(p._remaining)}
-                  <span style={{ fontSize: 12, color: '#555555' }}>s</span>
+                  <span className="text-text-dim" style={{ fontSize: 12 }}>s</span>
                 </div>
               ) : (
-                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#4ade80' }}>
+                <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--color-radiant)' }}>
                   ready
                 </div>
               )}
