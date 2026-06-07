@@ -19,39 +19,29 @@ export default function MatchRow({ game }: MatchRowProps) {
   return (
     <Link
       to={`/match/${game.match_id}`}
-      className="relative group flex items-center gap-6 px-8 min-h-[52px] border-b border-[#1a1a1a] cursor-pointer block"
-      style={{ transition: 'background 160ms ease' }}
-      onMouseEnter={e => {
-        (e.currentTarget as HTMLElement).style.background = '#111111'
-      }}
-      onMouseLeave={e => {
-        (e.currentTarget as HTMLElement).style.background = 'transparent'
-      }}
+      className="relative group flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6 px-4 md:px-8 min-h-[52px] py-2 sm:py-0 border-b border-border cursor-pointer block transition-colors duration-150 hover:bg-surface-2"
     >
-      {/* Left ember accent bar on hover — group-hover drives color, relative parent constrains position */}
-      <span
-        className="absolute left-0 top-0 w-[2px] h-full group-hover:bg-[#b03030]"
-        style={{ transition: 'background 160ms ease' }}
-      />
+      {/* Left accent rail — CSS-driven (no glow per Tactical Slate override): 3px gold on hover. */}
+      <span className="absolute left-0 top-0 w-[3px] h-full bg-transparent transition-colors duration-150 group-hover:bg-primary" />
 
-      {/* Team names */}
+      {/* Team names (Row A on phone) */}
       <span className="flex-1 min-w-0 flex items-baseline gap-2.5 text-sm">
-        <span className="text-[#d8d8d8] font-medium truncate">{radiantName}</span>
-        <span className="text-[#303030] font-light shrink-0">vs</span>
-        <span className="text-[#d8d8d8] font-medium truncate">{direName}</span>
+        <span className="text-text font-medium truncate min-w-0">{radiantName}</span>
+        <span className="text-text-dim font-light shrink-0">vs</span>
+        <span className="text-text font-medium truncate min-w-0">{direName}</span>
       </span>
 
-      {/* Right meta cluster */}
-      <span className="shrink-0 flex items-center gap-5">
+      {/* Right meta cluster (Row B on phone — wraps) */}
+      <span className="shrink-0 flex flex-wrap items-center gap-5">
         {seriesLabel && (
-          <span className="text-[#424242] text-[11px] tracking-[0.1em] tabular-nums">
+          <span className="text-text-dim text-[11px] tracking-[0.1em] tabular-nums">
             {radiantWins}–{direWins}
-            <span className="ml-1.5 text-[#303030]">{seriesLabel}</span>
+            <span className="ml-1.5 text-text-dim">{seriesLabel}</span>
           </span>
         )}
         <StatusTag status={statusLabel} />
         {game.duration !== undefined && (
-          <span className="text-[#383838] text-[11px] tabular-nums font-mono tracking-wide">
+          <span className="text-text-dim text-[11px] tabular-nums font-mono tracking-wide">
             {formatDuration(game.duration)}
           </span>
         )}
