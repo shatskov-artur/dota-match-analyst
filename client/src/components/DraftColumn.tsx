@@ -30,22 +30,22 @@ export default function DraftColumn({
   activePickIndex = -1, activeBanIndex = -1,
   heroStatsMap, playerIntelMap,
 }: DraftColumnProps) {
-  const labelColor = team === 'radiant' ? '#4ade80' : '#ef4444'
+  const labelColor = team === 'radiant' ? 'var(--color-radiant)' : 'var(--color-dire)'
   const labelText  = team === 'radiant' ? 'Radiant' : 'Dire'
 
   // Ember glow: three states (inactive / active confident / active tentative).
   // Values copied verbatim from MatchRow.tsx hover pattern per 04-PATTERNS.md §Ember glow.
   const borderLeft =
-    isActive && !tentative ? '2px solid #b03030'
-    : isActive && tentative ? '2px dashed #b03030'
+    isActive && !tentative ? '2px solid var(--color-primary)'
+    : isActive && tentative ? '2px dashed var(--color-primary)'
     : '2px solid transparent'
 
   const boxShadow =
-    isActive && !tentative ? '-4px 0 12px rgba(176,48,48,0.25)'
-    : isActive && tentative ? '-4px 0 12px rgba(176,48,48,0.10)'
+    isActive && !tentative ? '-4px 0 12px var(--color-primary-soft)'
+    : isActive && tentative ? '-4px 0 12px var(--color-primary-soft)'
     : 'none'
 
-  const background = isActive && !tentative ? '#111111' : 'transparent'
+  const background = isActive && !tentative ? 'var(--color-surface-2)' : 'transparent'
 
   return (
     <div
@@ -78,7 +78,7 @@ export default function DraftColumn({
             playerIntel={picks[i]?.hero_id !== undefined ? playerIntelMap?.[picks[i].hero_id!] : undefined}
           />
         ))}
-        <div style={{ width: 1, height: 40, background: '#222', margin: '0 4px', flexShrink: 0 }} />
+        <div style={{ width: 1, height: 40, background: 'var(--color-border)', margin: '0 4px', flexShrink: 0 }} />
         {Array.from({ length: 7 }).map((_, i) => (
           <DraftPortrait
             key={`ban-${i}`}

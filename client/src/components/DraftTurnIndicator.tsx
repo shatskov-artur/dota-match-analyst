@@ -55,13 +55,13 @@ export default function DraftTurnIndicator({
       <div className="text-center mb-2">
         <p
           className="text-[10px] uppercase tracking-[0.25em] font-bold"
-          style={{ color: '#303030' }}
+          style={{ color: 'var(--color-text-dim)' }}
         >
           Draft in progress
         </p>
         <p
           className="text-[10px] uppercase tracking-[0.2em]"
-          style={{ color: '#555', marginTop: 2 }}
+          style={{ color: 'var(--color-text-dim)', marginTop: 2 }}
         >
           {phaseName}
         </p>
@@ -69,7 +69,7 @@ export default function DraftTurnIndicator({
     )
   }
 
-  const color    = activeTeam === 'radiant' ? '#4ade80' : '#ef4444'
+  const color    = activeTeam === 'radiant' ? 'var(--color-radiant)' : 'var(--color-dire)'
   const teamName = activeTeam === 'radiant' ? 'Radiant' : 'Dire'
   const actionWord = action === 'pick' ? 'picking' : 'banning'
   // Em-dash + trailing " ?" for tentative per UI-SPEC §Copywriting.
@@ -88,7 +88,7 @@ export default function DraftTurnIndicator({
       </p>
       <p
         className="text-[10px] uppercase tracking-[0.2em]"
-        style={{ color: '#555', marginTop: 2 }}
+        style={{ color: 'var(--color-text-dim)', marginTop: 2 }}
       >
         {phaseName}
       </p>
