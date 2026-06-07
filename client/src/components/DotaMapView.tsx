@@ -26,10 +26,10 @@ function Dot({
   x, y, alive, team, r = 4,
 }: { x: number; y: number; alive: boolean; team: 'radiant' | 'dire'; r?: number }) {
   const color = alive
-    ? team === 'radiant' ? '#4ade80' : '#ef4444'
-    : '#1c1c1c'
+    ? team === 'radiant' ? 'var(--color-radiant)' : 'var(--color-dire)'
+    : 'var(--color-border)'
   const shadow = alive
-    ? team === 'radiant' ? '0 0 5px rgba(74,222,128,0.6)' : '0 0 5px rgba(239,68,68,0.6)'
+    ? team === 'radiant' ? '0 0 5px var(--color-radiant-soft)' : '0 0 5px var(--color-dire-soft)'
     : 'none'
   return <circle cx={x} cy={y} r={r} fill={color} style={{ filter: alive ? `drop-shadow(${shadow})` : 'none' }} />
 }
@@ -40,15 +40,13 @@ export default function DotaMapView({ buildings: b, heroPositions, size = 420 }:
 
   return (
     <svg
-      width={size}
-      height={size}
       viewBox={`0 0 ${S} ${S}`}
       preserveAspectRatio="xMidYMid meet"
       className="block"
-      style={{ borderRadius: 6 }}
+      style={{ width: '100%', maxWidth: size, aspectRatio: '1 / 1', borderRadius: 6 }}
     >
       {/* Solid backdrop — visible only if /minimap.jpg fails to load */}
-      <rect width={S} height={S} fill="#07100a" rx={6} />
+      <rect width={S} height={S} fill="var(--color-surface)" rx={6} />
 
       {/* Real Dota 2 minimap (Liquipedia game-map asset, downscaled to 640x640).
           clipPath rounds the corners to match the 6px border radius. */}
@@ -88,7 +86,7 @@ export default function DotaMapView({ buildings: b, heroPositions, size = 420 }:
       <Dot x={38}  y={248} alive={r.ancientTop}    team="radiant" r={3.5} />
       <Dot x={38}  y={270} alive={r.ancientBottom} team="radiant" r={3.5} />
       {/* Ancient */}
-      <circle cx={52} cy={258} r={7} fill="none" stroke={r.ancientTop || r.ancientBottom ? '#4ade80' : '#1c1c1c'} strokeWidth={1.5} />
+      <circle cx={52} cy={258} r={7} fill="none" stroke={r.ancientTop || r.ancientBottom ? 'var(--color-radiant)' : 'var(--color-border)'} strokeWidth={1.5} />
       <Dot x={52}  y={258} alive={r.ancientTop || r.ancientBottom} team="radiant" r={4} />
 
       {/* ── DIRE buildings ── */}
@@ -114,7 +112,7 @@ export default function DotaMapView({ buildings: b, heroPositions, size = 420 }:
       <Dot x={282} y={60}  alive={d.ancientTop}    team="dire" r={3.5} />
       <Dot x={282} y={72}  alive={d.ancientBottom} team="dire" r={3.5} />
       {/* Ancient */}
-      <circle cx={268} cy={62} r={7} fill="none" stroke={d.ancientTop || d.ancientBottom ? '#ef4444' : '#1c1c1c'} strokeWidth={1.5} />
+      <circle cx={268} cy={62} r={7} fill="none" stroke={d.ancientTop || d.ancientBottom ? 'var(--color-dire)' : 'var(--color-border)'} strokeWidth={1.5} />
       <Dot x={268} y={62} alive={d.ancientTop || d.ancientBottom} team="dire" r={4} />
 
       {/* Phase 8: hero positions — clipPath defs, then images, then team-colored stroke rings. */}
@@ -149,7 +147,7 @@ export default function DotaMapView({ buildings: b, heroPositions, size = 420 }:
             return (
               <circle key={`stroke-${h.hero_id}-${h.team}`}
                 cx={c.svgX} cy={c.svgY} r={8} fill="none"
-                stroke={h.team === 'radiant' ? '#4ade80' : '#ef4444'}
+                stroke={h.team === 'radiant' ? 'var(--color-radiant)' : 'var(--color-dire)'}
                 strokeWidth={1.5}
               />
             )
@@ -158,8 +156,8 @@ export default function DotaMapView({ buildings: b, heroPositions, size = 420 }:
       )}
 
       {/* Labels */}
-      <text x={8} y={14} fontSize={8} fill="#1e3020" fontFamily="monospace" letterSpacing={2}>RADIANT</text>
-      <text x={S - 8} y={S - 6} fontSize={8} fill="#301e1e" fontFamily="monospace" letterSpacing={2} textAnchor="end">DIRE</text>
+      <text x={8} y={14} fontSize={8} fill="var(--color-text-dim)" fontFamily="monospace" letterSpacing={2}>RADIANT</text>
+      <text x={S - 8} y={S - 6} fontSize={8} fill="var(--color-text-dim)" fontFamily="monospace" letterSpacing={2} textAnchor="end">DIRE</text>
     </svg>
   )
 }
