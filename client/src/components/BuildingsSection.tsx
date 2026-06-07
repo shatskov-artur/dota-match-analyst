@@ -10,12 +10,12 @@ const DIRE_ORDER: Array<keyof LaneBuildings> = ['rangedRax', 'meleeRax', 'tier3'
 const LANES: Array<'top' | 'mid' | 'bot'> = ['top', 'mid', 'bot']
 
 function BuildingDot({ standing, team }: { standing: boolean; team: 'radiant' | 'dire' }) {
-  const standingColor = team === 'radiant' ? '#4ade80' : '#ef4444'
+  const standingColor = team === 'radiant' ? 'var(--color-radiant)' : 'var(--color-dire)'
   return (
     <span
       className="w-2 h-2 rounded-full inline-block"
       style={{
-        background: standing ? standingColor : '#303030',
+        background: standing ? standingColor : 'var(--color-border)',
         opacity: standing ? 1 : 0.25,
       }}
     />
@@ -25,7 +25,7 @@ function BuildingDot({ standing, team }: { standing: boolean; team: 'radiant' | 
 export default function BuildingsSection({ buildings }: BuildingsSectionProps) {
   return (
     <div className="py-4">
-      <p className="text-[10px] uppercase tracking-[0.3em] mb-4" style={{ color: '#303030' }}>
+      <p className="text-[10px] uppercase tracking-[0.3em] mb-4" style={{ color: 'var(--color-text-dim)' }}>
         Buildings
       </p>
       <div className="flex gap-12 justify-center">
@@ -33,7 +33,7 @@ export default function BuildingsSection({ buildings }: BuildingsSectionProps) {
         <div className="flex flex-col gap-2">
           {LANES.map((lane) => (
             <div key={lane} className="flex items-center gap-3">
-              <span className="text-[10px] uppercase tracking-[0.2em] w-8" style={{ color: '#303030' }}>
+              <span className="text-[10px] uppercase tracking-[0.2em] w-8" style={{ color: 'var(--color-text-dim)' }}>
                 {lane}
               </span>
               <div className="flex items-center gap-1">
@@ -50,7 +50,7 @@ export default function BuildingsSection({ buildings }: BuildingsSectionProps) {
         </div>
 
         {/* Center divider */}
-        <div style={{ width: 1, background: '#1e1e1e' }} />
+        <div style={{ width: 1, background: 'var(--color-border)' }} />
 
         {/* Dire column */}
         <div className="flex flex-col gap-2">
@@ -65,7 +65,7 @@ export default function BuildingsSection({ buildings }: BuildingsSectionProps) {
                   />
                 ))}
               </div>
-              <span className="text-[10px] uppercase tracking-[0.2em] w-8" style={{ color: '#303030' }}>
+              <span className="text-[10px] uppercase tracking-[0.2em] w-8" style={{ color: 'var(--color-text-dim)' }}>
                 {lane}
               </span>
             </div>

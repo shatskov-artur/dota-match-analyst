@@ -23,7 +23,13 @@ function LootIcon({ itemId, size = 28, dimmed = false }: { itemId: number; size?
     opacity: dimmed ? 0.5 : 1,
   }
   if (!slug || imgError) {
-    return <div style={{ ...baseStyle, background: '#1a1a1a', border: '1px solid #2a2a2a' }} aria-label="Empty loot slot" />
+    return (
+      <div
+        className="bg-surface-2"
+        style={{ ...baseStyle, borderWidth: 1, borderStyle: 'solid', borderColor: 'var(--color-border)' }}
+        aria-label="Empty loot slot"
+      />
+    )
   }
   return (
     <img
@@ -31,7 +37,7 @@ function LootIcon({ itemId, size = 28, dimmed = false }: { itemId: number; size?
       alt={slug}
       width={size}
       height={size}
-      style={{ ...baseStyle, display: 'block', objectFit: 'cover' }}
+      style={{ ...baseStyle, display: 'block', objectFit: 'cover', boxShadow: 'inset 0 0 0 1px var(--color-primary-soft)' }}
       onError={() => setImgError(true)}
     />
   )
@@ -92,7 +98,7 @@ export default function RoshanBlock({ roshan }: RoshanBlockProps) {
       <div className="max-w-[360px] mx-auto w-full">
         {roshan.alive ? (
           <>
-            <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-3" style={{ color: '#555555' }}>
+            <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-3" style={{ color: 'var(--color-text-dim)' }}>
               Roshan #{nextKillNumber}
             </p>
             <div className="flex items-center gap-2 mb-4">
@@ -101,16 +107,16 @@ export default function RoshanBlock({ roshan }: RoshanBlockProps) {
           </>
         ) : (
           <>
-            <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-2 text-center" style={{ color: '#555555' }}>
+            <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-2 text-center" style={{ color: 'var(--color-text-dim)' }}>
               Respawn
             </p>
             <div
-              className="text-center mb-3"
+              className="text-center mb-3 font-mono"
               style={{
                 fontSize: 28,
                 fontWeight: 700,
                 fontVariantNumeric: 'tabular-nums',
-                color: '#e8e8e8',
+                color: 'var(--color-text)',
                 letterSpacing: '0.05em',
               }}
             >
@@ -123,8 +129,8 @@ export default function RoshanBlock({ roshan }: RoshanBlockProps) {
         )}
 
         {roshan.killCount >= 1 && roshan.lastKillLoot && (
-          <div className="flex flex-col gap-1 mt-2 pt-3 border-t" style={{ borderColor: '#1e1e1e' }}>
-            <p className="text-[9px] uppercase tracking-[0.25em]" style={{ color: '#555555' }}>
+          <div className="flex flex-col gap-1 mt-2 pt-3 border-t" style={{ borderColor: 'var(--color-border)' }}>
+            <p className="text-[9px] uppercase tracking-[0.25em]" style={{ color: 'var(--color-text-dim)' }}>
               Last Drop
             </p>
             <div className="flex items-center gap-1">
