@@ -46,28 +46,19 @@ export default function ScoreHeader({ match }: ScoreHeaderProps) {
   return (
     <div>
       {/* Score row */}
-      <div
-        className="flex items-center justify-between py-6"
-        style={{ borderBottom: '1px solid #1a1a1a' }}
-      >
+      <div className="flex flex-col gap-4 py-6 border-b border-border md:flex-row md:items-center md:justify-between">
         {/* Left: Radiant team name + kill score + series score */}
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 min-w-0">
           <span
-            className="text-xs font-bold uppercase tracking-[0.2em]"
-            style={{ color: '#4ade80' }}
+            className="text-xs font-bold uppercase tracking-[0.16em]"
+            style={{ color: 'var(--color-radiant)' }}
           >
             {match.radiant_team?.team_name ?? 'TBD'}
           </span>
-          <span
-            className="text-[52px] font-bold tabular-nums font-mono leading-none"
-            style={{ color: '#ffffff' }}
-          >
+          <span className="text-[40px] md:text-[44px] lg:text-[56px] font-mono font-extrabold tabular-nums leading-none text-text">
             {match.radiant_score ?? 0}
           </span>
-          <span
-            className="text-[11px] tabular-nums tracking-[0.08em]"
-            style={{ color: '#666666' }}
-          >
+          <span className="text-[11px] tabular-nums tracking-[0.08em] text-text-dim">
             {seriesScore}
           </span>
         </div>
@@ -76,53 +67,41 @@ export default function ScoreHeader({ match }: ScoreHeaderProps) {
         <div className="flex flex-col items-center gap-3">
           <StatusTag status={status} />
           {gameTime && (
-            <span
-              className="text-sm tabular-nums font-mono"
-              style={{ color: '#888888' }}
-            >
+            <span className="text-sm tabular-nums font-mono text-text-muted">
               {gameTime}
             </span>
           )}
           {roshanTimer && (
             <span
-              className="text-xs tabular-nums font-mono px-2 py-0.5 rounded"
-              style={{ color: '#f97316', background: 'rgba(249,115,22,0.1)', border: '1px solid rgba(249,115,22,0.2)' }}
+              className="text-xs tabular-nums font-mono px-2 py-0.5 rounded border"
+              style={{ color: 'var(--color-accent)', background: 'var(--color-accent-soft)', borderColor: 'var(--color-accent)' }}
             >
               Roshan {roshanTimer}
             </span>
           )}
           <span
             className="text-base tabular-nums font-mono font-bold"
-            style={{ color: goldDiff.color }}
+            style={{ color: 'var(--color-gold)' }}
           >
             {goldDiff.text}
           </span>
-          <span
-            className="text-[10px] tracking-[0.12em] uppercase"
-            style={{ color: '#555555' }}
-          >
+          <span className="text-[11px] uppercase tracking-label text-text-dim">
             {delayLabel}
           </span>
         </div>
 
         {/* Right: Dire kill score + team name + series score (mirrored) */}
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex flex-col items-start gap-2 min-w-0 md:items-end">
           <span
-            className="text-xs font-bold uppercase tracking-[0.2em]"
-            style={{ color: '#ef4444' }}
+            className="text-xs font-bold uppercase tracking-[0.16em]"
+            style={{ color: 'var(--color-dire)' }}
           >
             {match.dire_team?.team_name ?? 'TBD'}
           </span>
-          <span
-            className="text-[52px] font-bold tabular-nums font-mono leading-none"
-            style={{ color: '#ffffff' }}
-          >
+          <span className="text-[40px] md:text-[44px] lg:text-[56px] font-mono font-extrabold tabular-nums leading-none text-text">
             {match.dire_score ?? 0}
           </span>
-          <span
-            className="text-[11px] tabular-nums tracking-[0.08em]"
-            style={{ color: '#666666' }}
-          >
+          <span className="text-[11px] tabular-nums tracking-[0.08em] text-text-dim">
             {seriesScore}
           </span>
         </div>
