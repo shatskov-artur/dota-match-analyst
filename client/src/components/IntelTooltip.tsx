@@ -45,18 +45,18 @@ export default function IntelTooltip({
   // Stat line — handles hidden profile (null) and loading states
   const renderStatLine = () => {
     if (isLoading) {
-      return <span style={{ fontSize: 10, color: '#444444' }}>Loading...</span>
+      return <span style={{ fontSize: 10, color: 'var(--color-text-dim)' }}>Loading...</span>
     }
     if (playerIntel.games === null || playerIntel.winRate === null) {
       // PLAYER-02: hidden profile (account_id === 4294967295) — show em dashes (U+2014)
       return (
-        <span style={{ fontSize: 10, color: '#888888' }}>
+        <span style={{ fontSize: 10, color: 'var(--color-text-muted)' }}>
           {'—'} games {'·'} {'—'}% on {heroName}
         </span>
       )
     }
     return (
-      <span style={{ fontSize: 10, color: '#888888' }}>
+      <span style={{ fontSize: 10, color: 'var(--color-text-muted)' }}>
         {playerIntel.games} games {'·'} {Math.round(playerIntel.winRate * 100)}% on {heroName}
       </span>
     )
@@ -71,11 +71,11 @@ export default function IntelTooltip({
         zIndex: 50,
         minWidth: 160,
         maxWidth: 220,
-        background: '#111111',
-        border: '1px solid #1a1a1a',
-        borderRadius: 4,
+        background: 'var(--card-bg-grad)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-md)',
         padding: 8,
-        boxShadow: '0 4px 16px rgba(0,0,0,0.6)',
+        boxShadow: 'var(--shadow-card)',
         pointerEvents: 'none',  // tooltip is read-only — no click capture
         ...positionStyle,
       }}
@@ -85,7 +85,7 @@ export default function IntelTooltip({
         style={{
           fontSize: 10,
           fontWeight: 700,
-          color: '#d8d8d8',
+          color: 'var(--color-text)',
           margin: 0,
           marginBottom: 2,
           overflow: 'hidden',
@@ -105,13 +105,13 @@ export default function IntelTooltip({
       {isLoading && (
         <>
           {/* Separator */}
-          <div style={{ height: 1, background: '#1a1a1a', marginBottom: 6 }} />
+          <div style={{ height: 1, background: 'var(--color-border)', marginBottom: 6 }} />
           {/* Section label */}
           <p
             style={{
               fontSize: 10,
               fontWeight: 700,
-              color: '#444444',
+              color: 'var(--color-text-dim)',
               margin: 0,
               marginBottom: 4,
               textTransform: 'uppercase',
@@ -126,12 +126,12 @@ export default function IntelTooltip({
                 style={{
                   width: 32,
                   height: 32,
-                  background: '#1a1a1a',
+                  background: 'var(--color-surface-2)',
                   borderRadius: 2,
                   flexShrink: 0,
                 }}
               />
-              <div style={{ height: 10, background: '#1a1a1a', borderRadius: 2, flex: 1 }} />
+              <div style={{ height: 10, background: 'var(--color-surface-2)', borderRadius: 2, flex: 1 }} />
             </div>
           ))}
         </>
@@ -141,13 +141,13 @@ export default function IntelTooltip({
       {!isLoading && hasCounters && (
         <>
           {/* Separator */}
-          <div style={{ height: 1, background: '#1a1a1a', marginBottom: 6 }} />
+          <div style={{ height: 1, background: 'var(--color-border)', marginBottom: 6 }} />
           {/* Section label — "Counters" uppercased via CSS text-transform (not hardcoded) */}
           <p
             style={{
               fontSize: 10,
               fontWeight: 700,
-              color: '#444444',
+              color: 'var(--color-text-dim)',
               margin: 0,
               marginBottom: 4,
               textTransform: 'uppercase',
@@ -184,26 +184,26 @@ export default function IntelTooltip({
                     style={{
                       width: 32,
                       height: 32,
-                      background: '#1a1a1a',
+                      background: 'var(--color-surface-2)',
                       borderRadius: 2,
                       flexShrink: 0,
                     }}
                   />
                 )}
                 {/* Hero name */}
-                <span style={{ fontSize: 10, color: '#d8d8d8' }}>
+                <span style={{ fontSize: 10, color: 'var(--color-text)' }}>
                   {counterInfo?.name ?? `Hero ${counter.heroId}`}
                 </span>
                 {/* D-06: ⚠ flag (U+26A0) + opposing player name when knownPlayers non-empty */}
                 {hasKnownPlayer && (
                   <>
                     {/* Space before ⚠ per copywriting spec */}
-                    <span style={{ fontSize: 10, color: '#ef4444' }}>{'⚠'}</span>
+                    <span style={{ fontSize: 10, color: 'var(--color-dire)' }}>{'⚠'}</span>
                     {/* Opposing player name — truncated to 12 chars with ellipsis */}
                     <span
                       style={{
                         fontSize: 10,
-                        color: '#888888',
+                        color: 'var(--color-text-muted)',
                         overflow: 'hidden',
                         textOverflow: 'ellipsis',
                         whiteSpace: 'nowrap',
