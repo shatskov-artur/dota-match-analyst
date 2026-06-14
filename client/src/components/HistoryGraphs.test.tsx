@@ -69,10 +69,10 @@ describe('HistoryGraphs — rendered chart', () => {
       /^\+[\d.]+k? @ \d+:\d{2}$/.test(t.textContent ?? ''),
     )
     expect(peakTexts.length).toBeGreaterThanOrEqual(1)
-    expect(peakTexts[0].getAttribute('fill')).toBe('#6bcf8a')
+    expect(peakTexts[0].getAttribute('fill')).toBe('#4ade80')
     // Sibling dot
     const circles = Array.from(container.querySelectorAll('circle[r="3.5"]'))
-    expect(circles.some(c => c.getAttribute('fill') === '#6bcf8a')).toBe(true)
+    expect(circles.some(c => c.getAttribute('fill') === '#4ade80')).toBe(true)
   })
 
   it('renders Dire peak dot+label when any sample.gold < 0 (UAT-CHART-02)', () => {
@@ -91,9 +91,9 @@ describe('HistoryGraphs — rendered chart', () => {
       /^-[\d.]+k? @ \d+:\d{2}$/.test(t.textContent ?? ''),
     )
     expect(peakTexts.length).toBeGreaterThanOrEqual(1)
-    expect(peakTexts[0].getAttribute('fill')).toBe('#e06a72')
+    expect(peakTexts[0].getAttribute('fill')).toBe('#f87171')
     const circles = Array.from(container.querySelectorAll('circle[r="3.5"]'))
-    expect(circles.some(c => c.getAttribute('fill') === '#e06a72')).toBe(true)
+    expect(circles.some(c => c.getAttribute('fill') === '#f87171')).toBe(true)
   })
 
   it('headline is Radiant-green when last sample gold >= 0 (UAT-CHART-03)', () => {
@@ -113,7 +113,7 @@ describe('HistoryGraphs — rendered chart', () => {
     expect(headline).toBeTruthy()
     const color = (headline as HTMLElement).style.color
     // jsdom may normalize to rgb(...) or preserve hex; accept either.
-    expect(color === '#6bcf8a' || color === 'rgb(107, 207, 138)').toBe(true)
+    expect(color === '#4ade80' || color === 'rgb(74, 222, 128)').toBe(true)
   })
 
   it('headline is Dire-red when last sample gold < 0 (UAT-CHART-03)', () => {
@@ -132,7 +132,7 @@ describe('HistoryGraphs — rendered chart', () => {
     )
     expect(headline).toBeTruthy()
     const color = (headline as HTMLElement).style.color
-    expect(color === '#e06a72' || color === 'rgb(224, 106, 114)').toBe(true)
+    expect(color === '#f87171' || color === 'rgb(248, 113, 113)').toBe(true)
   })
 
   it('peak label uses text-anchor="start" when peak is near left edge (UAT-CHART-05)', () => {

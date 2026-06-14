@@ -6,10 +6,11 @@ import type { CSSProperties } from 'react'
 // NO chart library imports (D-25). Pure SVG primitives.
 // Canonical spec: .claude/skills/sketch-findings-dota-stats/references/charts-data-viz.md
 
-// Team color consts stay LITERAL softened hex — HistoryGraphs.test.tsx asserts these
+// Team color consts stay LITERAL hex — HistoryGraphs.test.tsx asserts these
 // fills directly, and jsdom does not resolve CSS var() in SVG attributes.
-const RADIANT_GREEN = '#6bcf8a'
-const DIRE_RED      = '#e06a72'
+// Neon Bento team colors: radiant #4ADE80, dire #F87171.
+const RADIANT_GREEN = '#4ade80'
+const DIRE_RED      = '#f87171'
 // Chrome consts use runtime var() tokens (not test-asserted).
 const PANEL_BG      = 'var(--card-bg-grad)'
 const PANEL_BORDER  = 'var(--color-border)'
