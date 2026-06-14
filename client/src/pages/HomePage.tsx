@@ -1,4 +1,4 @@
-import LeagueAccordion from '../components/LeagueAccordion'
+import MatchBentoGrid from '../components/MatchBentoGrid'
 import SkeletonRow from '../components/SkeletonRow'
 import ErrorBanner from '../components/ErrorBanner'
 import { useLiveGames } from '../hooks/useLiveGames'
@@ -32,10 +32,14 @@ export default function HomePage() {
       </header>
 
       <main className="max-w-[1180px] mx-auto px-4 md:px-6">
-        {/* Loading state: 5 skeleton rows while initial data loads */}
+        {/* Loading state: bento skeleton tiles matching the final grid (no layout jump) */}
         {isLoading && (
-          <div>
-            {Array.from({ length: 5 }).map((_, i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 py-6
+                          sm:[grid-auto-rows:minmax(150px,auto)] lg:[grid-auto-rows:minmax(160px,auto)]">
+            <div className="flex sm:col-span-2 lg:col-span-2 lg:row-span-2">
+              <SkeletonRow featured />
+            </div>
+            {Array.from({ length: 4 }).map((_, i) => (
               <SkeletonRow key={i} />
             ))}
           </div>
@@ -56,18 +60,8 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* Match list: show stale data even when background refetch errors */}
-        {!isLoading && grouped.length > 0 && (
-          <div>
-            {grouped.map(({ leagueId, leagueName, matches }) => (
-              <LeagueAccordion
-                key={leagueId}
-                leagueName={leagueName}
-                matches={matches}
-              />
-            ))}
-          </div>
-        )}
+        {/* Match grid: show stale data even when background refetch errors */}
+        {!isLoading && grouped.length > 0 && <MatchBentoGrid grouped={grouped} />}
       </main>
     </div>
   )
