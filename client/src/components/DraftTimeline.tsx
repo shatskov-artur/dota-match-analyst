@@ -25,7 +25,7 @@ export default function DraftTimeline({ slots, gameState, heroStatsMap, playerIn
   const portraitRefs = useRef<Record<number, HTMLDivElement | null>>({})
 
   return (
-    <div className="flex items-start">
+    <div className="flex items-start min-w-0">
       {/* Row labels */}
       <div className="flex flex-col shrink-0 mr-2" style={{ paddingTop: 10 }}>
         <div className="flex items-center text-[8px] font-bold uppercase tracking-widest"
@@ -34,8 +34,9 @@ export default function DraftTimeline({ slots, gameState, heroStatsMap, playerIn
           style={{ height: 48, color: 'var(--color-dire)' }}>D</div>
       </div>
 
-      {/* 24 columns — one per CM step */}
-      <div className="flex gap-1 flex-wrap">
+      {/* 24 columns — one per CM step. Horizontal scroll on narrow screens (UX: overflow-x-auto
+          over wrapping — wrapping a 24-col chess timeline produces ragged rows with spacer gaps). */}
+      <div className="flex gap-1 flex-nowrap overflow-x-auto pb-1 min-w-0">
         {slots.map((slot) => {
           const heroInfo = slot.heroId !== undefined ? heroMapper(slot.heroId) : null
           const isActiveEmpty = slot.isActive && isDraft && !heroInfo
