@@ -338,7 +338,12 @@ Plans:
   2. BFF applies a global rate-limit queue per upstream (Valve, OpenDota, Stratz) with exponential backoff on 429 responses and structured pino logs for every throttle event
   3. Polling stops automatically (`refetchInterval === false`) once `game_state === 6` so finished matches stop draining upstream quotas
   4. Frontend is deployed to Vercel and BFF is deployed to Railway with Upstash Redis configured, and a shareable URL loads the live matches list without local setup
-**Plans:** TBD
+**Plans:** 4 plans
+Plans:
+- [ ] 11-01-PLAN.md — Rate-limit queues + 429 backoff + stale fallback + structured throttle logs (criterion 2)
+- [ ] 11-02-PLAN.md — Per-card + route error boundaries (BentoErrorBoundary, react-error-boundary ^6) (criterion 1)
+- [ ] 11-03-PLAN.md — Polling-stop verification: game_state===6 -> false across all four pollers (criterion 3)
+- [ ] 11-04-PLAN.md — Split-origin deploy: VITE_API_URL + env CORS + railway.json/vercel.json + DEPLOY.md (criterion 4)
 **UI hint:** no
 
 ## Progress
@@ -359,7 +364,7 @@ Plans:
 | 10.2. HistoryGraphs polish + XP fix | 3/3 | Complete | 2026-05-15 |
 | 10.3. Match page layout restructure | 2/2 | Complete | 2026-05-15 |
 | 10.4. Visual redesign (Tactical Slate) + responsive | 8/8 | Complete    | 2026-06-14 |
-| 11. Harden & Deploy | 0/? | Not started | - |
+| 11. Harden & Deploy | 0/4 | Planned | - |
 
 ## Coverage Validation
 
