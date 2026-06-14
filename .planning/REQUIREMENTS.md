@@ -41,9 +41,9 @@
 
 ### UI — Visual Redesign & Responsiveness (added 2026-06-06)
 
-- [ ] **UI-01**: Entire app is restyled to the "Tactical Slate" dark theme (warm charcoal base, muted gold + steel-blue accents, soft-shadow rounded cards) via a shared design-token system — palette captured in sketches 003/004
-- [ ] **UI-02**: All screens (Home + Match) adapt responsively across four target widths: phone (~375px), tablet (~768px), laptop (~1280px), desktop (~1536px+) — no horizontal scroll, no overlapping/clipped content at any breakpoint
-- [ ] **UI-03**: Dense Match-page panel grid reflows on narrow viewports (multi-column → stacked) while preserving all data and readability; hero portraits, item slots, and cooldown icons remain legible on phone
+- [x] **UI-01**: Entire app is restyled to the "Tactical Slate" dark theme (warm charcoal base, muted gold + steel-blue accents, soft-shadow rounded cards) via a shared design-token system — palette captured in sketches 003/004
+- [x] **UI-02**: All screens (Home + Match) adapt responsively across four target widths: phone (~375px), tablet (~768px), laptop (~1280px), desktop (~1536px+) — no horizontal scroll, no overlapping/clipped content at any breakpoint
+- [x] **UI-03**: Dense Match-page panel grid reflows on narrow viewports (multi-column → stacked) while preserving all data and readability; hero portraits, item slots, and cooldown icons remain legible on phone
 
 ---
 
