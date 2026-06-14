@@ -63,19 +63,19 @@ export default function MatchPage() {
         {match?.dire_team?.team_name ?? 'TBD'}
       </h1>
 
-      {/* ScoreHeader — D-01 section order step 2 */}
-      {match && (
-        <ScoreHeader match={match} />
-      )}
+      {/* Score block — featured Neon Bento card with violet glow (D-01 section order step 2) */}
+      <div className="bento-card mt-2 bg-[radial-gradient(ellipse_at_center,var(--color-primary-soft),transparent_70%)]">
+        {match && <ScoreHeader match={match} />}
 
-      {/* Phase 6 gap closure: three-bar win probability panel — Gold and Est. always visible past 5 min */}
-      <WinProbBar
-        stratz={winProb.data?.stratz ?? null}
-        gold={winProb.data?.gold ?? 0.5}
-        estimate={winProb.data?.estimate ?? 0.5}
-        gameDuration={match?.duration}
-        gameState={match?.game_state}
-      />
+        {/* Phase 6 gap closure: three-bar win probability panel — Gold and Est. always visible past 5 min */}
+        <WinProbBar
+          stratz={winProb.data?.stratz ?? null}
+          gold={winProb.data?.gold ?? 0.5}
+          estimate={winProb.data?.estimate ?? 0.5}
+          gameDuration={match?.duration}
+          gameState={match?.game_state}
+        />
+      </div>
 
       {/* DraftSection — Phase 4 D-03 section order step 3; D-10 mount only when scoreboard present */}
       {/* Phase 5: heroStatsMap and playerIntelMap passed for badge strips (DRAFT-03) and tooltips (DRAFT-04) */}
@@ -93,7 +93,7 @@ export default function MatchPage() {
 
       {/* Pre-game / loading skeleton — show HeroPlayerGrid alone when in-game gate is closed */}
       {!(match?.game_state === 5 && radiantPlayers.length > 0) && (
-        <div className="mt-12">
+        <div className="bento-card mt-12">
           <HeroPlayerGrid
             radiantPlayers={radiantPlayers}
             direPlayers={direPlayers}
@@ -116,7 +116,7 @@ export default function MatchPage() {
         <div className="mt-12 flex flex-col gap-12">
           {/* Row 1 — heroes / items / cooldowns. Mobile-first: stacked below 1180px, 3-col at/above. */}
           <div className="flex flex-col gap-6 stack:flex-row stack:gap-8 stack:items-stretch">
-            <div className="min-w-0 stack:flex-1">
+            <div className="bento-card min-w-0 stack:flex-1">
               <HeroPlayerGrid
                 radiantPlayers={radiantPlayers}
                 direPlayers={direPlayers}
@@ -124,7 +124,7 @@ export default function MatchPage() {
                 playerIntelMap={playerIntelMap}
               />
             </div>
-            <div className="min-w-0 stack:flex-1 flex flex-col">
+            <div className="bento-card min-w-0 stack:flex-1 flex flex-col">
               <ItemsBlock
                 players={[
                   ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
@@ -132,7 +132,7 @@ export default function MatchPage() {
                 ].sort((a, b) => ((b.net_worth as number | undefined) ?? 0) - ((a.net_worth as number | undefined) ?? 0))}
               />
             </div>
-            <div className="min-w-0 stack:flex-1 flex flex-col">
+            <div className="bento-card min-w-0 stack:flex-1 flex flex-col">
               <CooldownsBlock
                 players={[
                   ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
@@ -152,13 +152,13 @@ export default function MatchPage() {
                 gameState={match?.game_state}
               />
             </div>
-            <div className="w-full stack:w-[320px] stack:shrink-0 flex flex-col gap-8">
+            <div className="bento-card w-full stack:w-[320px] stack:shrink-0 flex flex-col gap-8">
               <RoshanBlock roshan={match?.roshan ?? null} />
               {!buildings.unavailable && (
                 <BuildingsSection buildings={buildings} />
               )}
             </div>
-            <div className="w-full stack:w-auto stack:shrink-0 flex justify-center">
+            <div className="bento-card w-full stack:w-auto stack:shrink-0 flex justify-center">
               <DotaMapView
                 size={420}
                 buildings={buildings}

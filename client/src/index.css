@@ -50,3 +50,21 @@
   --glow-primary: 0 0 0 1px rgba(139, 92, 246, 0.45);
   --glow-accent: 0 0 0 1px rgba(251, 191, 36, 0.40);
 }
+
+/* Neon Bento card — reusable surface tile (Match-page panels). Skips the hover glow
+   on touch devices implicitly via :hover. */
+@layer components {
+  .bento-card {
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.125rem;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+  }
+  @media (min-width: 1024px) {
+    .bento-card { padding: 1.25rem; }
+  }
+  .bento-card:hover {
+    border-color: var(--color-primary);
+  }
+}
