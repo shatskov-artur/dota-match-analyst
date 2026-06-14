@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Bento — Home</title>
+<link rel="stylesheet" href="_theme.css">
+<style>
+  /* Home bento — ui-ux-pro-max Bento Box Grid: grid-auto-rows + varied spans.
+     Fixed row height keeps the grid even (no ragged gaps). Mobile-first. */
+  .bento{display:grid;grid-template-columns:1fr;gap:14px;margin-top:22px}
+  @media(min-width:640px){.bento{grid-template-columns:1fr 1fr;gap:16px;grid-auto-rows:minmax(150px,auto)}}
+  @media(min-width:1024px){.bento{grid-template-columns:repeat(3,1fr);grid-auto-rows:minmax(160px,auto)}}
+  /* every cell is a flex column: label top, score middle, pill bottom — fills its tile */
+  .cell{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:20px;transition:.18s;cursor:pointer;display:flex;flex-direction:column}
+  .cell:hover{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet),0 0 28px var(--violet-soft)}
+  .cell .body{flex:1;display:flex;flex-direction:column;justify-content:center}
+  .cell .pill{align-self:flex-start;margin-top:auto}
+  /* featured: 2×2 tile on laptop, 2-wide on tablet, full on phone */
+  .cell.feat{background:radial-gradient(ellipse at top left,var(--violet-soft),transparent 60%),var(--surface)}
+  @media(min-width:640px){.cell.feat{grid-column:span 2}}
+  @media(min-width:1024px){.cell.feat{grid-column:span 2;grid-row:span 2}}
+  .feat .feat-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:18px;padding-top:18px;border-top:1px solid var(--border)}
+  .feat .fs{text-align:center}
+  .feat .fs .v{font-family:var(--mono);font-weight:700;font-size:18px}
+  .feat .fs .l{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin-top:3px}
+  /* wide row (e.g. featured BO-style match): 2-wide tablet, full row laptop */
+  @media(min-width:640px){.cell.wide{grid-column:span 2}}
+  @media(min-width:1024px){.cell.wide{grid-column:span 3}}
+  .lab{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .mu{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:8px}
+  .crest{width:38px;height:38px;border-radius:11px;background:var(--surface2);border:1px solid var(--border);display:grid;place-items:center;font-weight:700;font-size:13px;color:var(--muted);flex-shrink:0}
+  .tname{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .feat .tname{font-size:18px}
+  .vs{font-family:var(--mono);font-weight:700;font-size:22px;font-variant-numeric:tabular-nums}.feat .vs{font-size:38px}
+  .tinfo{display:flex;align-items:center;gap:10px;min-width:0}
+</style></head>
+<body><div class="wrap">
+  <span class="live"><span class="d"></span>Live now · 3 matches</span>
+  <h1>Pro Matches</h1>
+  <div class="bento">
+    <div class="cell feat">
+      <div class="lab">★ Featured · TI2026 Groups</div>
+      <div class="body">
+        <div class="mu"><div class="tinfo"><span class="crest">TS</span><span class="tname">Team Spirit</span></div><span class="vs" style="color:var(--radiant)">2</span></div>
+        <div class="mu"><div class="tinfo"><span class="crest">GG</span><span class="tname">Gaimin Gladiators</span></div><span class="vs" style="color:var(--dire)">1</span></div>
+        <div class="feat-stats">
+          <div class="fs"><div class="v">28 - 21</div><div class="l">Game 4 kills</div></div>
+          <div class="fs"><div class="v" style="color:var(--gold)">+7.2k</div><div class="l">Net worth</div></div>
+          <div class="fs"><div class="v">32:14</div><div class="l">Duration</div></div>
+        </div>
+      </div>
+      <span class="pill live">● Live · 32:14</span>
+    </div>
+    <div class="cell"><div class="lab">TI2026 Groups</div>
+      <div class="body">
+        <div class="mu"><span class="tname">Falcons</span><span class="vs">0</span></div>
+        <div class="mu"><span class="tname">Team Liquid</span><span class="vs">0</span></div>
+      </div>
+      <span class="pill draft">Draft</span></div>
+    <div class="cell"><div class="lab">TI2026 Groups</div>
+      <div class="body">
+        <div class="mu"><span class="tname">Xtreme Gaming</span><span class="vs">1</span></div>
+        <div class="mu"><span class="tname">BetBoom</span><span class="vs">0</span></div>
+      </div>
+      <span class="pill live">● Live · 08:51</span></div>
+    <div class="cell wide"><div class="lab">DreamLeague S24</div>
+      <div class="body">
+        <div class="mu"><div class="tinfo"><span class="crest">TU</span><span class="tname">Tundra Esports</span></div><span class="vs">0 : 2</span><div class="tinfo"><span class="tname">OG</span><span class="crest">OG</span></div></div>
+      </div>
+      <span class="pill live">● Live · 41:07</span></div>
+    <div class="cell"><div class="lab">ESL One · Finished</div>
+      <div class="body">
+        <div class="mu"><span class="tname">PSG.LGD</span><span class="vs" style="color:var(--muted)">3</span></div>
+        <div class="mu"><span class="tname">Aurora</span><span class="vs" style="color:var(--muted)">1</span></div>
+      </div>
+      <span class="pill fin">Finished</span></div>
+    <div class="cell"><div class="lab">ESL One · Finished</div>
+      <div class="body">
+        <div class="mu"><span class="tname">Nigma Galaxy</span><span class="vs" style="color:var(--muted)">0</span></div>
+        <div class="mu"><span class="tname">Talon</span><span class="vs" style="color:var(--muted)">2</span></div>
+      </div>
+      <span class="pill fin">Finished</span></div>
+  </div>
+</div></body></html>

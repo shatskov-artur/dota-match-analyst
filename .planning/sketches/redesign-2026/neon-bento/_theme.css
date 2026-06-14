@@ -1,0 +1,67 @@
+/* ============================================================
+   NEON BENTO — shared theme (ui-ux-pro-max: Bento Box Grid + OLED + Web3 palette)
+   Mobile-first. Breakpoints: phone <640 / tablet 640 / laptop 1024 / desktop 1280
+   ============================================================ */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap');
+
+:root{
+  --bg:#08080F; --surface:#16152A; --surface2:#1F1D38; --border:#2E2B52;
+  --violet:#8B5CF6; --violet-soft:rgba(139,92,246,.2); --gold:#FBBF24; --gold-soft:rgba(251,191,36,.16);
+  --radiant:#4ADE80; --dire:#F87171; --radiant-soft:rgba(74,222,128,.16); --dire-soft:rgba(248,113,113,.16);
+  --text:#F4F2FF; --muted:#A39FCC; --dim:#615C8E; --danger:#EF4444;
+  --sans:'Plus Jakarta Sans',sans-serif; --mono:'JetBrains Mono',monospace;
+  --r-lg:18px; --r-md:12px; --r-sm:7px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+body{padding:18px 14px 60px}
+@media(min-width:640px){body{padding:24px 20px 70px}}
+@media(min-width:1024px){body{padding:30px 24px 80px}}
+.wrap{max-width:1320px;margin:0 auto}
+
+/* header */
+.live{display:inline-flex;align-items:center;gap:8px;font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--dire)}
+.live .d{width:8px;height:8px;border-radius:50%;background:var(--dire);box-shadow:0 0 10px var(--dire);animation:pulse 1.3s infinite}
+@keyframes pulse{50%{opacity:.3}}
+h1{font-weight:800;letter-spacing:-.02em;margin:6px 0 2px;font-size:clamp(1.5rem,5vw,2.6rem)}
+h1 .sep{color:var(--dim);font-weight:500}
+.backlink{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);text-decoration:none;margin-bottom:14px}
+.backlink:hover{color:var(--violet)}
+
+/* generic card */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:18px}
+.card h3{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+@media(min-width:1024px){.card{padding:20px}}
+
+/* tags / pills */
+.pill{display:inline-block;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 14px;border-radius:999px}
+.pill.live{background:var(--dire-soft);color:var(--dire)}
+.pill.draft{background:var(--gold-soft);color:var(--gold)}
+.pill.fin{background:var(--surface2);color:var(--muted)}
+
+/* player rows */
+.pl{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.pl:last-child{border:0}
+.port{width:38px;height:38px;border-radius:10px;flex-shrink:0;background:var(--surface2)}
+.port.r{box-shadow:inset 0 0 0 1.5px var(--radiant)}
+.port.d{box-shadow:inset 0 0 0 1.5px var(--dire)}
+.pn{flex:1;min-width:0;font-weight:600;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kda{font-family:var(--mono);font-size:12px;color:var(--muted)}
+.nwv{font-family:var(--mono);font-size:13px;color:var(--gold);min-width:50px;text-align:right;font-variant-numeric:tabular-nums}
+
+/* item slots */
+.its{display:flex;gap:4px}
+.s{width:25px;height:25px;border-radius:6px;background:var(--surface2);border:1px solid var(--border);flex-shrink:0}
+.s.f{box-shadow:inset 0 0 0 1px var(--gold-soft)}
+
+/* chart + map */
+.chart{height:96px;border-radius:var(--r-md);background:var(--surface2);position:relative;overflow:hidden}
+.chart svg{position:absolute;inset:0;width:100%;height:100%}
+.mapbox{aspect-ratio:1;width:100%;max-width:420px;margin:0 auto;border-radius:var(--r-md);background:var(--surface2);position:relative}
+.blip{position:absolute;width:9px;height:9px;border-radius:50%}
+
+/* skeleton shimmer */
+.sk{background:linear-gradient(90deg,var(--surface) 25%,var(--surface2) 50%,var(--surface) 75%);background-size:200% 100%;animation:shimmer 1.4s infinite;border-radius:6px}
+@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+.note{margin-top:22px;padding:14px 18px;border-radius:var(--r-md);background:var(--surface);border:1px dashed var(--border);color:var(--muted);font-size:13px;line-height:1.5}

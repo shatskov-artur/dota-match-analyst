@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Bento — Match (in-game)</title>
+<link rel="stylesheet" href="_theme.css">
+<style>
+  /* Match bento — mobile-first: all stack 1col → laptop 4col grid */
+  .mb{display:grid;grid-template-columns:1fr;gap:14px;margin-top:18px}
+  @media(min-width:640px){.mb{grid-template-columns:1fr 1fr;gap:16px}}
+  @media(min-width:1024px){.mb{grid-template-columns:repeat(4,1fr)}}
+  .score{display:flex;flex-direction:column;gap:18px;text-align:center;padding:22px;border-radius:var(--r-lg);
+    background:radial-gradient(ellipse at center,var(--violet-soft),transparent 70%),var(--surface);border:1px solid var(--border)}
+  @media(min-width:640px){.score{flex-direction:row;align-items:center;justify-content:space-between;text-align:left;grid-column:span 2}}
+  @media(min-width:1024px){.score{grid-column:span 4}}
+  .side{flex:1;min-width:0}.side.r{text-align:center}
+  @media(min-width:640px){.side.r{text-align:right}}
+  .tn{font-weight:700;font-size:17px}
+  .k{font-family:var(--mono);font-weight:700;font-size:clamp(40px,10vw,56px);line-height:1;font-variant-numeric:tabular-nums}
+  .k.r{color:var(--radiant)}.k.d{color:var(--dire)}
+  .mid{text-align:center}.ct{font-family:var(--mono);font-weight:700;font-size:22px}
+  .roshpill{display:inline-block;margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--gold);padding:4px 12px;border-radius:999px;background:var(--gold-soft)}
+  @media(min-width:1024px){
+    .heroes{grid-column:span 2;grid-row:span 2}
+    .items{grid-column:span 2}
+    .cds{grid-column:span 2}
+    .nw{grid-column:span 2}
+    .rosh{grid-column:span 1}
+    .map{grid-column:span 1}
+  }
+  @media(min-width:640px) and (max-width:1023px){.heroes,.nw{grid-column:span 2}}
+</style></head>
+<body><div class="wrap">
+  <a href="home.html" class="backlink">← Back to matches</a>
+  <span class="live"><span class="d"></span>Live · 32:14</span>
+  <h1>Team Spirit <span class="sep">vs</span> Gaimin Gladiators</h1>
+  <div class="mb">
+    <div class="score">
+      <div class="side"><div class="tn" style="color:var(--radiant)">Team Spirit</div><div class="k r">28</div></div>
+      <div class="mid"><div class="ct">32:14</div><span class="roshpill">Roshan 4:02</span></div>
+      <div class="side r"><div class="tn" style="color:var(--dire)">Gaimin Gladiators</div><div class="k d">21</div></div>
+    </div>
+    <div class="card heroes"><h3>Heroes</h3>
+      <div class="pl"><span class="port r"></span><span class="pn">Yatoro · Faceless Void</span><span class="kda">9/2/11</span><span class="nwv">24.1k</span></div>
+      <div class="pl"><span class="port r"></span><span class="pn">Larl · Invoker</span><span class="kda">7/4/14</span><span class="nwv">19.8k</span></div>
+      <div class="pl"><span class="port r"></span><span class="pn">Collapse · Magnus</span><span class="kda">5/3/18</span><span class="nwv">17.2k</span></div>
+      <div class="pl"><span class="port r"></span><span class="pn">Mira · Hoodwink</span><span class="kda">3/4/22</span><span class="nwv">12.6k</span></div>
+      <div class="pl"><span class="port r"></span><span class="pn">Miposhka · IO</span><span class="kda">1/5/27</span><span class="nwv">10.1k</span></div>
+      <div class="pl"><span class="port d"></span><span class="pn">Quinn · Puck</span><span class="kda">6/5/9</span><span class="nwv">18.9k</span></div>
+      <div class="pl"><span class="port d"></span><span class="pn">Ace · Tidehunter</span><span class="kda">4/6/12</span><span class="nwv">15.4k</span></div>
+    </div>
+    <div class="card items"><h3>Items</h3>
+      <div class="pl"><span class="port r"></span><div class="its"><span class="s f"></span><span class="s f"></span><span class="s f"></span><span class="s"></span><span class="s f"></span><span class="s"></span></div></div>
+      <div class="pl"><span class="port r"></span><div class="its"><span class="s f"></span><span class="s f"></span><span class="s"></span><span class="s f"></span><span class="s"></span><span class="s"></span></div></div>
+      <div class="pl"><span class="port d"></span><div class="its"><span class="s f"></span><span class="s f"></span><span class="s f"></span><span class="s f"></span><span class="s"></span><span class="s"></span></div></div>
+      <div class="pl"><span class="port d"></span><div class="its"><span class="s f"></span><span class="s f"></span><span class="s"></span><span class="s"></span><span class="s"></span><span class="s"></span></div></div>
+    </div>
+    <div class="card cds"><h3>Cooldowns</h3>
+      <div class="pl"><span class="port r"></span><span class="pn">Black Hole</span><span class="nwv" style="color:var(--gold)">12s</span></div>
+      <div class="pl"><span class="port d"></span><span class="pn">Ravage</span><span class="nwv" style="color:var(--radiant)">Ready</span></div>
+      <div class="pl"><span class="port r"></span><span class="pn">Chronosphere</span><span class="nwv" style="color:var(--gold)">34s</span></div>
+    </div>
+    <div class="card nw"><h3>Net Worth · XP</h3>
+      <div class="chart"><svg viewBox="0 0 300 96" preserveAspectRatio="none"><polyline fill="none" stroke="#4ADE80" stroke-width="2" points="0,62 50,54 100,50 150,36 200,28 250,22 300,16"/><polyline fill="none" stroke="#F87171" stroke-width="2" points="0,64 50,60 100,58 150,54 200,50 250,47 300,45"/></svg></div>
+      <div style="margin-top:10px;font-family:var(--mono);font-size:13px;color:var(--gold)">+7.2k advantage</div>
+    </div>
+    <div class="card rosh"><h3>Roshan · Buildings</h3>
+      <div style="text-align:center;font-family:var(--mono);font-size:26px;color:var(--gold)">4:02</div>
+      <div style="display:flex;gap:5px;justify-content:center;margin-top:12px"><span class="s f"></span><span class="s f"></span><span class="s"></span></div>
+    </div>
+    <div class="card map"><h3>Map</h3>
+      <div class="mapbox">
+        <span class="blip" style="background:var(--radiant);left:28%;top:66%;box-shadow:0 0 6px var(--radiant)"></span>
+        <span class="blip" style="background:var(--radiant);left:35%;top:58%;box-shadow:0 0 6px var(--radiant)"></span>
+        <span class="blip" style="background:var(--radiant);left:22%;top:74%;box-shadow:0 0 6px var(--radiant)"></span>
+        <span class="blip" style="background:var(--dire);left:68%;top:30%;box-shadow:0 0 6px var(--dire)"></span>
+        <span class="blip" style="background:var(--dire);left:62%;top:38%;box-shadow:0 0 6px var(--dire)"></span>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>Match · In-game</b> — бенто-сетка модулей. Телефон: всё в один столбец. Планшет (640+): 2 колонки, счёт и герои на всю ширину. Ноут/десктоп (1024+): 4-колоночная бенто-сетка, герои 2×2, карта/рошан компактные ячейки. Данные — заглушки.</div>
+</div></body></html>

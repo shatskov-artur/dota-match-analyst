@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redesign 5 — Neon Bento</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  /* ===== Neon Bento — Bento Box Grid + Dark Mode OLED + Web3 palette ===== */
+  :root{
+    --bg:#08080F; --surface:#16152A; --surface2:#1F1D38; --border:#2E2B52;
+    --violet:#8B5CF6; --violet-soft:rgba(139,92,246,.2); --gold:#FBBF24;
+    --radiant:#4ADE80; --dire:#F87171; --text:#F4F2FF; --muted:#A39FCC; --dim:#615C8E;
+    --sans:'Plus Jakarta Sans',sans-serif; --mono:'JetBrains Mono',monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+  .tabs{position:sticky;top:0;z-index:50;display:flex;gap:8px;padding:14px 22px;background:rgba(8,8,15,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+  .tab{font-weight:600;font-size:14px;padding:9px 20px;border-radius:999px;color:var(--muted);cursor:pointer;border:1px solid transparent}
+  .tab.active{background:var(--violet);color:#fff;box-shadow:0 0 22px var(--violet-soft)}
+  .wrap{max-width:1320px;margin:0 auto;padding:28px 22px 80px}
+  .page{display:none}.page.active{display:block}
+  h1{font-weight:800;font-size:clamp(1.9rem,4vw,2.8rem);letter-spacing:-.02em;margin:6px 0 2px}
+  h1 .sep{color:var(--dim);font-weight:500}
+  .live{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--dire)}
+  .live .d{width:8px;height:8px;border-radius:50%;background:var(--dire);box-shadow:0 0 10px var(--dire);animation:p 1.3s infinite}@keyframes p{50%{opacity:.3}}
+  /* HOME bento */
+  .bento{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:24px}
+  .cell{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px;transition:.18s;position:relative;overflow:hidden}
+  .cell:hover{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet),0 0 28px var(--violet-soft)}
+  .cell.feat{grid-column:span 2;grid-row:span 2;background:radial-gradient(ellipse at top left,var(--violet-soft),transparent 60%),var(--surface)}
+  .cell.wide{grid-column:span 2}
+  .lab{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  .matchup{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:10px}
+  .crest{width:40px;height:40px;border-radius:11px;background:var(--surface2);border:1px solid var(--border);display:grid;place-items:center;font-weight:700;font-size:14px;color:var(--muted)}
+  .tname{font-weight:700;font-size:15px}.feat .tname{font-size:19px}
+  .vs-sc{font-family:var(--mono);font-weight:700;font-size:24px}.feat .vs-sc{font-size:40px}
+  .pill{display:inline-block;margin-top:14px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:5px 14px;border-radius:999px}
+  .pill.live{background:rgba(248,113,113,.16);color:var(--dire)}.pill.draft{background:rgba(251,191,36,.16);color:var(--gold)}
+  /* MATCH bento */
+  .mb{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:22px}
+  .mb .score{grid-column:span 4;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:26px;border-radius:20px;background:radial-gradient(ellipse at center,var(--violet-soft),transparent 70%),var(--surface);border:1px solid var(--border)}
+  .mb .heroes{grid-column:span 2;grid-row:span 2}
+  .mb .items{grid-column:span 2}
+  .mb .cds{grid-column:span 2}
+  .mb .nw{grid-column:span 2}
+  .mb .rosh{grid-column:span 1}
+  .mb .map{grid-column:span 1}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:20px}
+  .card h3{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+  .side{flex:1;min-width:0}.side.r{text-align:right}
+  .tn{font-weight:700;font-size:18px}
+  .k{font-family:var(--mono);font-weight:700;font-size:56px;line-height:1;font-variant-numeric:tabular-nums}
+  .k.r{color:var(--radiant)}.k.d{color:var(--dire)}
+  .mid{text-align:center}.ct{font-family:var(--mono);font-weight:700;font-size:23px}
+  .roshpill{display:inline-block;margin-top:8px;font-family:var(--mono);font-size:12px;color:var(--gold);padding:4px 12px;border-radius:999px;background:rgba(251,191,36,.14)}
+  .pl{display:flex;align-items:center;gap:11px;padding:8px 0;border-bottom:1px solid var(--border)}.pl:last-child{border:0}
+  .port{width:40px;height:40px;border-radius:10px;flex-shrink:0;background:var(--surface2)}
+  .port.r{box-shadow:inset 0 0 0 1.5px var(--radiant)}.port.d{box-shadow:inset 0 0 0 1.5px var(--dire)}
+  .pn{flex:1;font-weight:600;font-size:14px}.kda{font-family:var(--mono);font-size:12px;color:var(--muted)}.nwv{font-family:var(--mono);font-size:13px;color:var(--gold);min-width:52px;text-align:right}
+  .its{display:flex;gap:4px}.s{width:25px;height:25px;border-radius:6px;background:var(--surface2);border:1px solid var(--border)}.s.f{box-shadow:inset 0 0 0 1px rgba(251,191,36,.45)}
+  .chart{height:96px;border-radius:12px;background:var(--surface2);position:relative;overflow:hidden}.chart svg{position:absolute;inset:0;width:100%;height:100%}
+  .mapbox{aspect-ratio:1;border-radius:12px;background:var(--surface2);position:relative}
+  .blip{position:absolute;width:9px;height:9px;border-radius:50%}
+  .note{margin-top:22px;padding:16px 20px;border-radius:14px;background:var(--surface);border:1px solid var(--border);color:var(--muted);font-size:13px}
+  @media(max-width:1100px){.bento,.mb{grid-template-columns:1fr}.cell.feat,.cell.wide,.mb .score,.mb .heroes,.mb .items,.mb .cds,.mb .nw,.mb .rosh,.mb .map{grid-column:span 1;grid-row:span 1}.mb .score{flex-direction:column}.side.r{text-align:center}}
+</style>
+</head>
+<body>
+<div class="tabs">
+  <div class="tab active" onclick="show('home',this)">Home</div>
+  <div class="tab" onclick="show('match',this)">Match</div>
+  <span style="margin-left:auto;align-self:center;color:var(--dim);font-family:var(--mono);font-size:12px">05 — NEON BENTO</span>
+</div>
+
+<!-- HOME -->
+<div class="wrap page active" id="home">
+  <span class="live"><span class="d"></span>Live now · 3 matches</span>
+  <h1>Pro Matches</h1>
+  <div class="bento">
+    <div class="cell feat">
+      <div class="lab">★ Featured · TI2026 Groups</div>
+      <div class="matchup"><div style="display:flex;align-items:center;gap:12px"><span class="crest">TS</span><span class="tname">Team Spirit</span></div><span class="vs-sc" style="color:var(--radiant)">2</span></div>
+      <div class="matchup"><div style="display:flex;align-items:center;gap:12px"><span class="crest">GG</span><span class="tname">Gaimin Gladiators</span></div><span class="vs-sc" style="color:var(--dire)">1</span></div>
+      <span class="pill live">● Live · 32:14</span>
+    </div>
+    <div class="cell"><div class="lab">TI2026 Groups</div>
+      <div class="matchup"><span class="tname">Falcons</span><span class="vs-sc">0</span></div>
+      <div class="matchup"><span class="tname">Team Liquid</span><span class="vs-sc">0</span></div>
+      <span class="pill draft">Draft</span></div>
+    <div class="cell"><div class="lab">TI2026 Groups</div>
+      <div class="matchup"><span class="tname">Xtreme Gaming</span><span class="vs-sc">1</span></div>
+      <div class="matchup"><span class="tname">BetBoom</span><span class="vs-sc">0</span></div>
+      <span class="pill live">● Live · 08:51</span></div>
+    <div class="cell wide"><div class="lab">DreamLeague S24</div>
+      <div class="matchup"><div style="display:flex;align-items:center;gap:10px"><span class="crest">TU</span><span class="tname">Tundra Esports</span></div><span class="vs-sc">0 : 2</span><div style="display:flex;align-items:center;gap:10px"><span class="tname">OG</span><span class="crest">OG</span></div></div>
+      <span class="pill live">● Live · 41:07</span></div>
+  </div>
+</div>
+
+<!-- MATCH -->
+<div class="wrap page" id="match">
+  <span class="live"><span class="d"></span>Live · 32:14</span>
+  <h1>Team Spirit <span class="sep">vs</span> Gaimin Gladiators</h1>
+  <div class="mb">
+    <div class="score">
+      <div class="side"><div class="tn" style="color:var(--radiant)">Team Spirit</div><div class="k r">28</div></div>
+      <div class="mid"><div class="ct">32:14</div><span class="roshpill">Roshan 4:02</span></div>
+      <div class="side r"><div class="tn" style="color:var(--dire)">Gaimin Gladiators</div><div class="k d">21</div></div>
+    </div>
+    <div class="card heroes"><h3>Heroes</h3>
+      <div class="pl"><span class="port r"></span><span class="pn">Yatoro</span><span class="kda">9/2/11</span><span class="nwv">24.1k</span></div>
+      <div class="pl"><span class="port r"></span><span class="pn">Larl</span><span class="kda">7/4/14</span><span class="nwv">19.8k</span></div>
+      <div class="pl"><span class="port r"></span><span class="pn">Collapse</span><span class="kda">5/3/18</span><span class="nwv">17.2k</span></div>
+      <div class="pl"><span class="port d"></span><span class="pn">Quinn</span><span class="kda">6/5/9</span><span class="nwv">18.9k</span></div>
+      <div class="pl"><span class="port d"></span><span class="pn">Ace</span><span class="kda">4/6/12</span><span class="nwv">15.4k</span></div>
+    </div>
+    <div class="card items"><h3>Items</h3>
+      <div class="pl"><span class="port r"></span><div class="its"><span class="s f"></span><span class="s f"></span><span class="s f"></span><span class="s"></span><span class="s f"></span><span class="s"></span></div></div>
+      <div class="pl"><span class="port r"></span><div class="its"><span class="s f"></span><span class="s f"></span><span class="s"></span><span class="s f"></span><span class="s"></span><span class="s"></span></div></div>
+      <div class="pl"><span class="port d"></span><div class="its"><span class="s f"></span><span class="s f"></span><span class="s f"></span><span class="s f"></span><span class="s"></span><span class="s"></span></div></div>
+    </div>
+    <div class="card cds"><h3>Cooldowns</h3>
+      <div class="pl"><span class="port r"></span><span class="pn">Black Hole</span><span class="nwv" style="color:var(--gold)">12s</span></div>
+      <div class="pl"><span class="port d"></span><span class="pn">Ravage</span><span class="nwv" style="color:var(--radiant)">Ready</span></div>
+      <div class="pl"><span class="port r"></span><span class="pn">RP</span><span class="nwv" style="color:var(--gold)">34s</span></div>
+    </div>
+    <div class="card nw"><h3>Net Worth</h3>
+      <div class="chart"><svg viewBox="0 0 300 96" preserveAspectRatio="none"><polyline fill="none" stroke="#4ADE80" stroke-width="2" points="0,62 50,54 100,50 150,36 200,28 250,22 300,16"/><polyline fill="none" stroke="#F87171" stroke-width="2" points="0,64 50,60 100,58 150,54 200,50 250,47 300,45"/></svg></div>
+      <div style="margin-top:10px;font-family:var(--mono);font-size:13px;color:var(--gold)">+7.2k advantage</div>
+    </div>
+    <div class="card rosh"><h3>Roshan</h3>
+      <div style="text-align:center;font-family:var(--mono);font-size:26px;color:var(--gold)">4:02</div>
+      <div style="display:flex;gap:5px;justify-content:center;margin-top:12px"><span class="s f"></span><span class="s f"></span><span class="s"></span></div>
+    </div>
+    <div class="card map"><h3>Map</h3>
+      <div class="mapbox">
+        <span class="blip" style="background:var(--radiant);left:28%;top:66%;box-shadow:0 0 6px var(--radiant)"></span>
+        <span class="blip" style="background:var(--radiant);left:35%;top:58%;box-shadow:0 0 6px var(--radiant)"></span>
+        <span class="blip" style="background:var(--dire);left:68%;top:30%;box-shadow:0 0 6px var(--dire)"></span>
+        <span class="blip" style="background:var(--dire);left:62%;top:38%;box-shadow:0 0 6px var(--dire)"></span>
+      </div>
+    </div>
+  </div>
+  <div class="note"><b>Neon Bento</b> — модульный OLED-дашборд: Plus Jakarta Sans, бенто-сетка (блоки разного размера), глубокий чёрный фон, фиолет #8B5CF6 + золото, скруглённые карточки, мягкий неон-глоу при ховере. Featured-матч крупной ячейкой. Данные — заглушки.</div>
+</div>
+
+<script>
+function show(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');window.scrollTo(0,0);}
+</script>
+</body>
+</html>

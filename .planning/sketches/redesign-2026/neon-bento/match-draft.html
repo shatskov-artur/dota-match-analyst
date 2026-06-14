@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Bento — Match (draft)</title>
+<link rel="stylesheet" href="_theme.css">
+<style>
+  .draftcard{margin-top:18px}
+  .turn{display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;border-radius:var(--r-md);background:var(--gold-soft);border:1px solid rgba(251,191,36,.3);margin-bottom:16px;font-weight:700;font-size:14px;color:var(--gold)}
+  .turn .blink{width:8px;height:8px;border-radius:50%;background:var(--gold);animation:pulse 1s infinite}
+  /* two columns of teams: phone stack, tablet+ side by side */
+  .cols{display:grid;grid-template-columns:1fr;gap:14px}
+  @media(min-width:640px){.cols{grid-template-columns:1fr 1fr}}
+  .col h4{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px}
+  .col.r h4{color:var(--radiant)}.col.d h4{color:var(--dire)}
+  .picks{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+  .p{width:54px;height:54px;border-radius:9px;background:var(--surface2);position:relative;border:1px solid var(--border)}
+  .p.active{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 0 14px var(--gold-soft);animation:pulse 1.2s infinite}
+  .p .ord{position:absolute;top:2px;left:4px;font-size:9px;font-weight:700;color:var(--muted);font-family:var(--mono)}
+  .p.ban::after{content:"✕";position:absolute;inset:0;display:grid;place-items:center;color:var(--dire);font-size:24px;opacity:.75}
+  .seclbl{font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);margin-bottom:6px}
+  /* timeline */
+  .tl{margin-top:18px;overflow-x:auto;padding-bottom:6px}
+  .tlrow{display:flex;gap:5px;min-width:max-content}
+  .tlc{display:flex;flex-direction:column;align-items:center;gap:2px}
+  .tlc .step{font-size:8px;color:var(--dim);font-family:var(--mono)}
+  .tp{width:42px;height:42px;border-radius:7px;background:var(--surface2);border:1px solid var(--border);position:relative}
+  .tp.ban::after{content:"✕";position:absolute;inset:0;display:grid;place-items:center;color:var(--dire);font-size:18px;opacity:.7}
+  .tp.sp{background:transparent;border:0}
+  .tl-labels{display:flex;flex-direction:column;gap:5px;margin-right:8px;padding-top:14px}
+  .tl-labels span{height:42px;display:flex;align-items:center;font-size:9px;font-weight:700}
+</style></head>
+<body><div class="wrap">
+  <a href="home.html" class="backlink">← Back to matches</a>
+  <span class="pill draft">● Draft Phase</span>
+  <h1 style="margin-top:8px">Falcons <span class="sep">vs</span> Team Liquid</h1>
+
+  <div class="card draftcard">
+    <div class="turn"><span class="blink"></span>Falcons picking — Phase 2 · Pick 3</div>
+    <div class="cols">
+      <div class="col r"><h4>◄ Radiant · Falcons</h4>
+        <div class="seclbl">Picks</div>
+        <div class="picks">
+          <span class="p"><span class="ord">P1</span></span><span class="p"><span class="ord">P2</span></span>
+          <span class="p active"><span class="ord">P3</span></span><span class="p"><span class="ord">P4</span></span><span class="p"><span class="ord">P5</span></span>
+        </div>
+        <div class="seclbl">Bans</div>
+        <div class="picks">
+          <span class="p ban"><span class="ord">B1</span></span><span class="p ban"><span class="ord">B2</span></span>
+          <span class="p ban"><span class="ord">B3</span></span><span class="p"><span class="ord">B4</span></span>
+        </div>
+      </div>
+      <div class="col d"><h4>Dire · Team Liquid ►</h4>
+        <div class="seclbl">Picks</div>
+        <div class="picks">
+          <span class="p"><span class="ord">P1</span></span><span class="p"><span class="ord">P2</span></span>
+          <span class="p"><span class="ord">P3</span></span><span class="p"><span class="ord">P4</span></span><span class="p"><span class="ord">P5</span></span>
+        </div>
+        <div class="seclbl">Bans</div>
+        <div class="picks">
+          <span class="p ban"><span class="ord">B1</span></span><span class="p ban"><span class="ord">B2</span></span>
+          <span class="p ban"><span class="ord">B3</span></span><span class="p"><span class="ord">B4</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:16px">
+    <h3>Draft Timeline · CM 7.40</h3>
+    <div style="display:flex">
+      <div class="tl-labels"><span style="color:var(--radiant)">R</span><span style="color:var(--dire)">D</span></div>
+      <div class="tl"><div class="tlrow">
+        <div class="tlc"><span class="step">1</span><span class="tp ban"></span><span class="tp sp"></span></div>
+        <div class="tlc"><span class="step">2</span><span class="tp sp"></span><span class="tp ban"></span></div>
+        <div class="tlc"><span class="step">3</span><span class="tp ban"></span><span class="tp sp"></span></div>
+        <div class="tlc"><span class="step">4</span><span class="tp sp"></span><span class="tp ban"></span></div>
+        <div class="tlc"><span class="step">5</span><span class="tp"></span><span class="tp sp"></span></div>
+        <div class="tlc"><span class="step">6</span><span class="tp sp"></span><span class="tp"></span></div>
+        <div class="tlc"><span class="step">7</span><span class="tp"></span><span class="tp sp"></span></div>
+        <div class="tlc"><span class="step">8</span><span class="tp sp"></span><span class="tp"></span></div>
+        <div class="tlc"><span class="step">9</span><span class="tp ban"></span><span class="tp sp"></span></div>
+        <div class="tlc"><span class="step">10</span><span class="tp sp"></span><span class="tp ban"></span></div>
+        <div class="tlc"><span class="step">11</span><span class="tp"></span><span class="tp sp"></span></div>
+        <div class="tlc"><span class="step">12</span><span class="tp sp"></span><span class="tp"></span></div>
+      </div></div>
+    </div>
+  </div>
+
+  <div class="note"><b>Match · Draft</b> — фаза драфта: индикатор хода (золотой пульс), пики/баны двумя командами (телефон — стопкой, планшет+ — рядом), draft timeline с горизонтальным скроллом на телефоне. Бан помечен ✕. Данные — заглушки.</div>
+</div></body></html>

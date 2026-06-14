@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Bento — все экраны</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#08080F;--surface:#16152A;--border:#2E2B52;--text:#F4F2FF;--muted:#A39FCC;--dim:#615C8E;--violet:#8B5CF6;--gold:#FBBF24}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;padding:40px 24px 80px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px;margin:0 auto}
+  h1{font-size:32px;font-weight:800;letter-spacing:-.02em}
+  .tag{display:inline-block;margin-top:10px;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--violet);background:rgba(139,92,246,.16);padding:5px 14px;border-radius:999px}
+  .sub{color:var(--muted);margin:14px 0 30px;font-size:15px;line-height:1.6}
+  .hero{display:block;text-decoration:none;color:inherit;background:radial-gradient(ellipse at top left,rgba(139,92,246,.18),transparent 60%),var(--surface);border:1px solid var(--violet);border-radius:18px;padding:26px;margin-bottom:24px;transition:.18s}
+  .hero:hover{box-shadow:0 0 0 1px var(--violet),0 10px 40px rgba(139,92,246,.25)}
+  .hero .t{font-size:22px;font-weight:700}.hero .d{color:var(--muted);font-size:14px;margin-top:6px;line-height:1.5}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:640px){.grid{grid-template-columns:1fr}}
+  .card{display:block;text-decoration:none;color:inherit;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:22px;transition:.18s}
+  .card:hover{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet),0 8px 28px rgba(139,92,246,.16);transform:translateY(-2px)}
+  .num{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim)}
+  .name{font-size:18px;font-weight:700;margin:6px 0 8px}
+  .desc{color:var(--muted);font-size:13px;line-height:1.5}
+  .back{display:inline-block;margin-bottom:20px;color:var(--muted);text-decoration:none;font-size:13px;font-weight:600}
+  .back:hover{color:var(--violet)}
+  .footer{margin-top:30px;padding:18px 20px;border-radius:12px;background:var(--surface);border:1px dashed var(--border);color:var(--muted);font-size:14px;line-height:1.6}
+</style></head>
+<body><div class="wrap">
+  <a class="back" href="../index.html">← Все 5 направлений</a>
+  <h1>Neon Bento</h1>
+  <span class="tag">★ Выбранный фаворит</span>
+  <p class="sub">Модульный OLED-дашборд: Plus Jakarta Sans, бенто-сетка, фиолет #8B5CF6 + золото, скруглённые карточки, неон-глоу. Все экраны приложения mobile-first responsive.</p>
+
+  <a class="hero" href="responsive.html">
+    <div class="num">▶ ГЛАВНОЕ</div>
+    <div class="t">📱💻 Адаптив на 4 устройствах</div>
+    <div class="d">Любой экран рядом на телефоне 375 / планшете 768 / ноуте 1280 / десктопе 1536 — увидеть реальный рефлоу. Начни отсюда.</div>
+  </a>
+
+  <div class="grid">
+    <a class="card" href="home.html"><div class="num">01</div><div class="name">🏠 Home</div><div class="desc">Список матчей в бенто-сетке. Featured-матч крупной ячейкой, live/draft/finished состояния.</div></a>
+    <a class="card" href="match-ingame.html"><div class="num">02</div><div class="name">⚔ Match · In-game</div><div class="desc">Счёт, герои, предметы, кулдауны, графики NW/XP, рошан, карта — бенто-модули.</div></a>
+    <a class="card" href="match-draft.html"><div class="num">03</div><div class="name">🎯 Match · Draft</div><div class="desc">Фаза драфта: индикатор хода, пики/баны двух команд, draft timeline.</div></a>
+    <a class="card" href="match-loading.html"><div class="num">04</div><div class="name">⏳ Match · Loading</div><div class="desc">Pre-game: скелетон-шиммер в той же сетке — без прыжка layout.</div></a>
+    <a class="card" href="states.html"><div class="num">05</div><div class="name">⚠ Empty / Error</div><div class="desc">Пустое состояние и ошибка с понятным действием (Refresh / Retry).</div></a>
+  </div>
+
+  <div class="footer">💡 Одноразовые мокапы, данные-заглушки, адаптив реальный. После твоего «ок» — реализую Neon Bento в коде приложения (React + Tailwind v4), заменив текущую тему Tactical Slate.</div>
+</div></body></html>

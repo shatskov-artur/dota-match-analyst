@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redesign 2 — Terminal Ops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ===== Terminal Ops — Data-Dense Dashboard + Developer Mono + Cybersecurity palette ===== */
+  :root{
+    --bg:#000000; --surface:#0C130E; --surface2:#10171180; --border:#1F2A20;
+    --primary:#00FF41; --primary-soft:rgba(0,255,65,.12); --alert:#FF3333;
+    --radiant:#39FF6A; --dire:#FF5C5C; --amber:#FFB000;
+    --text:#D6F5DE; --muted:#6FA37C; --dim:#3D5E45;
+    --mono:'JetBrains Mono',monospace; --sans:'IBM Plex Sans',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:var(--mono);font-size:13px;-webkit-font-smoothing:antialiased}
+  .tabs{position:sticky;top:0;z-index:50;display:flex;gap:0;padding:0;background:#000;border-bottom:1px solid var(--primary)}
+  .tab{padding:10px 22px;font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:.05em;color:var(--dim);cursor:pointer;border-right:1px solid var(--border)}
+  .tab.active{background:var(--primary-soft);color:var(--primary);box-shadow:inset 0 -2px 0 var(--primary)}
+  .tab::before{content:"> "}
+  .wrap{max-width:1320px;margin:0 auto;padding:20px 18px 70px}
+  .page{display:none}.page.active{display:block}
+  .prompt{color:var(--primary);font-weight:700;letter-spacing:.04em}
+  .prompt::before{content:"┌─[";color:var(--dim)}.prompt::after{content:"]";color:var(--dim)}
+  .live{color:var(--alert);font-weight:700}.live::before{content:"● ";animation:blink 1s steps(1) infinite}
+  @keyframes blink{50%{opacity:.2}}
+  h1{font-family:var(--mono);font-weight:800;font-size:clamp(18px,3vw,26px);letter-spacing:.03em;margin:6px 0 18px;color:var(--text)}
+  h1 .sep{color:var(--dim)}
+  /* HOME table */
+  .tbl{width:100%;border:1px solid var(--border);border-collapse:collapse}
+  .tbl th{text-align:left;padding:9px 12px;background:var(--surface);color:var(--muted);font-weight:500;border-bottom:1px solid var(--primary);letter-spacing:.05em;text-transform:uppercase;font-size:11px}
+  .tbl td{padding:10px 12px;border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums}
+  .tbl tr:hover td{background:var(--primary-soft)}
+  .badge{padding:2px 8px;border:1px solid;font-size:11px;font-weight:700}
+  .badge.live{color:var(--alert);border-color:var(--alert)}
+  .badge.draft{color:var(--amber);border-color:var(--amber)}
+  .sc{font-weight:700;color:var(--primary)}
+  /* MATCH */
+  .scorebar{display:flex;align-items:stretch;border:1px solid var(--primary);margin-top:16px}
+  .sb-side{flex:1;padding:16px 18px}.sb-side.r{text-align:right;border-left:1px solid var(--border)}
+  .sb-mid{padding:16px 22px;border-left:1px solid var(--border);border-right:1px solid var(--border);text-align:center;background:var(--surface)}
+  .tn{color:var(--muted);font-size:12px;letter-spacing:.05em}
+  .k{font-weight:800;font-size:52px;line-height:1;font-variant-numeric:tabular-nums}
+  .k.r{color:var(--radiant)}.k.d{color:var(--dire)}
+  .ct{font-weight:800;font-size:22px;color:var(--text)}
+  .panels{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-top:14px}
+  .panel{border:1px solid var(--border);background:var(--surface)}
+  .panel h3{padding:8px 12px;background:#000;color:var(--primary);border-bottom:1px solid var(--border);font-weight:700;font-size:11px;letter-spacing:.08em;text-transform:uppercase}
+  .panel h3::before{content:"// "}
+  .pbody{padding:6px 0}
+  .r2{display:flex;align-items:center;gap:10px;padding:6px 12px;border-bottom:1px solid var(--border)}
+  .r2:last-child{border:0}
+  .dot{width:6px;height:6px;flex-shrink:0}.dot.r{background:var(--radiant)}.dot.d{background:var(--dire)}
+  .nm{flex:1;color:var(--text)}.kda{color:var(--muted)}.nw{color:var(--amber);min-width:48px;text-align:right}
+  .items{display:flex;gap:3px}.s{width:22px;height:22px;border:1px solid var(--border);background:#000}.s.f{border-color:var(--primary);background:var(--primary-soft)}
+  .chart{height:90px;margin:8px 12px;border:1px solid var(--border);position:relative}
+  .chart svg{position:absolute;inset:0;width:100%;height:100%}
+  .map{aspect-ratio:1;max-width:300px;margin:10px auto;border:1px solid var(--border);background:repeating-linear-gradient(0deg,transparent,transparent 19px,rgba(0,255,65,.04) 20px),repeating-linear-gradient(90deg,transparent,transparent 19px,rgba(0,255,65,.04) 20px),#000;position:relative}
+  .blip{position:absolute;width:7px;height:7px}
+  .note{margin-top:20px;padding:12px 14px;border:1px dashed var(--border);color:var(--muted);font-size:12px}
+  @media(max-width:1100px){.panels{grid-template-columns:1fr}.scorebar{flex-direction:column}.sb-side.r{border-left:0;border-top:1px solid var(--border)}}
+</style>
+</head>
+<body>
+<div class="tabs">
+  <div class="tab active" onclick="show('home',this)">home</div>
+  <div class="tab" onclick="show('match',this)">match</div>
+  <span style="margin-left:auto;align-self:center;padding-right:14px;color:var(--dim)">02 — TERMINAL_OPS</span>
+</div>
+
+<!-- HOME -->
+<div class="wrap page active" id="home">
+  <div class="prompt">dota@analyst:~/live</div>
+  <h1>$ ./fetch_pro_matches --live</h1>
+  <table class="tbl">
+    <thead><tr><th>League</th><th>Radiant</th><th>Score</th><th>Dire</th><th>State</th><th>Time</th></tr></thead>
+    <tbody>
+      <tr><td>TI2026 · Groups</td><td>Team Spirit</td><td class="sc">2:1</td><td>Gaimin Gladiators</td><td><span class="badge live">LIVE</span></td><td>32:14</td></tr>
+      <tr><td>TI2026 · Groups</td><td>Falcons</td><td class="sc">0:0</td><td>Team Liquid</td><td><span class="badge draft">DRAFT</span></td><td>00:00</td></tr>
+      <tr><td>TI2026 · Groups</td><td>Xtreme Gaming</td><td class="sc">1:0</td><td>BetBoom Team</td><td><span class="badge live">LIVE</span></td><td>08:51</td></tr>
+      <tr><td>DreamLeague S24</td><td>Tundra Esports</td><td class="sc">0:2</td><td>OG</td><td><span class="badge live">LIVE</span></td><td>41:07</td></tr>
+    </tbody>
+  </table>
+  <div style="margin-top:10px;color:var(--dim)">└─ 4 matches · refresh 5s · <span class="live">streaming</span></div>
+</div>
+
+<!-- MATCH -->
+<div class="wrap page" id="match">
+  <div class="prompt">dota@analyst:~/match/7891234</div>
+  <h1>TEAM_SPIRIT <span class="sep">::</span> GAIMIN_GLADIATORS <span class="live" style="font-size:13px">LIVE 32:14</span></h1>
+  <div class="scorebar">
+    <div class="sb-side"><div class="tn">RADIANT // team_spirit</div><div class="k r">28</div></div>
+    <div class="sb-mid"><div class="ct">32:14</div><div style="color:var(--amber);margin-top:6px">rosh 4:02</div></div>
+    <div class="sb-side r"><div class="tn">team_gaimin // DIRE</div><div class="k d">21</div></div>
+  </div>
+
+  <div class="panels">
+    <div class="panel"><h3>heroes</h3><div class="pbody">
+      <div class="r2"><span class="dot r"></span><span class="nm">yatoro</span><span class="kda">9/2/11</span><span class="nw">24.1k</span></div>
+      <div class="r2"><span class="dot r"></span><span class="nm">larl</span><span class="kda">7/4/14</span><span class="nw">19.8k</span></div>
+      <div class="r2"><span class="dot r"></span><span class="nm">collapse</span><span class="kda">5/3/18</span><span class="nw">17.2k</span></div>
+      <div class="r2"><span class="dot d"></span><span class="nm">quinn</span><span class="kda">6/5/9</span><span class="nw">18.9k</span></div>
+      <div class="r2"><span class="dot d"></span><span class="nm">ace</span><span class="kda">4/6/12</span><span class="nw">15.4k</span></div>
+    </div></div>
+    <div class="panel"><h3>items</h3><div class="pbody">
+      <div class="r2"><span class="dot r"></span><div class="items"><span class="s f"></span><span class="s f"></span><span class="s f"></span><span class="s"></span><span class="s f"></span><span class="s"></span></div></div>
+      <div class="r2"><span class="dot r"></span><div class="items"><span class="s f"></span><span class="s f"></span><span class="s"></span><span class="s f"></span><span class="s"></span><span class="s"></span></div></div>
+      <div class="r2"><span class="dot d"></span><div class="items"><span class="s f"></span><span class="s f"></span><span class="s f"></span><span class="s f"></span><span class="s"></span><span class="s"></span></div></div>
+    </div></div>
+    <div class="panel"><h3>cooldowns</h3><div class="pbody">
+      <div class="r2"><span class="dot r"></span><span class="nm">black_hole</span><span class="nw" style="color:var(--amber)">12s</span></div>
+      <div class="r2"><span class="dot d"></span><span class="nm">ravage</span><span class="nw" style="color:var(--radiant)">RDY</span></div>
+      <div class="r2"><span class="dot r"></span><span class="nm">rp</span><span class="nw" style="color:var(--amber)">34s</span></div>
+    </div></div>
+  </div>
+
+  <div class="panels">
+    <div class="panel"><h3>net_worth.log</h3>
+      <div class="chart"><svg viewBox="0 0 300 90" preserveAspectRatio="none"><polyline fill="none" stroke="#39FF6A" stroke-width="1.5" points="0,60 50,52 100,48 150,34 200,26 250,20 300,14"/><polyline fill="none" stroke="#FF5C5C" stroke-width="1.5" points="0,62 50,58 100,56 150,52 200,48 250,46 300,44"/></svg></div>
+      <div style="padding:0 12px 10px;color:var(--amber)">delta: +7.2k</div>
+    </div>
+    <div class="panel"><h3>roshan</h3>
+      <div style="text-align:center;font-size:26px;font-weight:800;color:var(--amber);padding:16px 0">04:02</div>
+      <div style="display:flex;gap:4px;justify-content:center;padding-bottom:14px"><span class="s f"></span><span class="s f"></span><span class="s"></span></div>
+    </div>
+    <div class="panel"><h3>map</h3>
+      <div class="map">
+        <span class="blip" style="background:var(--radiant);left:28%;top:66%"></span>
+        <span class="blip" style="background:var(--radiant);left:35%;top:58%"></span>
+        <span class="blip" style="background:var(--dire);left:68%;top:30%"></span>
+        <span class="blip" style="background:var(--dire);left:62%;top:38%"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">// <b>Terminal Ops</b> — моноширинный дата-терминал: JetBrains Mono везде, матрикс-зелёный #00FF41 на чёрном, таблицы вместо карточек, сетка-осциллограмма, максимальная плотность. Данные — заглушки.</div>
+</div>
+
+<script>
+function show(id,el){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');window.scrollTo(0,0);}
+</script>
+</body>
+</html>

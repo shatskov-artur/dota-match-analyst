@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Bento — Empty / Error</title>
+<link rel="stylesheet" href="_theme.css">
+<style>
+  .state{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+    min-height:300px;padding:40px 24px;border-radius:var(--r-lg);background:var(--surface);border:1px solid var(--border);margin-top:18px}
+  .ic{width:72px;height:72px;border-radius:20px;display:grid;place-items:center;font-size:34px;margin-bottom:18px}
+  .ic.empty{background:var(--violet-soft);color:var(--violet)}
+  .ic.err{background:var(--dire-soft);color:var(--dire)}
+  .state h2{font-size:20px;font-weight:700;margin-bottom:8px}
+  .state p{color:var(--muted);font-size:14px;max-width:380px;line-height:1.6}
+  .btn{margin-top:20px;display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:999px;
+    background:var(--violet);color:#fff;font-weight:600;font-size:14px;border:0;cursor:pointer;text-decoration:none}
+  .btn:hover{box-shadow:0 0 22px var(--violet-soft)}
+  .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--text)}
+  .twocol{display:grid;grid-template-columns:1fr;gap:18px}
+  @media(min-width:900px){.twocol{grid-template-columns:1fr 1fr}}
+  .seclbl{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin:24px 0 0}
+</style></head>
+<body><div class="wrap">
+  <h1>States</h1>
+
+  <div class="seclbl">Empty — нет активных матчей</div>
+  <div class="twocol">
+    <div class="state">
+      <div class="ic empty">🎮</div>
+      <h2>No live matches</h2>
+      <p>Прямо сейчас профессиональных матчей не идёт. Загляни позже или проверь расписание турниров.</p>
+      <a href="#" class="btn">Refresh</a>
+    </div>
+
+    <div class="state">
+      <div class="ic err">⚠</div>
+      <h2>Couldn't load matches</h2>
+      <p>Не удалось получить данные с сервера. Проверь соединение и попробуй снова.</p>
+      <div style="display:flex;gap:10px;margin-top:20px;flex-wrap:wrap;justify-content:center">
+        <a href="#" class="btn">Retry</a>
+        <a href="home.html" class="btn ghost">Go Home</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="note"><b>Empty / Error</b> — по UX-правилам скилла: пустое состояние с пояснением + действием (не пустой экран), ошибка с понятной причиной + путём восстановления (Retry). Иконка-плашка в стиле бенто, фиолет для нейтрального действия, dire-red для ошибки. На телефоне — стопкой, на десктопе — рядом.</div>
+</div></body></html>

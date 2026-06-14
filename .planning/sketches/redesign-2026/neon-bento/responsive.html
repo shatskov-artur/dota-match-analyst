@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Bento — Responsive Showcase</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#08080F;--surface:#16152A;--border:#2E2B52;--text:#F4F2FF;--muted:#A39FCC;--dim:#615C8E;--violet:#8B5CF6}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:'Plus Jakarta Sans',sans-serif;padding:24px 18px 80px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1700px;margin:0 auto}
+  h1{font-size:28px;font-weight:800;letter-spacing:-.02em}
+  .sub{color:var(--muted);margin:8px 0 20px;font-size:14px;line-height:1.5}
+  .picker{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}
+  .pk{padding:9px 18px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--muted);font-weight:600;font-size:13px;cursor:pointer}
+  .pk.active{background:var(--violet);color:#fff;border-color:var(--violet);box-shadow:0 0 18px rgba(139,92,246,.3)}
+  .scroller{overflow-x:auto;padding-bottom:18px}
+  .stage{display:flex;gap:26px;align-items:flex-start;min-width:max-content;padding:4px}
+  .device{flex-shrink:0}
+  .device .cap{display:flex;align-items:baseline;gap:8px;margin-bottom:10px}
+  .device .cap b{font-size:14px;font-weight:700}
+  .device .cap span{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim)}
+  .frame{border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--bg);box-shadow:0 10px 40px rgba(0,0,0,.4)}
+  .frame iframe{display:block;border:0;background:var(--bg)}
+  /* device widths (CSS px of the framed viewport) — heights scaled to show enough */
+  .d-phone iframe{width:375px;height:760px}
+  .d-tablet iframe{width:768px;height:720px}
+  .d-laptop iframe{width:1280px;height:680px}
+  .d-desktop iframe{width:1536px;height:680px}
+  .hint{margin-top:8px;color:var(--dim);font-size:12px}
+  .legend{margin-top:24px;padding:16px 20px;border-radius:12px;background:var(--surface);border:1px dashed var(--border);color:var(--muted);font-size:13px;line-height:1.7}
+  .legend b{color:var(--text)}
+</style></head>
+<body><div class="wrap">
+  <h1>Neon Bento — адаптив на 4 устройствах</h1>
+  <p class="sub">Выбери экран — он показан рядом на 4 ширинах (телефон 375 · планшет 768 · ноут 1280 · десктоп 1536). Прокручивай вправо, чтобы увидеть широкие устройства. Каждый фрейм — реальная страница со своими media-queries.</p>
+
+  <div class="picker">
+    <button class="pk active" data-src="home.html">🏠 Home</button>
+    <button class="pk" data-src="match-ingame.html">⚔ Match · In-game</button>
+    <button class="pk" data-src="match-draft.html">🎯 Match · Draft</button>
+    <button class="pk" data-src="match-loading.html">⏳ Match · Loading</button>
+    <button class="pk" data-src="states.html">⚠ Empty / Error</button>
+  </div>
+
+  <div class="scroller"><div class="stage">
+    <div class="device d-phone"><div class="cap"><b>Phone</b><span>375px</span></div><div class="frame"><iframe id="f-phone"></iframe></div><div class="hint">1 колонка · стек</div></div>
+    <div class="device d-tablet"><div class="cap"><b>Tablet</b><span>768px</span></div><div class="frame"><iframe id="f-tablet"></iframe></div><div class="hint">2 колонки</div></div>
+    <div class="device d-laptop"><div class="cap"><b>Laptop</b><span>1280px</span></div><div class="frame"><iframe id="f-laptop"></iframe></div><div class="hint">бенто 3–4 кол.</div></div>
+    <div class="device d-desktop"><div class="cap"><b>Desktop</b><span>1536px</span></div><div class="frame"><iframe id="f-desktop"></iframe></div><div class="hint">центр, max-width</div></div>
+  </div></div>
+
+  <div class="legend">
+    💡 <b>Как читать:</b> media-queries срабатывают по ширине <i>фрейма</i>, не окна браузера — поэтому ты видишь честный рефлоу. <br>
+    <b>Брейкпоинты Neon Bento:</b> &lt;640 телефон (1 кол.) · 640+ планшет (2 кол.) · 1024+ ноут/десктоп (бенто 3–4 кол.). Контейнер центрируется и упирается в max-width 1320px на десктопе.<br>
+    Это одноразовые мокапы с данными-заглушками. После одобрения — реализую в React + Tailwind v4.
+  </div>
+</div>
+<script>
+  const ids=['phone','tablet','laptop','desktop'];
+  function load(src){ids.forEach(d=>document.getElementById('f-'+d).src=src);}
+  document.querySelectorAll('.pk').forEach(b=>b.addEventListener('click',()=>{
+    document.querySelectorAll('.pk').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');load(b.dataset.src);
+  }));
+  load('home.html');
+</script>
+</body></html>

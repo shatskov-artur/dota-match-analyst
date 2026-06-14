@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Bento — Match (pre-game / loading)</title>
+<link rel="stylesheet" href="_theme.css">
+<style>
+  .mb{display:grid;grid-template-columns:1fr;gap:14px;margin-top:18px}
+  @media(min-width:640px){.mb{grid-template-columns:1fr 1fr;gap:16px}}
+  @media(min-width:1024px){.mb{grid-template-columns:repeat(4,1fr)}}
+  .score{grid-column:1/-1}
+  @media(min-width:1024px){.heroes{grid-column:span 2;grid-row:span 2}.nw{grid-column:span 2}.items{grid-column:span 2}.cds{grid-column:span 2}}
+  .skrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)}
+  .skrow:last-child{border:0}
+  .skport{width:38px;height:38px;border-radius:10px;flex-shrink:0}
+  .sktext{height:13px;flex:1}
+  .sknum{height:13px;width:48px}
+</style></head>
+<body><div class="wrap">
+  <a href="home.html" class="backlink">← Back to matches</a>
+  <span class="pill draft">Pre-game · Loading</span>
+  <h1 style="margin-top:8px">Xtreme Gaming <span class="sep">vs</span> BetBoom</h1>
+  <div class="mb">
+    <div class="card score">
+      <div class="sk" style="height:18px;width:140px;margin:0 auto 14px"></div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:24px">
+        <div class="sk" style="height:48px;width:60px"></div>
+        <div class="sk" style="height:24px;width:70px"></div>
+        <div class="sk" style="height:48px;width:60px"></div>
+      </div>
+    </div>
+    <div class="card heroes"><h3>Heroes</h3>
+      <div class="skrow"><span class="sk skport"></span><span class="sk sktext"></span><span class="sk sknum"></span></div>
+      <div class="skrow"><span class="sk skport"></span><span class="sk sktext"></span><span class="sk sknum"></span></div>
+      <div class="skrow"><span class="sk skport"></span><span class="sk sktext"></span><span class="sk sknum"></span></div>
+      <div class="skrow"><span class="sk skport"></span><span class="sk sktext"></span><span class="sk sknum"></span></div>
+      <div class="skrow"><span class="sk skport"></span><span class="sk sktext"></span><span class="sk sknum"></span></div>
+    </div>
+    <div class="card items"><h3>Items</h3>
+      <div class="skrow"><span class="sk skport"></span><div class="its"><span class="sk s"></span><span class="sk s"></span><span class="sk s"></span><span class="sk s"></span><span class="sk s"></span><span class="sk s"></span></div></div>
+      <div class="skrow"><span class="sk skport"></span><div class="its"><span class="sk s"></span><span class="sk s"></span><span class="sk s"></span><span class="sk s"></span><span class="sk s"></span><span class="sk s"></span></div></div>
+    </div>
+    <div class="card cds"><h3>Cooldowns</h3>
+      <div class="skrow"><span class="sk skport"></span><span class="sk sktext"></span><span class="sk sknum"></span></div>
+      <div class="skrow"><span class="sk skport"></span><span class="sk sktext"></span><span class="sk sknum"></span></div>
+    </div>
+    <div class="card nw"><h3>Net Worth · XP</h3>
+      <div class="sk" style="height:96px;border-radius:var(--r-md)"></div>
+    </div>
+  </div>
+  <div class="note"><b>Match · Pre-game / Loading</b> — данные ещё загружаются: скелетон-шиммер вместо контента (по UX-правилу скилла: skeleton при загрузке >300ms, без блокирующего спиннера). Та же бенто-сетка, что и в in-game — нет «прыжка» layout при появлении данных. Данные — заглушки.</div>
+</div></body></html>
