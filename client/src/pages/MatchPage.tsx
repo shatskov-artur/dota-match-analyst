@@ -15,6 +15,7 @@ import ItemsBlock from '../components/ItemsBlock'
 import CooldownsBlock from '../components/CooldownsBlock'
 import RoshanBlock from '../components/RoshanBlock'
 import HistoryGraphs from '../components/HistoryGraphs'
+import { BentoErrorBoundary } from '../components/BentoErrorBoundary'
 
 export default function MatchPage() {
   const { matchId } = useParams()
@@ -65,16 +66,18 @@ export default function MatchPage() {
 
       {/* Score block — featured Neon Bento card with violet glow (D-01 section order step 2) */}
       <div className="bento-card mt-2 bg-[radial-gradient(ellipse_at_center,var(--color-primary-soft),transparent_70%)]">
-        {match && <ScoreHeader match={match} />}
+        <BentoErrorBoundary resetKeys={[matchId]}>
+          {match && <ScoreHeader match={match} />}
 
-        {/* Phase 6 gap closure: three-bar win probability panel — Gold and Est. always visible past 5 min */}
-        <WinProbBar
-          stratz={winProb.data?.stratz ?? null}
-          gold={winProb.data?.gold ?? 0.5}
-          estimate={winProb.data?.estimate ?? 0.5}
-          gameDuration={match?.duration}
-          gameState={match?.game_state}
-        />
+          {/* Phase 6 gap closure: three-bar win probability panel — Gold and Est. always visible past 5 min */}
+          <WinProbBar
+            stratz={winProb.data?.stratz ?? null}
+            gold={winProb.data?.gold ?? 0.5}
+            estimate={winProb.data?.estimate ?? 0.5}
+            gameDuration={match?.duration}
+            gameState={match?.game_state}
+          />
+        </BentoErrorBoundary>
       </div>
 
       {/* DraftSection — Phase 4 D-03 section order step 3; D-10 mount only when scoreboard present */}
@@ -94,12 +97,14 @@ export default function MatchPage() {
       {/* Pre-game / loading skeleton — show HeroPlayerGrid alone when in-game gate is closed */}
       {!(match?.game_state === 5 && radiantPlayers.length > 0) && (
         <div className="bento-card mt-12">
-          <HeroPlayerGrid
-            radiantPlayers={radiantPlayers}
-            direPlayers={direPlayers}
-            isLoading={isLoading}
-            playerIntelMap={playerIntelMap}
-          />
+          <BentoErrorBoundary resetKeys={[matchId]}>
+            <HeroPlayerGrid
+              radiantPlayers={radiantPlayers}
+              direPlayers={direPlayers}
+              isLoading={isLoading}
+              playerIntelMap={playerIntelMap}
+            />
+          </BentoErrorBoundary>
         </div>
       )}
 
@@ -117,28 +122,34 @@ export default function MatchPage() {
           {/* Row 1 — heroes / items / cooldowns. Mobile-first: stacked below 1180px, 3-col at/above. */}
           <div className="flex flex-col gap-6 stack:flex-row stack:gap-8 stack:items-stretch">
             <div className="bento-card min-w-0 stack:flex-1">
-              <HeroPlayerGrid
-                radiantPlayers={radiantPlayers}
-                direPlayers={direPlayers}
-                isLoading={isLoading}
-                playerIntelMap={playerIntelMap}
-              />
+              <BentoErrorBoundary resetKeys={[matchId]}>
+                <HeroPlayerGrid
+                  radiantPlayers={radiantPlayers}
+                  direPlayers={direPlayers}
+                  isLoading={isLoading}
+                  playerIntelMap={playerIntelMap}
+                />
+              </BentoErrorBoundary>
             </div>
             <div className="bento-card min-w-0 stack:flex-1 flex flex-col">
-              <ItemsBlock
-                players={[
-                  ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
-                  ...direPlayers.map(p => ({ ...p, team: 'dire' as const })),
-                ].sort((a, b) => ((b.net_worth as number | undefined) ?? 0) - ((a.net_worth as number | undefined) ?? 0))}
-              />
+              <BentoErrorBoundary resetKeys={[matchId]}>
+                <ItemsBlock
+                  players={[
+                    ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
+                    ...direPlayers.map(p => ({ ...p, team: 'dire' as const })),
+                  ].sort((a, b) => ((b.net_worth as number | undefined) ?? 0) - ((a.net_worth as number | undefined) ?? 0))}
+                />
+              </BentoErrorBoundary>
             </div>
             <div className="bento-card min-w-0 stack:flex-1 flex flex-col">
-              <CooldownsBlock
-                players={[
-                  ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
-                  ...direPlayers.map(p => ({ ...p, team: 'dire' as const })),
-                ]}
-              />
+              <BentoErrorBoundary resetKeys={[matchId]}>
+                <CooldownsBlock
+                  players={[
+                    ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
+                    ...direPlayers.map(p => ({ ...p, team: 'dire' as const })),
+                  ]}
+                />
+              </BentoErrorBoundary>
             </div>
           </div>
 
@@ -153,16 +164,19 @@ export default function MatchPage() {
               />
             </div>
             <div className="bento-card w-full stack:w-[320px] stack:shrink-0 flex flex-col gap-8">
-              <RoshanBlock roshan={match?.roshan ?? null} />
-              {!buildings.unavailable && (
-                <BuildingsSection buildings={buildings} />
-              )}
+              <BentoErrorBoundary resetKeys={[matchId]}>
+                <RoshanBlock roshan={match?.roshan ?? null} />
+                {!buildings.unavailable && (
+                  <BuildingsSection buildings={buildings} />
+                )}
+              </BentoErrorBoundary>
             </div>
             <div className="bento-card w-full stack:w-auto stack:shrink-0 flex justify-center">
-              <DotaMapView
-                size={420}
-                buildings={buildings}
-                heroPositions={[
+              <BentoErrorBoundary resetKeys={[matchId]}>
+                <DotaMapView
+                  size={420}
+                  buildings={buildings}
+                  heroPositions={[
                   ...radiantPlayers
                     .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
                     .map(p => ({
@@ -180,7 +194,8 @@ export default function MatchPage() {
                       position_y: p.position_y as number,
                     })),
                 ]}
-              />
+                />
+              </BentoErrorBoundary>
             </div>
           </div>
         </div>
