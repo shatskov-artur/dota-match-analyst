@@ -10,16 +10,18 @@
     "test": "vitest"
   },
   "dependencies": {
-    "hono": "^4.0.0",
     "@hono/node-server": "^1.0.0",
+    "hono": "^4.0.0",
     "ioredis": "^5.0.0",
-    "zod": "^3.0.0",
-    "pino": "^9.0.0"
+    "p-queue": "^9.3.1",
+    "p-retry": "^8.0.0",
+    "pino": "^9.0.0",
+    "zod": "^3.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.6.0",
     "@types/node": "^22.0.0",
     "tsx": "^4.0.0",
+    "typescript": "^5.6.0",
     "vitest": "^2.0.0"
   }
 }
