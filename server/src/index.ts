@@ -9,7 +9,9 @@ import { logger } from './logger.js'
 
 const app = new Hono()
 
-app.use('*', cors({ origin: 'http://localhost:5173' }))
+// SECURITY (T-11-08): exact env-driven origin, scoped to /api/*, credentials stays false (no '*').
+// CORS_ORIGIN is the exact Vercel production URL (no trailing slash); dev falls back to localhost.
+app.use('/api/*', cors({ origin: env.CORS_ORIGIN ?? 'http://localhost:5173' }))
 
 app.get('/api/health', (c) => {
   return c.json({ status: 'ok', ts: Date.now() })
