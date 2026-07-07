@@ -1,5 +1,6 @@
 import { useQuery, type Query } from '@tanstack/react-query'
 import { inferActiveTeam, inferFirstPickFromHistory } from '../utils/draftOrder'
+import { API_BASE } from '../lib/apiBase'
 
 // Response shape types — mirror the Plan 02 BFF route response + CLAUDE.md .passthrough() discipline.
 // `[key: string]: unknown` preserves unknown Valve fields (score, tower_state, barracks_state, heroes)
@@ -29,7 +30,7 @@ export interface DraftResponse {
 }
 
 async function fetchDraft(matchId: string): Promise<DraftResponse> {
-  const res = await fetch(`/api/live/draft/${matchId}`)
+  const res = await fetch(`${API_BASE}/api/live/draft/${matchId}`)
   if (!res.ok) throw new Error(`BFF error: ${res.status}`)
   return res.json() as Promise<DraftResponse>
 }

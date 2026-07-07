@@ -1,4 +1,5 @@
 import { useQuery, type Query } from '@tanstack/react-query'
+import { API_BASE } from '../lib/apiBase'
 
 // Per-player intel shape returned by BFF GET /api/live/intel/:matchId
 export interface CounterHero {
@@ -36,7 +37,7 @@ export function computeIntelInterval(gameState: number | undefined): number | fa
 }
 
 async function fetchMatchIntel(matchId: string): Promise<MatchIntelResponse> {
-  const res = await fetch(`/api/live/intel/${matchId}`)
+  const res = await fetch(`${API_BASE}/api/live/intel/${matchId}`)
   if (!res.ok) throw new Error(`BFF error: ${res.status}`)
   return res.json() as Promise<MatchIntelResponse>
 }
