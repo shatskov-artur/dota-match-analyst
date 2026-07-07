@@ -46,12 +46,12 @@ See: .planning/PROJECT.md
 
 ## Current Position
 
-Phase: 11 (harden-deploy) — EXECUTING
-Plan: 1 of 4
-Plans: 2 of 2
+Phase: 11 (harden-deploy) — EXECUTING (Plan 04 at blocking human-action deploy checkpoint)
+Plan: 4 of 4
+Plans: 4 of 4 (all autonomous code/config done; live deploy = outstanding human-action)
 
 - **Phase:** 11
-- **Status:** Executing Phase 11
+- **Status:** Executing Phase 11 — awaiting human deploy (Railway + Vercel + Upstash) per DEPLOY.md
 - **Progress:** [█████████░] 99%
 
 ## Performance Metrics
@@ -92,6 +92,11 @@ Plans: 2 of 2
 - Phase 6: WinProbBar self-gates: gameState===5 AND duration>300 AND radiantWinProb!==null — no wrapper needed in MatchPage
 - Phase 6: Stratz live.match returns null for matches it doesn't track — expected, bar silently hides
 - radiance item id is 137 in OpenDota data (plan had 119 which was stale); itemMapper test corrected
+- Phase 11 D-09: split-origin base URL via client/src/lib/apiBase.ts — API_BASE = import.meta.env.VITE_API_URL ?? ''; '' fallback keeps the Vite dev proxy, a set value inlines the Railway origin at build time (VITE_* is build-time only)
+- Phase 11 D-09: CORS_ORIGIN is z.string().optional() in env.ts; index.ts CORS scoped to /api/* with exact origin + credentials false (no '*') — T-11-08
+- Phase 11 A5: canonical server `start` = `node dist/index.js` (no --env-file; Railway injects env via process.env); dev path preserved as `start:local`; PORT stays Railway-injected
+- Phase 11 D-08: railway.json pins builder NIXPACKS explicitly (Railpack is 2026 Railway default); healthcheck /api/health
+- Phase 11 A4: Railway Root Directory = server/, Vercel Root Directory = client/; secrets live only in dashboards (repo carries *.example only) — T-11-10
 
 ### Todos
 
@@ -100,7 +105,7 @@ Plans: 2 of 2
 
 ### Blockers
 
-None.
+- **Plan 11-04 deploy checkpoint (human-action, blocking):** All split-origin deploy code/config is committed (apiBase.ts + 6 hooks, env-driven CORS, railway.json/vercel.json, .env.production.example, DEPLOY.md). The LIVE deploy is outstanding — it needs the owner to create Upstash/Railway/Vercel accounts, set dashboard secrets, and run the deploy per DEPLOY.md. ROADMAP criterion 4 is config-complete but not yet live-verified.
 
 ### Roadmap Evolution
 
@@ -110,11 +115,11 @@ None.
 
 ## Session Continuity
 
-- Last session: 2026-05-15 — Phase 10.3 Wave 2 (10.3-02) landed; per-component sanity sweep at new slot widths
-- Next action: Phase 11 (Harden & Deploy) — rate-limit queues, error boundaries, 429 backoff, Vercel + Railway deploy
+- Last session: 2026-07-07 — Phase 11 Wave 2 (11-04) split-origin deploy config landed (railway.json, vercel.json, .env templates, DEPLOY.md); Tasks 1-3 committed, Task 4 (live deploy) is a blocking human-action checkpoint
+- Next action: Human deploy per DEPLOY.md (Upstash → Railway root=server/ → Vercel root=client/ w/ VITE_API_URL before build → cross-wire CORS_ORIGIN → smoke test), then run the phase-11 verifier
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
 
-**Completed Plan:** 10.3-02 (per-component sanity sweep — RoshanBlock clamp, HistoryGraphs label bump, BuildingsSection center, CooldownsBlock no-op) — 2026-05-15
+**Completed Plan:** 11-04 autonomous tasks (apiBase + 6 hooks, env-driven CORS + Railway prod start, railway.json/vercel.json/env templates/DEPLOY.md) — 2026-07-07; live deploy outstanding as human-action checkpoint
 
-**Next Plan:** Phase 11 first plan (TBD — discuss/plan Harden & Deploy)
+**Next Plan:** None — Phase 11 is the last planned phase; awaiting human deploy-smoke to close ROADMAP criterion 4

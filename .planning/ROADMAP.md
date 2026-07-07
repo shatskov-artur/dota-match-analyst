@@ -19,7 +19,7 @@
 | 8 | Ability Cooldowns | User sees which ultimates are on cooldown, sorted by time remaining | TBD | 4 criteria |
 | 9 | Roshan Tracker | User sees Roshan kill count and exact loot for next kill | TBD | 4 criteria |
 | 10 | Historical Graphs | User sees gold and XP lead charts over the full game duration | TBD | 5 criteria |
-| 11 | Harden & Deploy | Small group can hit a public URL and the app stays up under rate limits | — (hardening) | 4 criteria |
+| 11 | Harden & Deploy | 3.75/4 | In Progress — 11-04 config done, awaiting human deploy (criterion 4) |  |
 
 ## Phases
 
@@ -338,12 +338,12 @@ Plans:
   2. BFF applies a global rate-limit queue per upstream (Valve, OpenDota, Stratz) with exponential backoff on 429 responses and structured pino logs for every throttle event
   3. Polling stops automatically (`refetchInterval === false`) once `game_state === 6` so finished matches stop draining upstream quotas
   4. Frontend is deployed to Vercel and BFF is deployed to Railway with Upstash Redis configured, and a shareable URL loads the live matches list without local setup
-**Plans:** 4 plans
+**Plans:** 3/4 plans executed; 11-04 config-complete, live deploy outstanding (human-action)
 Plans:
-- [ ] 11-01-PLAN.md — Rate-limit queues + 429 backoff + stale fallback + structured throttle logs (criterion 2)
-- [ ] 11-02-PLAN.md — Per-card + route error boundaries (BentoErrorBoundary, react-error-boundary ^6) (criterion 1)
-- [ ] 11-03-PLAN.md — Polling-stop verification: game_state===6 -> false across all four pollers (criterion 3)
-- [ ] 11-04-PLAN.md — Split-origin deploy: VITE_API_URL + env CORS + railway.json/vercel.json + DEPLOY.md (criterion 4)
+- [x] 11-01-PLAN.md — Rate-limit queues + 429 backoff + stale fallback + structured throttle logs (criterion 2)
+- [x] 11-02-PLAN.md — Per-card + route error boundaries (BentoErrorBoundary, react-error-boundary ^6) (criterion 1)
+- [x] 11-03-PLAN.md — Polling-stop verification: game_state===6 -> false across all four pollers (criterion 3)
+- [~] 11-04-PLAN.md — Split-origin deploy: VITE_API_URL + env CORS + railway.json/vercel.json + DEPLOY.md (criterion 4) — all code/config committed; LIVE deploy is a blocking human-action checkpoint (see DEPLOY.md)
 **UI hint:** no
 
 ## Progress
