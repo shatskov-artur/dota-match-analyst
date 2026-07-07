@@ -1,4 +1,6 @@
 import { cached, TTL } from '../cache.js'
+import { stratzQueue } from '../queues.js'
+import { parseRetryAfter } from './retryAfter.js'
 import { StratzWinProbResponseSchema, StratzMatchupResponseSchema } from '../schemas/stratz.js'
 import type { StratzHeroDryadEntry } from '../schemas/stratz.js'
 import { env } from '../env.js'
@@ -42,6 +44,10 @@ async function fetchWinProbability(matchId: number): Promise<number | null> {
     return null
   }
   if (!res.ok) {
+    // 429 → throw a retryable rate-limit error so cached()'s pRetry backs off (Stratz 500/hr).
+    if (res.status === 429) {
+      throw Object.assign(new Error('Stratz 429 (winprob)'), { status: 429, retryAfterMs: parseRetryAfter(res) })
+    }
     // SECURITY: T-6-04 — log status only, never forward Stratz response body
     console.error(`[stratzApi] winprob fetch error: ${res.status} ${res.statusText}`)
     return null
@@ -65,7 +71,7 @@ async function fetchWinProbability(matchId: number): Promise<number | null> {
  * TTL.WIN_PROB = 60s = 2× the 30s client poll — every poll gets fresh-enough data.
  */
 export function getWinProbability(matchId: number): Promise<number | null> {
-  return cached(`stratz:winprob:${matchId}`, TTL.WIN_PROB, () => fetchWinProbability(matchId))
+  return cached(`stratz:winprob:${matchId}`, TTL.WIN_PROB, () => fetchWinProbability(matchId), { queue: stratzQueue, upstream: 'stratz' })
 }
 
 // ─── Hero Matchups ────────────────────────────────────────────────────────────
@@ -110,6 +116,10 @@ async function fetchHeroMatchupsStratz(heroId: number): Promise<StratzHeroDryadE
     return null
   }
   if (!res.ok) {
+    // 429 → throw a retryable rate-limit error so cached()'s pRetry backs off (Stratz 500/hr).
+    if (res.status === 429) {
+      throw Object.assign(new Error('Stratz 429 (matchups)'), { status: 429, retryAfterMs: parseRetryAfter(res) })
+    }
     console.error(`[stratzApi] Hero matchups fetch error: ${res.status} ${res.statusText}`)
     return null
   }
@@ -130,5 +140,5 @@ async function fetchHeroMatchupsStratz(heroId: number): Promise<StratzHeroDryadE
  * TTL.HERO_STATS = 21_600s = 6h — pro matchup data as static as patch hero stats.
  */
 export function getHeroMatchupsStratz(heroId: number): Promise<StratzHeroDryadEntry[] | null> {
-  return cached(`stratz:matchups:v2:${heroId}`, TTL.HERO_STATS, () => fetchHeroMatchupsStratz(heroId))
+  return cached(`stratz:matchups:v2:${heroId}`, TTL.HERO_STATS, () => fetchHeroMatchupsStratz(heroId), { queue: stratzQueue, upstream: 'stratz' })
 }

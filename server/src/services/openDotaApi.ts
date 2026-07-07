@@ -1,9 +1,22 @@
 import { z } from 'zod'
 import { cached, TTL } from '../cache.js'
+import { openDotaQueue } from '../queues.js'
+import { parseRetryAfter } from './retryAfter.js'
 import { LeagueSchema, HeroStatsSchema, PlayerHeroSchema } from '../schemas/openDota.js'
 import type { HeroStatsMap } from '../schemas/openDota.js'
 
 const OPENDOTA_BASE = 'https://api.opendota.com/api'
+
+/**
+ * Throws a retryable rate-limit error on 429 so cached()'s pRetry backs off.
+ * Call this in the `!res.ok` branch BEFORE the null-return so genuine (non-429)
+ * failures keep the OpenDota `value | null` graceful-degradation contract (CLAUDE.md).
+ */
+function throwIfRateLimited(res: Response, label: string): void {
+  if (res.status === 429) {
+    throw Object.assign(new Error(`OpenDota 429 (${label})`), { status: 429, retryAfterMs: parseRetryAfter(res) })
+  }
+}
 
 /**
  * Fetches league name from OpenDota /leagues/{leagueId}.
@@ -15,6 +28,7 @@ async function fetchLeagueName(leagueId: number): Promise<string | null> {
   try {
     const res = await fetch(`${OPENDOTA_BASE}/leagues/${leagueId}`)
     if (!res.ok) {
+      throwIfRateLimited(res, `league ${leagueId}`) // 429 → retryable throw (propagated below)
       console.error(`[openDotaApi] League fetch error: ${res.status} ${res.statusText}`)
       return null
     }
@@ -26,6 +40,7 @@ async function fetchLeagueName(leagueId: number): Promise<string | null> {
     }
     return parsed.data.name ?? null
   } catch (err) {
+    if ((err as { status?: number }).status === 429) throw err // let cached() retry a rate-limit
     console.error(`[openDotaApi] Error fetching league ${leagueId}:`, (err as Error).message)
     return null
   }
@@ -38,7 +53,7 @@ async function fetchLeagueName(leagueId: number): Promise<string | null> {
  * TTL.HERO_STATS = 21_600s = 6h — per D-06.
  */
 export function getLeagueName(leagueId: number): Promise<string | null> {
-  return cached(`league:${leagueId}`, TTL.HERO_STATS, () => fetchLeagueName(leagueId))
+  return cached(`league:${leagueId}`, TTL.HERO_STATS, () => fetchLeagueName(leagueId), { queue: openDotaQueue, upstream: 'opendota' })
 }
 
 // ─── Hero Stats ─────────────────────────────────────────────────────────────
@@ -67,6 +82,7 @@ async function fetchHeroStats(): Promise<HeroStatsMap | null> {
   try {
     const res = await fetch(`${OPENDOTA_BASE}/heroStats`)
     if (!res.ok) {
+      throwIfRateLimited(res, 'heroStats') // 429 → retryable throw (propagated below)
       console.error(`[openDotaApi] heroStats fetch error: ${res.status} ${res.statusText}`)
       return null
     }
@@ -78,6 +94,7 @@ async function fetchHeroStats(): Promise<HeroStatsMap | null> {
     }
     return buildHeroStatsMap(parsed.data)
   } catch (err) {
+    if ((err as { status?: number }).status === 429) throw err // let cached() retry a rate-limit
     console.error('[openDotaApi] Error fetching heroStats:', (err as Error).message)
     return null
   }
@@ -89,7 +106,7 @@ async function fetchHeroStats(): Promise<HeroStatsMap | null> {
  * Returns null when OpenDota is unreachable — badge strips will be hidden (D-03).
  */
 export function getHeroStats(): Promise<HeroStatsMap | null> {
-  return cached('hero:stats', TTL.HERO_STATS, fetchHeroStats)
+  return cached('hero:stats', TTL.HERO_STATS, fetchHeroStats, { queue: openDotaQueue, upstream: 'opendota' })
 }
 
 // ─── Player Heroes ───────────────────────────────────────────────────────────
@@ -98,6 +115,7 @@ async function fetchPlayerHeroes(accountId: number): Promise<z.infer<typeof Play
   try {
     const res = await fetch(`${OPENDOTA_BASE}/players/${accountId}/heroes`)
     if (!res.ok) {
+      throwIfRateLimited(res, `player ${accountId}`) // 429 → retryable throw (propagated below)
       console.error(`[openDotaApi] Player heroes fetch error: ${res.status} ${res.statusText}`)
       return null
     }
@@ -109,6 +127,7 @@ async function fetchPlayerHeroes(accountId: number): Promise<z.infer<typeof Play
     }
     return parsed.data
   } catch (err) {
+    if ((err as { status?: number }).status === 429) throw err // let cached() retry a rate-limit
     console.error(`[openDotaApi] Error fetching player heroes ${accountId}:`, (err as Error).message)
     return null
   }
@@ -120,6 +139,6 @@ async function fetchPlayerHeroes(accountId: number): Promise<z.infer<typeof Play
  * SECURITY: never called for hidden profiles (account_id=4294967295) — caller guards via hiddenProfile().
  */
 export function getPlayerHeroes(accountId: number): Promise<z.infer<typeof PlayerHeroSchema>[] | null> {
-  return cached(`player:heroes:${accountId}`, TTL.PLAYER_STATS, () => fetchPlayerHeroes(accountId))
+  return cached(`player:heroes:${accountId}`, TTL.PLAYER_STATS, () => fetchPlayerHeroes(accountId), { queue: openDotaQueue, upstream: 'opendota' })
 }
 

@@ -1,4 +1,6 @@
 import { cached, TTL } from '../cache.js'
+import { valveQueue } from '../queues.js'
+import { parseRetryAfter } from './retryAfter.js'
 import { LiveLeagueGamesSchema, type LiveLeagueGames } from '../schemas/valve.js'
 import { env } from '../env.js'
 
@@ -9,6 +11,10 @@ async function fetchLiveLeagueGames(): Promise<LiveLeagueGames> {
   const url = `${STEAM_API_BASE}/IDOTA2Match_570/GetLiveLeagueGames/v1/?key=${env.VALVE_API_KEY}&partner=1`
   const res = await fetch(url, { signal: AbortSignal.timeout(10_000) })
   if (!res.ok) {
+    // 429 → throw a retryable rate-limit error so cached()'s pRetry backs off (status/retryAfterMs only).
+    if (res.status === 429) {
+      throw Object.assign(new Error('Valve API 429'), { status: 429, retryAfterMs: parseRetryAfter(res) })
+    }
     throw new Error(`Valve API error: ${res.status} ${res.statusText}`)
   }
   const raw: unknown = await res.json()
@@ -23,7 +29,7 @@ async function fetchLiveLeagueGames(): Promise<LiveLeagueGames> {
  * T-04-03: cached() ensures 1 upstream call per 30s regardless of client polling rate.
  */
 export function getLiveLeagueGames(): Promise<LiveLeagueGames> {
-  return cached('live_games', TTL.LIVE_MATCH, fetchLiveLeagueGames)
+  return cached('live_games', TTL.LIVE_MATCH, fetchLiveLeagueGames, { queue: valveQueue, upstream: 'valve' })
 }
 
 /**
@@ -35,5 +41,5 @@ export function getLiveLeagueGames(): Promise<LiveLeagueGames> {
  * Per CLAUDE.md: cached() is the ONLY path to upstream. Never call fetchLiveLeagueGames directly.
  */
 export function getLiveLeagueGamesFast(): Promise<LiveLeagueGames> {
-  return cached('live_games:draft', TTL.DRAFT, fetchLiveLeagueGames)
+  return cached('live_games:draft', TTL.DRAFT, fetchLiveLeagueGames, { queue: valveQueue, upstream: 'valve' })
 }
