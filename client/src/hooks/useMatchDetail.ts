@@ -5,6 +5,18 @@ import { buildingDecoder } from '@shared/buildingDecoder'
 import type { LiveGamesResponse } from './useLiveGames'
 
 /**
+ * Pure helper — exported for unit testing (11-03 useMatchDetail.test.ts).
+ * Mirrors computeWinProbInterval / computeIntelInterval / computeDraftInterval pattern.
+ *
+ * Polling cadence for the in-game match detail poller (D-12 / D-14):
+ *   game_state === 6 (post-game) → false  (CLAUDE.md §Critical Pitfalls — MUST stop; finished matches drain quota)
+ *   anything else                → 30_000 ms (30s in-game cadence)
+ */
+export function computeMatchInterval(gameState: number | undefined): number | false {
+  return gameState === 6 ? false : 30_000
+}
+
+/**
  * Returns detailed data for a single live match, derived from the shared ['live-games'] cache.
  *
  * Data flow (per D-11, D-12, D-14, D-15):
@@ -36,7 +48,7 @@ export function useMatchDetail(matchId: string | undefined) {
       return r.json()
     },
     // D-12: plain 30s interval. D-14: stop polling when post-game (game_state === 6).
-    refetchInterval: matchFromCache?.game_state === 6 ? false : 30_000,
+    refetchInterval: computeMatchInterval(matchFromCache?.game_state),
     staleTime: 25_000, // matches useLiveGames — avoids redundant refetch on back-navigation
   })
 
