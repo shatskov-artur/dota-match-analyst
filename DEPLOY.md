@@ -80,8 +80,14 @@ Follow the steps **in order** — the cross-wiring (step 4) depends on both host
 ## 3. Vercel — deploy the SPA (`client/`)
 
 1. Sign in at <https://vercel.com> → **Add New… → Project** → import this repository.
-2. **Settings → General → Root Directory** → set to **`client/`**.
-   `client/vercel.json` provides the build command, `dist` output dir, and the SPA rewrite
+2. **Leave Root Directory as the repo root.** Do *not* set it to `client`.
+
+   Same constraint as Railway: `client/` imports `shared/` both via the `@shared` alias and
+   via `../../../shared/*.json`, so rooting the build at `client/` omits `shared/` and `tsc`
+   fails with `TS2307: Cannot find module '@shared/buildingDecoder'`.
+
+   The root `vercel.json` targets `client/` explicitly instead — it sets `buildCommand`
+   (`npm run build:client`), `outputDirectory` (`client/dist`), and the SPA rewrite
    (`/(.*) → /index.html`) so React Router v7 deep links survive a hard refresh.
 3. **Settings → Environment Variables** → add:
 
