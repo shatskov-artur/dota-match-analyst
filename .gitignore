@@ -3,5 +3,6 @@ dist/
 .env
 *.local
 .claude
+.env.production
 
 # GSD workflow artifacts are tracked — do not add .planning/ here
