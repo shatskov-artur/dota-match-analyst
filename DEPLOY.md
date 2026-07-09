@@ -37,14 +37,22 @@ Follow the steps **in order** — the cross-wiring (step 4) depends on both host
 ## 2. Railway — deploy the BFF (`server/`)
 
 1. Sign in at <https://railway.app> → **New Project** → **Deploy from GitHub repo** →
-   select this repository.
-2. Open the service → **Settings** → **Root Directory** and set it to **`server/`**.
+   select this repository. Railway will ask you to install its **GitHub App** first; grant it
+   access to **this repository only**.
+2. Railway creates a **service** (a card on the project canvas). Click that card, then open its
+   **Settings** tab — *service* settings, not project settings. Under **Source**, set
+   **Root Directory** to **`server`**.
    (The monorepo has sibling `client/`, `server/`, `shared/` dirs — Railway must build only `server/`.)
-3. Confirm the builder. `railway.json` at the repo root pins **`"builder": "NIXPACKS"`**
+3. Confirm the builder. `railway.json` pins **`"builder": "NIXPACKS"`**
    (Nixpacks must be explicit — Railpack is the 2026 default). It also sets:
    - `buildCommand`: `npm run build`
    - `startCommand`: `npm run start` → `node dist/index.js` (**no** `--env-file`; Railway injects env via the dashboard)
    - `healthcheckPath`: `/api/health`
+
+   > Railway resolves `railway.json` **relative to Root Directory**, so with Root Directory
+   > `server` it reads `server/railway.json`. That file is the one that governs this deploy;
+   > the identical copy at the repo root is kept only so the config is discoverable from the
+   > top of the tree. Keep the two in sync if you change either.
 4. **Settings → Variables** — add these (values from steps 1 and the API providers):
 
    | Variable              | Value / source                                                        |
