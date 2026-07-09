@@ -45,8 +45,12 @@ Follow the steps **in order** — the cross-wiring (step 4) depends on both host
    (The monorepo has sibling `client/`, `server/`, `shared/` dirs — Railway must build only `server/`.)
 3. Confirm the builder. `railway.json` pins **`"builder": "NIXPACKS"`**
    (Nixpacks must be explicit — Railpack is the 2026 default). It also sets:
-   - `buildCommand`: `npm run build`
-   - `startCommand`: `npm run start` → `node dist/index.js` (**no** `--env-file`; Railway injects env via the dashboard)
+   - `buildCommand`: `npm install --include=dev && npm run build`
+     (`--include=dev` is required: `NODE_ENV=production` makes npm skip `devDependencies`,
+     and `tsc` lives there — without it the build dies with `tsc: not found`, exit 127)
+   - `startCommand`: `npm run start` → `node dist/server/src/index.js` (**no** `--env-file`; Railway injects env via the dashboard)
+     (`tsconfig.json` sets `rootDir: ".."` so `tsc` can pull in `shared/`; it therefore mirrors
+     the source tree and the entrypoint lands under `dist/server/src/`, **not** `dist/`)
    - `healthcheckPath`: `/api/health`
 
    > Railway resolves `railway.json` **relative to Root Directory**, so with Root Directory
