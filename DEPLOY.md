@@ -23,12 +23,14 @@ Follow the steps **in order** — the cross-wiring (step 4) depends on both host
 
 1. Sign in at <https://console.upstash.com> and **Create Database** (Redis).
    Pick a region close to your Railway region to minimise latency.
-2. Open the database → **Redis Connect** → **ioredis** tab.
-3. Copy the connection **URL** (`rediss://:<token>@<host>:<port>`) and the **token**.
-   You will paste these into Railway in the next step as `UPSTASH_REDIS_URL` and
-   `UPSTASH_REDIS_TOKEN`.
+2. Open the database and copy its **endpoint URL** (e.g. `https://your-instance.upstash.io`)
+   and its **token**. You will paste these into Railway in the next step as
+   `UPSTASH_REDIS_URL` and `UPSTASH_REDIS_TOKEN`.
 
-> The BFF uses the ioredis (Redis-protocol) endpoint, **not** the REST URL.
+> `cache.ts` reads only the **host** out of `UPSTASH_REDIS_URL` and rebuilds the
+> connection itself as `rediss://:<UPSTASH_REDIS_TOKEN>@<host>`. So the scheme does
+> not matter, and you must **not** append a port — Upstash's TLS endpoint answers on
+> ioredis's default `6379`. Pasting a `:6380` URL makes the BFF fail to reach Redis.
 
 ---
 
@@ -48,8 +50,8 @@ Follow the steps **in order** — the cross-wiring (step 4) depends on both host
    | Variable              | Value / source                                                        |
    | --------------------- | --------------------------------------------------------------------- |
    | `NODE_ENV`            | `production`                                                          |
-   | `UPSTASH_REDIS_URL`   | Upstash → Redis Connect → ioredis (`rediss://:<token>@<host>:<port>`)  |
-   | `UPSTASH_REDIS_TOKEN` | Upstash → Redis Connect                                              |
+   | `UPSTASH_REDIS_URL`   | Upstash → database endpoint, host only, **no port** (e.g. `https://your-instance.upstash.io`) |
+   | `UPSTASH_REDIS_TOKEN` | Upstash → database token                                             |
    | `VALVE_API_KEY`       | <https://steamcommunity.com/dev/apikey>                              |
    | `STRATZ_TOKEN`        | <https://stratz.com/api>                                             |
    | `CORS_ORIGIN`         | *(set in step 4, once the Vercel URL exists)*                        |
