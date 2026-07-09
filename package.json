@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "seed": "tsx scripts/seed-heroes.ts",
-    "build:ults": "tsx scripts/build-hero-ultimates.ts"
+    "build:ults": "tsx scripts/build-hero-ultimates.ts",
+    "build:server": "npm install --include=dev --prefix server && npm run build --prefix server",
+    "start:server": "npm run start --prefix server"
   },
   "devDependencies": {
     "concurrently": "^9.0.0",

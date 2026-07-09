@@ -40,23 +40,25 @@ Follow the steps **in order** — the cross-wiring (step 4) depends on both host
    select this repository. Railway will ask you to install its **GitHub App** first; grant it
    access to **this repository only**.
 2. Railway creates a **service** (a card on the project canvas). Click that card, then open its
-   **Settings** tab — *service* settings, not project settings. Under **Source**, set
-   **Root Directory** to **`server`**.
-   (The monorepo has sibling `client/`, `server/`, `shared/` dirs — Railway must build only `server/`.)
-3. Confirm the builder. `railway.json` pins **`"builder": "NIXPACKS"`**
+   **Settings** tab — *service* settings, not project settings.
+
+   **Leave Root Directory empty (the repo root).** Do *not* set it to `server`.
+   `server/tsconfig.json` compiles `../shared/*.ts` alongside `server/src`, so the build needs
+   both directories. Rooting the build at `server/` copies only that directory into the image
+   and `tsc` dies with `TS2307: Cannot find module '../../../shared/hiddenProfile.js'`.
+   The root `railway.json` targets `server/` explicitly instead.
+
+3. Confirm the builder. `railway.json` (repo root) pins **`"builder": "NIXPACKS"`**
    (Nixpacks must be explicit — Railpack is the 2026 default). It also sets:
-   - `buildCommand`: `npm install --include=dev && npm run build`
+   - `buildCommand`: `npm run build:server`
+     → `npm install --include=dev --prefix server && npm run build --prefix server`
      (`--include=dev` is required: `NODE_ENV=production` makes npm skip `devDependencies`,
      and `tsc` lives there — without it the build dies with `tsc: not found`, exit 127)
-   - `startCommand`: `npm run start` → `node dist/server/src/index.js` (**no** `--env-file`; Railway injects env via the dashboard)
+   - `startCommand`: `npm run start:server` → `node dist/server/src/index.js`
+     (**no** `--env-file`; Railway injects env via the dashboard)
      (`tsconfig.json` sets `rootDir: ".."` so `tsc` can pull in `shared/`; it therefore mirrors
      the source tree and the entrypoint lands under `dist/server/src/`, **not** `dist/`)
    - `healthcheckPath`: `/api/health`
-
-   > Railway resolves `railway.json` **relative to Root Directory**, so with Root Directory
-   > `server` it reads `server/railway.json`. That file is the one that governs this deploy;
-   > the identical copy at the repo root is kept only so the config is discoverable from the
-   > top of the tree. Keep the two in sync if you change either.
 4. **Settings → Variables** — add these (values from steps 1 and the API providers):
 
    | Variable              | Value / source                                                        |
