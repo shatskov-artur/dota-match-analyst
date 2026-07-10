@@ -6,7 +6,11 @@ const EnvSchema = z.object({
   UPSTASH_REDIS_TOKEN: z.string().min(1, 'UPSTASH_REDIS_TOKEN is required. Get it from https://console.upstash.com'),
   VALVE_API_KEY: z.string().min(1, 'VALVE_API_KEY is required. Get it from https://steamcommunity.com/dev/apikey'),
   STRATZ_TOKEN: z.string().min(1, 'STRATZ_TOKEN is required. Get it from https://stratz.com/api'),  // D-01
-  CORS_ORIGIN: z.string().optional(),   // exact Vercel URL in prod (no trailing slash); optional so local boot works
+  // Exact Vercel URL in prod; optional so local boot works.
+  // Browsers never send a trailing slash in the Origin header, and Hono compares the
+  // configured origin verbatim — so a dashboard value like "https://app.vercel.app/"
+  // silently blocks every request. Strip it here rather than rely on the operator.
+  CORS_ORIGIN: z.string().trim().transform((s) => s.replace(/\/+$/, '')).optional(),
 })
 
 const parsed = EnvSchema.safeParse(process.env)

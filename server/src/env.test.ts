@@ -77,4 +77,59 @@ describe('env module', () => {
 
     expect(env.PORT).toBe('4000')
   })
+
+  describe('CORS_ORIGIN normalization', () => {
+    // A browser never puts a trailing slash in the Origin header, and Hono compares the
+    // configured origin verbatim. So a dashboard value of "https://app.vercel.app/" would
+    // reject every real request. env.ts strips it rather than rely on the operator.
+    const setRequired = () => {
+      process.env.UPSTASH_REDIS_URL = REQUIRED_VARS.UPSTASH_REDIS_URL
+      process.env.UPSTASH_REDIS_TOKEN = REQUIRED_VARS.UPSTASH_REDIS_TOKEN
+      process.env.VALVE_API_KEY = REQUIRED_VARS.VALVE_API_KEY
+      process.env.STRATZ_TOKEN = REQUIRED_VARS.STRATZ_TOKEN
+    }
+
+    beforeEach(() => {
+      delete process.env.CORS_ORIGIN
+    })
+
+    afterEach(() => {
+      delete process.env.CORS_ORIGIN
+    })
+
+    it('strips a trailing slash', async () => {
+      setRequired()
+      process.env.CORS_ORIGIN = 'https://dota-match-analyst.vercel.app/'
+
+      const { env } = await import('./env.js')
+
+      expect(env.CORS_ORIGIN).toBe('https://dota-match-analyst.vercel.app')
+    })
+
+    it('leaves a slash-free origin untouched', async () => {
+      setRequired()
+      process.env.CORS_ORIGIN = 'https://dota-match-analyst.vercel.app'
+
+      const { env } = await import('./env.js')
+
+      expect(env.CORS_ORIGIN).toBe('https://dota-match-analyst.vercel.app')
+    })
+
+    it('trims whitespace and strips repeated trailing slashes', async () => {
+      setRequired()
+      process.env.CORS_ORIGIN = '  https://dota-match-analyst.vercel.app//  '
+
+      const { env } = await import('./env.js')
+
+      expect(env.CORS_ORIGIN).toBe('https://dota-match-analyst.vercel.app')
+    })
+
+    it('stays undefined when unset so the localhost dev fallback applies', async () => {
+      setRequired()
+
+      const { env } = await import('./env.js')
+
+      expect(env.CORS_ORIGIN).toBeUndefined()
+    })
+  })
 })
