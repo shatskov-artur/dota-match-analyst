@@ -118,7 +118,7 @@ Follow the steps **in order** — the cross-wiring (step 4) depends on both host
 1. Open the **Vercel production URL** in a fresh browser (no local setup): the **live matches
    list renders**.
 2. Navigate into a match (`/match/:id`) and **hard-refresh** the page: it loads (**not a 404**)
-   — confirms the SPA rewrite in `client/vercel.json`.
+   — confirms the SPA rewrite in the root `vercel.json`.
 3. Open **DevTools → Console**: there is **no CORS error** on the Vercel → Railway `/api/*`
    requests.
 4. *(Optional soak)* Leave it running during a real match day. Watch **Railway logs** for
@@ -133,10 +133,11 @@ If all four pass, the deploy is live and shareable.
 
 | Symptom                                   | Likely cause / fix                                                                                      |
 | ----------------------------------------- | ------------------------------------------------------------------------------------------------------ |
-| CORS error in console                     | `CORS_ORIGIN` on Railway doesn't **exactly** match the Vercel origin (trailing slash / http vs https). |
+| CORS error in console                     | `CORS_ORIGIN` on Railway doesn't match the Vercel origin — scheme (`http` vs `https`) or host. A trailing slash is harmless: `env.ts` strips it. |
 | Requests go to Vercel, not Railway        | `VITE_API_URL` was unset/blank at build time — set it in Vercel and **redeploy** (build-time inline).   |
-| `404` on hard-refresh of `/match/:id`     | `client/vercel.json` rewrite missing or Root Directory not `client/`.                                   |
-| Railway healthcheck never passes          | Root Directory not `server/`, or a required env var missing (env schema fails fast at boot).            |
+| `404` on hard-refresh of `/match/:id`     | Root `vercel.json` rewrite missing, or Root Directory was set to `client` (must stay the repo root).    |
+| `tsc` fails with `TS2307` on `shared/…`   | Root Directory was set to `server`/`client`. Both builds must run from the repo root so `shared/` resolves. |
+| Railway healthcheck never passes          | A required env var is missing (the env schema fails fast at boot), or Root Directory was set to `server`. |
 | `PORT` errors / app not reachable         | You set `PORT` manually — remove it; Railway injects it.                                                |
 
 ### Preview deploys (optional)

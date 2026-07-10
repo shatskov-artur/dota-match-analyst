@@ -19,7 +19,7 @@
 | 8 | Ability Cooldowns | User sees which ultimates are on cooldown, sorted by time remaining | TBD | 4 criteria |
 | 9 | Roshan Tracker | User sees Roshan kill count and exact loot for next kill | TBD | 4 criteria |
 | 10 | Historical Graphs | User sees gold and XP lead charts over the full game duration | TBD | 5 criteria |
-| 11 | Harden & Deploy | 3.75/4 | In Progress — 11-04 config done, awaiting human deploy (criterion 4) |  |
+| 11 | Harden & Deploy | 4/4 | Complete   | 2026-07-10 |
 
 ## Phases
 
@@ -34,7 +34,7 @@
 - [x] **Phase 9: Roshan Tracker** - Kill counter (Redis), loot prediction by kill number, respawn countdown ✓ 2026-05-04 (manual UAT deferred)
 - [x] **Phase 10: Historical Graphs** - Gold diff and XP diff line charts accumulated server-side in Redis every 30s ✓ 2026-05-09
 - [x] **Phase 10.4: Visual redesign (Tactical Slate) + responsive** - Full restyle to Tactical Slate theme via design tokens + responsive across phone/tablet/laptop/desktop (sketches 003-B / 004-B) (completed 2026-06-14)
-- [ ] **Phase 11: Harden & Deploy** - Rate-limit queues, error boundaries, 429 backoff, deploy to Vercel + Railway
+- [x] **Phase 11: Harden & Deploy** - Rate-limit queues, error boundaries, 429 backoff, deploy to Vercel + Railway (completed 2026-07-10)
 
 ## Phase Details
 
@@ -338,7 +338,7 @@ Plans:
   2. BFF applies a global rate-limit queue per upstream (Valve, OpenDota, Stratz) with exponential backoff on 429 responses and structured pino logs for every throttle event
   3. Polling stops automatically (`refetchInterval === false`) once `game_state === 6` so finished matches stop draining upstream quotas
   4. Frontend is deployed to Vercel and BFF is deployed to Railway with Upstash Redis configured, and a shareable URL loads the live matches list without local setup
-**Plans:** 3/4 plans executed; 11-04 config-complete, live deploy outstanding (human-action)
+**Plans:** 4/4 plans complete
 Plans:
 - [x] 11-01-PLAN.md — Rate-limit queues + 429 backoff + stale fallback + structured throttle logs (criterion 2)
 - [x] 11-02-PLAN.md — Per-card + route error boundaries (BentoErrorBoundary, react-error-boundary ^6) (criterion 1)
