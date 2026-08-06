@@ -13,6 +13,8 @@ fed by the Valve Web API, OpenDota and Stratz.
 
 ## Live demo
 
+### → **https://shatskov-artur.github.io/dota-match-analyst/**
+
 **The demo is a replay of a real recording, not a running service.**
 
 It shows genuine data captured from live tournament matches on **2026-08-06, 20:29–20:48 UTC**
