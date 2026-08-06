@@ -125,6 +125,7 @@ async function waitForDevtools() {
 const requests = []
 const consoleErrors = []
 const failures = []
+const badStatuses = []
 
 const browserWs = await waitForDevtools()
 const cdp = connect(browserWs)
@@ -140,6 +141,13 @@ cdp.on((msg) => {
   }
   if (msg.method === 'Network.loadingFailed') {
     failures.push({ url: '(see requests)', error: msg.params.errorText })
+  }
+  // A 404 is a *successful* load of an error page, so it never reaches loadingFailed. That gap
+  // let a broken minimap reference ship: /minimap.jpg is root-absolute, which 404s under a
+  // GitHub Pages project subdirectory while the harness still reported a clean run.
+  if (msg.method === 'Network.responseReceived') {
+    const { status, url } = msg.params.response
+    if (status >= 400) badStatuses.push({ url, status })
   }
   if (msg.method === 'Runtime.consoleAPICalled' && msg.params.type === 'error') {
     consoleErrors.push(msg.params.args.map((a) => a.value ?? a.description ?? '?').join(' '))
@@ -320,10 +328,16 @@ console.log(`console errors          : ${consoleErrors.length}`)
 for (const e of consoleErrors) console.log(`   !! ${e.slice(0, 300)}`)
 console.log(`failed loads            : ${failures.length}`)
 for (const f of failures) console.log(`   !! ${f.error}`)
+console.log(`4xx/5xx responses       : ${badStatuses.length}   <- must be 0`)
+for (const b of badStatuses) console.log(`   !! ${b.status} ${b.url}`)
 
 cdp.close()
 cleanup()
 
-const ok = external.length === 0 && consoleErrors.length === 0
-console.log(ok ? '\nPASS — no external requests, no console errors' : '\nFAIL — see above')
+const ok = external.length === 0 && consoleErrors.length === 0 && badStatuses.length === 0
+console.log(
+  ok
+    ? '\nPASS — no API requests, no console errors, no 4xx/5xx'
+    : '\nFAIL — see above',
+)
 process.exit(ok ? 0 : 1)
