@@ -10,6 +10,12 @@ import { demoMeta, capturedAtForSlice } from './snapshot'
  * at a glance, without reading the README. It states what the data is, when it was captured,
  * which match it belongs to, and why nothing is live.
  *
+ * The wording is deliberately precise about the CDN. An earlier draft claimed the page "makes
+ * no network requests", which headless verification disproved: hero portraits, item icons and
+ * ability icons load from Valve's public asset CDN, exactly as they do in the live app. That
+ * host takes no key and burns no quota, so the quota claim holds — but the blanket claim did
+ * not, and a disclosure banner that overstates its own case is worse than none.
+ *
  * The scrubber is deliberately exposed too: being able to drag through the recording makes
  * the "this is a snapshot" claim self-evident rather than something you have to take on faith.
  */
@@ -56,7 +62,8 @@ export default function DemoBanner() {
             </>
           )}
           . The live service is switched off so it does not consume Valve API quota — this page
-          replays the recording and makes no network requests.
+          replays the recording and calls no match-data API. Hero and item art still loads from
+          Valve's public CDN, which needs no key and no quota.
         </p>
 
         {total > 1 && (
