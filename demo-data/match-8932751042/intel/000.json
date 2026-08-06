@@ -1,0 +1,240 @@
+{
+  "capturedAt": "2026-08-06T20:29:31.400Z",
+  "endpoint": "/api/live/intel/8932751042",
+  "requestUrl": "http://localhost:3001/api/live/intel/8932751042",
+  "upstreams": [
+    "OpenDota (player hero history)",
+    "Stratz (hero matchups)"
+  ],
+  "matchId": 8932751042,
+  "sliceIndex": 0,
+  "payload": {
+    "players": [
+      {
+        "accountId": 1145018750,
+        "heroId": 63,
+        "playerName": "Outsider",
+        "games": 38,
+        "winRate": 0.7368421052631579,
+        "counters": [
+          {
+            "heroId": 37,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 61,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 89,
+            "knownPlayers": []
+          }
+        ]
+      },
+      {
+        "accountId": 302677832,
+        "heroId": 53,
+        "playerName": "꧁LordPotato꧂",
+        "games": 79,
+        "winRate": 0.46835443037974683,
+        "counters": [
+          {
+            "heroId": 4,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 79,
+            "knownPlayers": [
+              "[AT] STARK"
+            ]
+          },
+          {
+            "heroId": 66,
+            "knownPlayers": []
+          }
+        ]
+      },
+      {
+        "accountId": 914108414,
+        "heroId": 101,
+        "playerName": "[AT] STARK",
+        "games": 12,
+        "winRate": 0.4166666666666667,
+        "counters": [
+          {
+            "heroId": 36,
+            "knownPlayers": [
+              "Viscacha",
+              "Castellan"
+            ]
+          },
+          {
+            "heroId": 155,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 68,
+            "knownPlayers": []
+          }
+        ]
+      },
+      {
+        "accountId": 185628347,
+        "heroId": 21,
+        "playerName": "Акина",
+        "games": 4,
+        "winRate": 0.75,
+        "counters": [
+          {
+            "heroId": 89,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 47,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 136,
+            "knownPlayers": []
+          }
+        ]
+      },
+      {
+        "accountId": 819978319,
+        "heroId": 61,
+        "playerName": "курымдык",
+        "games": 1,
+        "winRate": 0,
+        "counters": [
+          {
+            "heroId": 113,
+            "knownPlayers": [
+              "Viscacha"
+            ]
+          },
+          {
+            "heroId": 76,
+            "knownPlayers": [
+              "Viscacha"
+            ]
+          },
+          {
+            "heroId": 66,
+            "knownPlayers": []
+          }
+        ]
+      },
+      {
+        "accountId": 819419700,
+        "heroId": 70,
+        "playerName": "我的家乡",
+        "games": 2,
+        "winRate": 1,
+        "counters": [
+          {
+            "heroId": 1,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 55,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 82,
+            "knownPlayers": []
+          }
+        ]
+      },
+      {
+        "accountId": 1562986900,
+        "heroId": 27,
+        "playerName": "Viscacha",
+        "games": 3,
+        "winRate": 0.6666666666666666,
+        "counters": [
+          {
+            "heroId": 103,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 34,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 62,
+            "knownPlayers": []
+          }
+        ]
+      },
+      {
+        "accountId": 1030700012,
+        "heroId": 26,
+        "playerName": "Castellan",
+        "games": 154,
+        "winRate": 0.4935064935064935,
+        "counters": [
+          {
+            "heroId": 155,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 65,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 114,
+            "knownPlayers": []
+          }
+        ]
+      },
+      {
+        "accountId": 1854152641,
+        "heroId": 60,
+        "playerName": "mostafa",
+        "games": 90,
+        "winRate": 0.4888888888888889,
+        "counters": [
+          {
+            "heroId": 1,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 8,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 13,
+            "knownPlayers": [
+              "claid1k"
+            ]
+          }
+        ]
+      },
+      {
+        "accountId": 1186208773,
+        "heroId": 71,
+        "playerName": "claid1k",
+        "games": 18,
+        "winRate": 0.3888888888888889,
+        "counters": [
+          {
+            "heroId": 4,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 120,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 104,
+            "knownPlayers": [
+              "Viscacha",
+              "Castellan"
+            ]
+          }
+        ]
+      }
+    ],
+    "game_state": 5
+  }
+}

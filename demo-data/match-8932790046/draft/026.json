@@ -1,0 +1,62 @@
+{
+  "capturedAt": "2026-08-06T20:42:14.524Z",
+  "endpoint": "/api/live/draft/8932790046",
+  "requestUrl": "http://localhost:3001/api/live/draft/8932790046",
+  "upstreams": [
+    "Valve Web API (GetLiveLeagueGames)"
+  ],
+  "matchId": 8932790046,
+  "sliceIndex": 26,
+  "payload": {
+    "match_id": 8932790046,
+    "scoreboard": {
+      "radiant": {
+        "score": 0,
+        "tower_state": 0,
+        "barracks_state": 0,
+        "players": [],
+        "picks": [
+          {
+            "hero_id": 2
+          },
+          {
+            "hero_id": 101
+          },
+          {
+            "hero_id": 74
+          },
+          {
+            "hero_id": 30
+          }
+        ],
+        "bans": []
+      },
+      "dire": {
+        "score": 0,
+        "tower_state": 0,
+        "barracks_state": 0,
+        "players": [],
+        "picks": [
+          {
+            "hero_id": 50
+          },
+          {
+            "hero_id": 75
+          },
+          {
+            "hero_id": 6
+          },
+          {
+            "hero_id": 135
+          },
+          {
+            "hero_id": 25
+          }
+        ],
+        "bans": []
+      },
+      "roshan_respawn_timer": 0,
+      "duration": 0
+    }
+  }
+}

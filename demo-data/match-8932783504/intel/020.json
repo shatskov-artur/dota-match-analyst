@@ -1,0 +1,96 @@
+{
+  "capturedAt": "2026-08-06T20:36:55.708Z",
+  "endpoint": "/api/live/intel/8932783504",
+  "requestUrl": "http://localhost:3001/api/live/intel/8932783504",
+  "upstreams": [
+    "OpenDota (player hero history)",
+    "Stratz (hero matchups)"
+  ],
+  "matchId": 8932783504,
+  "sliceIndex": 20,
+  "payload": {
+    "players": [
+      {
+        "accountId": 1855377896,
+        "heroId": 0,
+        "playerName": "panic",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 860567873,
+        "heroId": 0,
+        "playerName": "GodSon",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 227714330,
+        "heroId": 0,
+        "playerName": "Paradigma217",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 1663213705,
+        "heroId": 0,
+        "playerName": "azyzzz",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 888672547,
+        "heroId": 0,
+        "playerName": "okyn'",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 147657144,
+        "heroId": 0,
+        "playerName": "Your Majesty",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 701861828,
+        "heroId": 0,
+        "playerName": "Ame",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 1678166039,
+        "heroId": 0,
+        "playerName": ".",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 1825806077,
+        "heroId": 0,
+        "playerName": "check",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 82246092,
+        "heroId": 0,
+        "playerName": "Лупить елдой",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      }
+    ],
+    "game_state": 2
+  }
+}

@@ -1,0 +1,281 @@
+{
+  "capturedAt": "2026-08-06T20:36:54.126Z",
+  "endpoint": "/api/live/intel/8932722908",
+  "requestUrl": "http://localhost:3001/api/live/intel/8932722908",
+  "upstreams": [
+    "OpenDota (player hero history)",
+    "Stratz (hero matchups)"
+  ],
+  "matchId": 8932722908,
+  "sliceIndex": 20,
+  "payload": {
+    "players": [
+      {
+        "accountId": 1604816401,
+        "heroId": 46,
+        "playerName": "смятение",
+        "games": 49,
+        "winRate": 0.6122448979591837,
+        "counters": [
+          {
+            "heroId": 38,
+            "knownPlayers": [
+              "Redhardt",
+              "Meadow"
+            ]
+          },
+          {
+            "heroId": 37,
+            "knownPlayers": [
+              "meow>.<"
+            ]
+          },
+          {
+            "heroId": 53,
+            "knownPlayers": [
+              "tv/waste06"
+            ]
+          }
+        ]
+      },
+      {
+        "accountId": 116790140,
+        "heroId": 20,
+        "playerName": "базутчик",
+        "games": 97,
+        "winRate": 0.6391752577319587,
+        "counters": [
+          {
+            "heroId": 68,
+            "knownPlayers": [
+              "meow>.<"
+            ]
+          },
+          {
+            "heroId": 95,
+            "knownPlayers": [
+              "Meadow"
+            ]
+          },
+          {
+            "heroId": 102,
+            "knownPlayers": [
+              "Gelendvagen"
+            ]
+          }
+        ]
+      },
+      {
+        "accountId": 227366146,
+        "heroId": 123,
+        "playerName": "Gelendvagen",
+        "games": 83,
+        "winRate": 0.5301204819277109,
+        "counters": [
+          {
+            "heroId": 65,
+            "knownPlayers": [
+              "смятение",
+              "Clackson"
+            ]
+          },
+          {
+            "heroId": 4,
+            "knownPlayers": [
+              "Clackson"
+            ]
+          },
+          {
+            "heroId": 1,
+            "knownPlayers": [
+              "смятение",
+              "Clackson",
+              "BOTTEGA_VOV4iK"
+            ]
+          }
+        ]
+      },
+      {
+        "accountId": 435845395,
+        "heroId": 94,
+        "playerName": "meow>.<",
+        "games": 45,
+        "winRate": 0.6222222222222222,
+        "counters": [
+          {
+            "heroId": 138,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 43,
+            "knownPlayers": [
+              "Clackson"
+            ]
+          },
+          {
+            "heroId": 45,
+            "knownPlayers": [
+              "базутчик",
+              "Clackson"
+            ]
+          }
+        ]
+      },
+      {
+        "accountId": 98482878,
+        "heroId": 14,
+        "playerName": "Clackson",
+        "games": 144,
+        "winRate": 0.5486111111111112,
+        "counters": [
+          {
+            "heroId": 89,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 35,
+            "knownPlayers": [
+              "meow>.<",
+              "Meadow"
+            ]
+          },
+          {
+            "heroId": 78,
+            "knownPlayers": [
+              "Meadow"
+            ]
+          }
+        ]
+      },
+      {
+        "accountId": 1703611271,
+        "heroId": 39,
+        "playerName": "Season 9",
+        "games": 4,
+        "winRate": 0.5,
+        "counters": [
+          {
+            "heroId": 66,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 57,
+            "knownPlayers": [
+              "meow>.<",
+              "Meadow"
+            ]
+          },
+          {
+            "heroId": 61,
+            "knownPlayers": []
+          }
+        ]
+      },
+      {
+        "accountId": 246336777,
+        "heroId": 27,
+        "playerName": "BOTTEGA_VOV4iK",
+        "games": 5,
+        "winRate": 0.8,
+        "counters": [
+          {
+            "heroId": 103,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 34,
+            "knownPlayers": [
+              "Gelendvagen",
+              "meow>.<",
+              "tv/waste06"
+            ]
+          },
+          {
+            "heroId": 62,
+            "knownPlayers": []
+          }
+        ]
+      },
+      {
+        "accountId": 1622789802,
+        "heroId": 90,
+        "playerName": "tv/waste06",
+        "games": 40,
+        "winRate": 0.625,
+        "counters": [
+          {
+            "heroId": 138,
+            "knownPlayers": []
+          },
+          {
+            "heroId": 103,
+            "knownPlayers": [
+              "Clackson"
+            ]
+          },
+          {
+            "heroId": 42,
+            "knownPlayers": [
+              "BOTTEGA_VOV4iK"
+            ]
+          }
+        ]
+      },
+      {
+        "accountId": 477711022,
+        "heroId": 45,
+        "playerName": "Redhardt",
+        "games": 12,
+        "winRate": 0.6666666666666666,
+        "counters": [
+          {
+            "heroId": 33,
+            "knownPlayers": [
+              "смятение",
+              "базутчик",
+              "Clackson"
+            ]
+          },
+          {
+            "heroId": 4,
+            "knownPlayers": [
+              "Clackson"
+            ]
+          },
+          {
+            "heroId": 79,
+            "knownPlayers": []
+          }
+        ]
+      },
+      {
+        "accountId": 381753634,
+        "heroId": 38,
+        "playerName": "Meadow",
+        "games": 539,
+        "winRate": 0.5825602968460112,
+        "counters": [
+          {
+            "heroId": 103,
+            "knownPlayers": [
+              "Clackson"
+            ]
+          },
+          {
+            "heroId": 43,
+            "knownPlayers": [
+              "Clackson"
+            ]
+          },
+          {
+            "heroId": 60,
+            "knownPlayers": [
+              "Clackson"
+            ]
+          }
+        ]
+      }
+    ],
+    "game_state": 5
+  }
+}

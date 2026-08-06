@@ -1,0 +1,96 @@
+{
+  "capturedAt": "2026-08-06T20:29:13.737Z",
+  "endpoint": "/api/live/intel/8932787127",
+  "requestUrl": "http://localhost:3001/api/live/intel/8932787127",
+  "upstreams": [
+    "OpenDota (player hero history)",
+    "Stratz (hero matchups)"
+  ],
+  "matchId": 8932787127,
+  "sliceIndex": 0,
+  "payload": {
+    "players": [
+      {
+        "accountId": 157709694,
+        "heroId": 0,
+        "playerName": "Cookei_1",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 466902186,
+        "heroId": 0,
+        "playerName": "КиСлОмОлОчНыЙ",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 1692832135,
+        "heroId": 0,
+        "playerName": "Chomoske",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 258661729,
+        "heroId": 0,
+        "playerName": "EgorkaNoobas",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 180989790,
+        "heroId": 0,
+        "playerName": "Mango",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 82226499,
+        "heroId": 0,
+        "playerName": "Фруктовый вальс",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 368509389,
+        "heroId": 0,
+        "playerName": "ℕℙℚ",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 60041347,
+        "heroId": 0,
+        "playerName": "PSY",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 215123629,
+        "heroId": 0,
+        "playerName": "GODGVK",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 116591842,
+        "heroId": 0,
+        "playerName": "Highlight Provider",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      }
+    ],
+    "game_state": 2
+  }
+}

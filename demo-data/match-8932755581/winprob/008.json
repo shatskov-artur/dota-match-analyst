@@ -1,0 +1,18 @@
+{
+  "capturedAt": "2026-08-06T20:33:14.678Z",
+  "endpoint": "/api/live/winprob/8932755581",
+  "requestUrl": "http://localhost:3001/api/live/winprob/8932755581",
+  "upstreams": [
+    "Stratz (live win rate)",
+    "BFF-derived (logistic win-probability heuristic)"
+  ],
+  "matchId": 8932755581,
+  "sliceIndex": 8,
+  "payload": {
+    "stratz": null,
+    "gold": 0.631128699768528,
+    "estimate": 0.8079992729551239,
+    "gameState": 5,
+    "duration": 1082.433349609375
+  }
+}

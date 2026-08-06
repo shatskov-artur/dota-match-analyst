@@ -1,0 +1,511 @@
+{
+  "capturedAt": "2026-08-06T20:29:44.656Z",
+  "endpoint": "/api/live/draft/8932717566",
+  "requestUrl": "http://localhost:3001/api/live/draft/8932717566",
+  "upstreams": [
+    "Valve Web API (GetLiveLeagueGames)"
+  ],
+  "matchId": 8932717566,
+  "sliceIndex": 1,
+  "payload": {
+    "match_id": 8932717566,
+    "scoreboard": {
+      "radiant": {
+        "picks": [
+          {
+            "hero_id": 26
+          },
+          {
+            "hero_id": 78
+          },
+          {
+            "hero_id": 50
+          },
+          {
+            "hero_id": 15
+          },
+          {
+            "hero_id": 45
+          }
+        ],
+        "bans": [
+          {
+            "hero_id": 90
+          },
+          {
+            "hero_id": 86
+          },
+          {
+            "hero_id": 60
+          },
+          {
+            "hero_id": 93
+          },
+          {
+            "hero_id": 44
+          },
+          {
+            "hero_id": 48
+          },
+          {
+            "hero_id": 126
+          }
+        ],
+        "score": 29,
+        "tower_state": 1982,
+        "barracks_state": 63,
+        "players": [
+          {
+            "player_slot": 0,
+            "account_id": 456142235,
+            "hero_id": 26,
+            "kills": 4,
+            "death": 5,
+            "assists": 13,
+            "last_hits": 20,
+            "denies": 1,
+            "gold": 1130,
+            "level": 13,
+            "gold_per_min": 269,
+            "xp_per_min": 370,
+            "ultimate_state": 3,
+            "ultimate_cooldown": 0,
+            "item0": 1,
+            "item1": 11,
+            "item2": 37,
+            "item3": 214,
+            "item4": 244,
+            "item5": 188,
+            "respawn_timer": 0,
+            "position_x": -6900,
+            "position_y": -6425,
+            "net_worth": 6255
+          },
+          {
+            "player_slot": 1,
+            "account_id": 100788083,
+            "hero_id": 15,
+            "kills": 5,
+            "death": 0,
+            "assists": 12,
+            "last_hits": 286,
+            "denies": 19,
+            "gold": 1815,
+            "level": 19,
+            "gold_per_min": 649,
+            "xp_per_min": 744,
+            "ultimate_state": 1,
+            "ultimate_cooldown": 4,
+            "item0": 156,
+            "item1": 4205,
+            "item2": 116,
+            "item3": 50,
+            "item4": 154,
+            "item5": 596,
+            "respawn_timer": 0,
+            "position_x": 6258.52734375,
+            "position_y": 2844.966552734375,
+            "net_worth": 18010
+          },
+          {
+            "player_slot": 2,
+            "account_id": 1562480812,
+            "hero_id": 50,
+            "kills": 3,
+            "death": 2,
+            "assists": 12,
+            "last_hits": 56,
+            "denies": 3,
+            "gold": 770,
+            "level": 14,
+            "gold_per_min": 340,
+            "xp_per_min": 425,
+            "ultimate_state": 1,
+            "ultimate_cooldown": 8,
+            "item0": -1,
+            "item1": 4204,
+            "item2": 218,
+            "item3": 36,
+            "item4": 231,
+            "item5": 229,
+            "respawn_timer": 0,
+            "position_x": 6255.95947265625,
+            "position_y": 2000.4578857421875,
+            "net_worth": 8665
+          },
+          {
+            "player_slot": 3,
+            "account_id": 210047003,
+            "hero_id": 45,
+            "kills": 10,
+            "death": 6,
+            "assists": 9,
+            "last_hits": 143,
+            "denies": 2,
+            "gold": 259,
+            "level": 17,
+            "gold_per_min": 532,
+            "xp_per_min": 580,
+            "ultimate_state": 3,
+            "ultimate_cooldown": 0,
+            "item0": 41,
+            "item1": 180,
+            "item2": 108,
+            "item3": 1,
+            "item4": 232,
+            "item5": 36,
+            "respawn_timer": 0,
+            "position_x": -6219.1669921875,
+            "position_y": -825.1776733398438,
+            "net_worth": 13849
+          },
+          {
+            "player_slot": 4,
+            "account_id": 1593210943,
+            "hero_id": 78,
+            "kills": 6,
+            "death": 2,
+            "assists": 9,
+            "last_hits": 146,
+            "denies": 4,
+            "gold": 2378,
+            "level": 17,
+            "gold_per_min": 453,
+            "xp_per_min": 565,
+            "ultimate_state": 1,
+            "ultimate_cooldown": 8,
+            "item0": 1,
+            "item1": 267,
+            "item2": 20,
+            "item3": 36,
+            "item4": 29,
+            "item5": 108,
+            "respawn_timer": 0,
+            "position_x": 7134.26953125,
+            "position_y": 2534.572998046875,
+            "net_worth": 12768
+          }
+        ],
+        "abilities": [
+          {
+            "ability_id": 5400,
+            "ability_level": 4
+          },
+          {
+            "ability_id": 7310,
+            "ability_level": 4
+          },
+          {
+            "ability_id": 5402,
+            "ability_level": 4
+          },
+          {
+            "ability_id": 1681,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 5403,
+            "ability_level": 3
+          },
+          {
+            "ability_id": 6359,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 6082,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 730,
+            "ability_level": 3
+          },
+          {
+            "ability_id": 5669,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 842,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 8873,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 2610,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 8034,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 8035,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 1877,
+            "ability_level": 3
+          },
+          {
+            "ability_id": 1878,
+            "ability_level": 2
+          },
+          {
+            "ability_id": 1879,
+            "ability_level": 3
+          }
+        ]
+      },
+      "dire": {
+        "picks": [
+          {
+            "hero_id": 119
+          },
+          {
+            "hero_id": 71
+          },
+          {
+            "hero_id": 2
+          },
+          {
+            "hero_id": 36
+          },
+          {
+            "hero_id": 63
+          }
+        ],
+        "bans": [
+          {
+            "hero_id": 91
+          },
+          {
+            "hero_id": 49
+          },
+          {
+            "hero_id": 67
+          },
+          {
+            "hero_id": 95
+          },
+          {
+            "hero_id": 6
+          },
+          {
+            "hero_id": 106
+          },
+          {
+            "hero_id": 11
+          }
+        ],
+        "score": 15,
+        "tower_state": 1542,
+        "barracks_state": 19,
+        "players": [
+          {
+            "player_slot": 128,
+            "account_id": 246599543,
+            "hero_id": 63,
+            "kills": 1,
+            "death": 4,
+            "assists": 3,
+            "last_hits": 243,
+            "denies": 4,
+            "gold": 578,
+            "level": 17,
+            "gold_per_min": 454,
+            "xp_per_min": 608,
+            "ultimate_state": 3,
+            "ultimate_cooldown": 0,
+            "item0": 34,
+            "item1": 147,
+            "item2": 63,
+            "item3": 166,
+            "item4": 596,
+            "item5": 20,
+            "respawn_timer": 0,
+            "position_x": -3820.124267578125,
+            "position_y": 7933.255859375,
+            "net_worth": 12458
+          },
+          {
+            "player_slot": 129,
+            "account_id": 913456022,
+            "hero_id": 119,
+            "kills": 2,
+            "death": 8,
+            "assists": 6,
+            "last_hits": 37,
+            "denies": 8,
+            "gold": 288,
+            "level": 12,
+            "gold_per_min": 238,
+            "xp_per_min": 337,
+            "ultimate_state": 3,
+            "ultimate_cooldown": 0,
+            "item0": -1,
+            "item1": -1,
+            "item2": 1,
+            "item3": -1,
+            "item4": 214,
+            "item5": -1,
+            "respawn_timer": 0,
+            "position_x": 6550.29541015625,
+            "position_y": 4261.2080078125,
+            "net_worth": 4988
+          },
+          {
+            "player_slot": 130,
+            "account_id": 286410778,
+            "hero_id": 36,
+            "kills": 8,
+            "death": 5,
+            "assists": 2,
+            "last_hits": 221,
+            "denies": 10,
+            "gold": 93,
+            "level": 17,
+            "gold_per_min": 511,
+            "xp_per_min": 585,
+            "ultimate_state": 1,
+            "ultimate_cooldown": 49,
+            "item0": 50,
+            "item1": 36,
+            "item2": 137,
+            "item3": 226,
+            "item4": 37,
+            "item5": 1848,
+            "respawn_timer": 0,
+            "position_x": 5837.93017578125,
+            "position_y": 3781.7724609375,
+            "net_worth": 14003
+          },
+          {
+            "player_slot": 131,
+            "account_id": 1115985498,
+            "hero_id": 71,
+            "kills": 0,
+            "death": 6,
+            "assists": 10,
+            "last_hits": 43,
+            "denies": 0,
+            "gold": 734,
+            "level": 12,
+            "gold_per_min": 228,
+            "xp_per_min": 297,
+            "ultimate_state": 3,
+            "ultimate_cooldown": 0,
+            "item0": 185,
+            "item1": -1,
+            "item2": 485,
+            "item3": 50,
+            "item4": 215,
+            "item5": -1,
+            "respawn_timer": 0,
+            "position_x": -4241.2099609375,
+            "position_y": 441.9443359375,
+            "net_worth": 5809
+          },
+          {
+            "player_slot": 132,
+            "account_id": 110951896,
+            "hero_id": 2,
+            "kills": 2,
+            "death": 6,
+            "assists": 5,
+            "last_hits": 182,
+            "denies": 3,
+            "gold": 1029,
+            "level": 16,
+            "gold_per_min": 394,
+            "xp_per_min": 548,
+            "ultimate_state": 3,
+            "ultimate_cooldown": 0,
+            "item0": 50,
+            "item1": 34,
+            "item2": 1,
+            "item3": 244,
+            "item4": 127,
+            "item5": 53,
+            "respawn_timer": 6,
+            "position_x": 4425.48486328125,
+            "position_y": 3868.5068359375,
+            "net_worth": 10529
+          }
+        ],
+        "abilities": [
+          {
+            "ability_id": 5007,
+            "ability_level": 4
+          },
+          {
+            "ability_id": 5008,
+            "ability_level": 4
+          },
+          {
+            "ability_id": 5009,
+            "ability_level": 4
+          },
+          {
+            "ability_id": 5010,
+            "ability_level": 2
+          },
+          {
+            "ability_id": 1166,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 9401,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 6102,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 730,
+            "ability_level": 2
+          },
+          {
+            "ability_id": 5669,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 842,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 8873,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 2610,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 8034,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 8035,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 1877,
+            "ability_level": 2
+          },
+          {
+            "ability_id": 1878,
+            "ability_level": 1
+          },
+          {
+            "ability_id": 1879,
+            "ability_level": 2
+          }
+        ]
+      },
+      "roshan_respawn_timer": 0,
+      "duration": 1680.2332763671875
+    }
+  }
+}

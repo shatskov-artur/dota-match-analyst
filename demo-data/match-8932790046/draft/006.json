@@ -1,0 +1,13 @@
+{
+  "capturedAt": "2026-08-06T20:32:13.843Z",
+  "endpoint": "/api/live/draft/8932790046",
+  "requestUrl": "http://localhost:3001/api/live/draft/8932790046",
+  "upstreams": [
+    "Valve Web API (GetLiveLeagueGames)"
+  ],
+  "matchId": 8932790046,
+  "sliceIndex": 6,
+  "payload": {
+    "match_id": 8932790046
+  }
+}

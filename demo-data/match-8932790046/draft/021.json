@@ -1,0 +1,52 @@
+{
+  "capturedAt": "2026-08-06T20:39:44.669Z",
+  "endpoint": "/api/live/draft/8932790046",
+  "requestUrl": "http://localhost:3001/api/live/draft/8932790046",
+  "upstreams": [
+    "Valve Web API (GetLiveLeagueGames)"
+  ],
+  "matchId": 8932790046,
+  "sliceIndex": 21,
+  "payload": {
+    "match_id": 8932790046,
+    "scoreboard": {
+      "radiant": {
+        "picks": [
+          {
+            "hero_id": 2
+          },
+          {
+            "hero_id": 101
+          },
+          {
+            "hero_id": 74
+          },
+          {
+            "hero_id": 30
+          }
+        ],
+        "bans": []
+      },
+      "dire": {
+        "picks": [
+          {
+            "hero_id": 50
+          },
+          {
+            "hero_id": 75
+          },
+          {
+            "hero_id": 6
+          },
+          {
+            "hero_id": 135
+          },
+          {
+            "hero_id": 25
+          }
+        ],
+        "bans": []
+      }
+    }
+  }
+}

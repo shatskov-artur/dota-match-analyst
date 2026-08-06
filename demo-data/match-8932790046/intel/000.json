@@ -1,0 +1,96 @@
+{
+  "capturedAt": "2026-08-06T20:29:21.469Z",
+  "endpoint": "/api/live/intel/8932790046",
+  "requestUrl": "http://localhost:3001/api/live/intel/8932790046",
+  "upstreams": [
+    "OpenDota (player hero history)",
+    "Stratz (hero matchups)"
+  ],
+  "matchId": 8932790046,
+  "sliceIndex": 0,
+  "payload": {
+    "players": [
+      {
+        "accountId": 370485183,
+        "heroId": 0,
+        "playerName": "one day",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 861408237,
+        "heroId": 0,
+        "playerName": "京都 K Y O T O",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 225242005,
+        "heroId": 0,
+        "playerName": "7le6ede87",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 404252152,
+        "heroId": 0,
+        "playerName": "--",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 1240854506,
+        "heroId": 0,
+        "playerName": "21s",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 184963399,
+        "heroId": 0,
+        "playerName": "Pucker",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 914093008,
+        "heroId": 0,
+        "playerName": "LiFeCC Derb_",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 210117511,
+        "heroId": 0,
+        "playerName": "ALD",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 176141508,
+        "heroId": 0,
+        "playerName": "Fable",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      },
+      {
+        "accountId": 1863845100,
+        "heroId": 0,
+        "playerName": "min 5 gg  pls fsattttttttt",
+        "games": null,
+        "winRate": null,
+        "counters": []
+      }
+    ],
+    "game_state": 2
+  }
+}

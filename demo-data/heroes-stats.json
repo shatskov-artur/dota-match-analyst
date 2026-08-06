@@ -1,0 +1,484 @@
+{
+  "capturedAt": "2026-08-06T20:29:12.833Z",
+  "endpoint": "/api/heroes/stats",
+  "requestUrl": "http://localhost:3001/api/heroes/stats",
+  "upstreams": [
+    "OpenDota (hero stats)"
+  ],
+  "matchId": null,
+  "sliceIndex": null,
+  "payload": {
+    "1": {
+      "win_rate": 1,
+      "pick_rate": 1
+    },
+    "2": {
+      "win_rate": 0.6,
+      "pick_rate": 20
+    },
+    "3": {
+      "win_rate": 0.3225806451612903,
+      "pick_rate": 31
+    },
+    "5": {
+      "win_rate": 1,
+      "pick_rate": 1
+    },
+    "6": {
+      "win_rate": 0.18181818181818182,
+      "pick_rate": 11
+    },
+    "7": {
+      "win_rate": 0.5333333333333333,
+      "pick_rate": 15
+    },
+    "8": {
+      "win_rate": 0.75,
+      "pick_rate": 4
+    },
+    "9": {
+      "win_rate": 0.5454545454545454,
+      "pick_rate": 55
+    },
+    "10": {
+      "win_rate": 0.3333333333333333,
+      "pick_rate": 6
+    },
+    "11": {
+      "win_rate": 0.4473684210526316,
+      "pick_rate": 38
+    },
+    "12": {
+      "win_rate": 0.6,
+      "pick_rate": 5
+    },
+    "13": {
+      "win_rate": 0.4375,
+      "pick_rate": 32
+    },
+    "14": {
+      "win_rate": 1,
+      "pick_rate": 3
+    },
+    "15": {
+      "win_rate": 0.5,
+      "pick_rate": 2
+    },
+    "16": {
+      "win_rate": 0.46153846153846156,
+      "pick_rate": 13
+    },
+    "17": {
+      "win_rate": 0.56,
+      "pick_rate": 25
+    },
+    "18": {
+      "win_rate": 0.6666666666666666,
+      "pick_rate": 12
+    },
+    "19": {
+      "win_rate": 0.5588235294117647,
+      "pick_rate": 34
+    },
+    "20": {
+      "win_rate": 0.3333333333333333,
+      "pick_rate": 6
+    },
+    "21": {
+      "win_rate": 0.4642857142857143,
+      "pick_rate": 28
+    },
+    "22": {
+      "win_rate": 0,
+      "pick_rate": 2
+    },
+    "23": {
+      "win_rate": 0,
+      "pick_rate": 1
+    },
+    "25": {
+      "win_rate": 0.4791666666666667,
+      "pick_rate": 48
+    },
+    "26": {
+      "win_rate": 0.5185185185185185,
+      "pick_rate": 27
+    },
+    "27": {
+      "win_rate": 0.8571428571428571,
+      "pick_rate": 7
+    },
+    "28": {
+      "win_rate": 0.2777777777777778,
+      "pick_rate": 18
+    },
+    "29": {
+      "win_rate": 0.8571428571428571,
+      "pick_rate": 7
+    },
+    "30": {
+      "win_rate": 0.45454545454545453,
+      "pick_rate": 22
+    },
+    "31": {
+      "win_rate": 0.4117647058823529,
+      "pick_rate": 17
+    },
+    "33": {
+      "win_rate": 0.75,
+      "pick_rate": 16
+    },
+    "34": {
+      "win_rate": 0.5,
+      "pick_rate": 2
+    },
+    "36": {
+      "win_rate": 0.35714285714285715,
+      "pick_rate": 28
+    },
+    "37": {
+      "win_rate": 0,
+      "pick_rate": 1
+    },
+    "38": {
+      "win_rate": 0.42105263157894735,
+      "pick_rate": 19
+    },
+    "39": {
+      "win_rate": 0.6666666666666666,
+      "pick_rate": 3
+    },
+    "40": {
+      "win_rate": 0.75,
+      "pick_rate": 4
+    },
+    "41": {
+      "win_rate": 0.5,
+      "pick_rate": 2
+    },
+    "43": {
+      "win_rate": 0,
+      "pick_rate": 2
+    },
+    "45": {
+      "win_rate": 0.5,
+      "pick_rate": 2
+    },
+    "46": {
+      "win_rate": 0.5555555555555556,
+      "pick_rate": 9
+    },
+    "47": {
+      "win_rate": 0.5833333333333334,
+      "pick_rate": 12
+    },
+    "48": {
+      "win_rate": 0.6470588235294118,
+      "pick_rate": 17
+    },
+    "50": {
+      "win_rate": 0,
+      "pick_rate": 1
+    },
+    "51": {
+      "win_rate": 0.5909090909090909,
+      "pick_rate": 44
+    },
+    "52": {
+      "win_rate": 0.4,
+      "pick_rate": 5
+    },
+    "53": {
+      "win_rate": 0.4,
+      "pick_rate": 25
+    },
+    "54": {
+      "win_rate": 0.5238095238095238,
+      "pick_rate": 21
+    },
+    "55": {
+      "win_rate": 0.5333333333333333,
+      "pick_rate": 30
+    },
+    "56": {
+      "win_rate": 0.5,
+      "pick_rate": 18
+    },
+    "57": {
+      "win_rate": 0,
+      "pick_rate": 2
+    },
+    "58": {
+      "win_rate": 0.68,
+      "pick_rate": 25
+    },
+    "59": {
+      "win_rate": 0.25,
+      "pick_rate": 4
+    },
+    "60": {
+      "win_rate": 0.42857142857142855,
+      "pick_rate": 7
+    },
+    "61": {
+      "win_rate": 0.4,
+      "pick_rate": 5
+    },
+    "62": {
+      "win_rate": 1,
+      "pick_rate": 1
+    },
+    "63": {
+      "win_rate": 0,
+      "pick_rate": 1
+    },
+    "64": {
+      "win_rate": 0.3333333333333333,
+      "pick_rate": 3
+    },
+    "65": {
+      "win_rate": 0.3,
+      "pick_rate": 20
+    },
+    "66": {
+      "win_rate": 0,
+      "pick_rate": 1
+    },
+    "67": {
+      "win_rate": 0.35714285714285715,
+      "pick_rate": 14
+    },
+    "68": {
+      "win_rate": 0.6666666666666666,
+      "pick_rate": 3
+    },
+    "69": {
+      "win_rate": 0.5,
+      "pick_rate": 16
+    },
+    "70": {
+      "win_rate": 0,
+      "pick_rate": 2
+    },
+    "71": {
+      "win_rate": 0.8333333333333334,
+      "pick_rate": 6
+    },
+    "72": {
+      "win_rate": 0.14285714285714285,
+      "pick_rate": 7
+    },
+    "73": {
+      "win_rate": 0.6,
+      "pick_rate": 10
+    },
+    "74": {
+      "win_rate": 0.4482758620689655,
+      "pick_rate": 29
+    },
+    "75": {
+      "win_rate": 0.75,
+      "pick_rate": 4
+    },
+    "76": {
+      "win_rate": 0,
+      "pick_rate": 2
+    },
+    "77": {
+      "win_rate": 0.4,
+      "pick_rate": 15
+    },
+    "78": {
+      "win_rate": 0.5833333333333334,
+      "pick_rate": 12
+    },
+    "79": {
+      "win_rate": 0.4,
+      "pick_rate": 5
+    },
+    "80": {
+      "win_rate": 0.47619047619047616,
+      "pick_rate": 21
+    },
+    "81": {
+      "win_rate": 0,
+      "pick_rate": 1
+    },
+    "82": {
+      "win_rate": 1,
+      "pick_rate": 1
+    },
+    "83": {
+      "win_rate": 0.8333333333333334,
+      "pick_rate": 12
+    },
+    "84": {
+      "win_rate": 0,
+      "pick_rate": 1
+    },
+    "85": {
+      "win_rate": 0.44,
+      "pick_rate": 50
+    },
+    "86": {
+      "win_rate": 0.6,
+      "pick_rate": 30
+    },
+    "87": {
+      "win_rate": 0.3333333333333333,
+      "pick_rate": 3
+    },
+    "88": {
+      "win_rate": 0.8888888888888888,
+      "pick_rate": 9
+    },
+    "89": {
+      "win_rate": 0.75,
+      "pick_rate": 8
+    },
+    "90": {
+      "win_rate": 0.6296296296296297,
+      "pick_rate": 27
+    },
+    "91": {
+      "win_rate": 0.5,
+      "pick_rate": 6
+    },
+    "93": {
+      "win_rate": 0.6666666666666666,
+      "pick_rate": 6
+    },
+    "94": {
+      "win_rate": 1,
+      "pick_rate": 1
+    },
+    "95": {
+      "win_rate": 0,
+      "pick_rate": 1
+    },
+    "96": {
+      "win_rate": 0.47619047619047616,
+      "pick_rate": 63
+    },
+    "97": {
+      "win_rate": 1,
+      "pick_rate": 2
+    },
+    "98": {
+      "win_rate": 0.625,
+      "pick_rate": 16
+    },
+    "99": {
+      "win_rate": 0.16666666666666666,
+      "pick_rate": 6
+    },
+    "100": {
+      "win_rate": 0.625,
+      "pick_rate": 32
+    },
+    "101": {
+      "win_rate": 0.3333333333333333,
+      "pick_rate": 3
+    },
+    "102": {
+      "win_rate": 1,
+      "pick_rate": 1
+    },
+    "103": {
+      "win_rate": 0.3333333333333333,
+      "pick_rate": 3
+    },
+    "105": {
+      "win_rate": 0.5263157894736842,
+      "pick_rate": 19
+    },
+    "106": {
+      "win_rate": 0.6428571428571429,
+      "pick_rate": 56
+    },
+    "107": {
+      "win_rate": 0.631578947368421,
+      "pick_rate": 38
+    },
+    "108": {
+      "win_rate": 0.5384615384615384,
+      "pick_rate": 13
+    },
+    "109": {
+      "win_rate": 0.5,
+      "pick_rate": 14
+    },
+    "110": {
+      "win_rate": 0.375,
+      "pick_rate": 8
+    },
+    "111": {
+      "win_rate": 0.3333333333333333,
+      "pick_rate": 6
+    },
+    "112": {
+      "win_rate": 0.5681818181818182,
+      "pick_rate": 44
+    },
+    "114": {
+      "win_rate": 0.6666666666666666,
+      "pick_rate": 3
+    },
+    "119": {
+      "win_rate": 0.44,
+      "pick_rate": 50
+    },
+    "120": {
+      "win_rate": 0.47619047619047616,
+      "pick_rate": 21
+    },
+    "121": {
+      "win_rate": 0.16666666666666666,
+      "pick_rate": 6
+    },
+    "123": {
+      "win_rate": 0.410958904109589,
+      "pick_rate": 73
+    },
+    "126": {
+      "win_rate": 0.5454545454545454,
+      "pick_rate": 11
+    },
+    "128": {
+      "win_rate": 0.46153846153846156,
+      "pick_rate": 13
+    },
+    "129": {
+      "win_rate": 0,
+      "pick_rate": 1
+    },
+    "131": {
+      "win_rate": 0.34615384615384615,
+      "pick_rate": 26
+    },
+    "135": {
+      "win_rate": 0.44,
+      "pick_rate": 25
+    },
+    "136": {
+      "win_rate": 0.42857142857142855,
+      "pick_rate": 7
+    },
+    "137": {
+      "win_rate": 0.4,
+      "pick_rate": 5
+    },
+    "138": {
+      "win_rate": 0.75,
+      "pick_rate": 4
+    },
+    "145": {
+      "win_rate": 0.4166666666666667,
+      "pick_rate": 24
+    },
+    "155": {
+      "win_rate": 0.4418604651162791,
+      "pick_rate": 43
+    }
+  }
+}
