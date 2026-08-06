@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
-import { API_BASE } from '../lib/apiBase'
+import { apiFetch } from '../lib/apiFetch'
 
 // Server-side transformed shape: hero_id → { win_rate, pick_rate }
 // win_rate is 0–1 (e.g. 0.52 = 52%). pick_rate is raw pro_pick count from OpenDota.
@@ -11,7 +11,7 @@ export interface HeroStatsEntry {
 export type HeroStatsMap = Record<number, HeroStatsEntry>
 
 async function fetchHeroStats(): Promise<HeroStatsMap> {
-  const res = await fetch(`${API_BASE}/api/heroes/stats`)
+  const res = await apiFetch('/api/heroes/stats')
   if (!res.ok) throw new Error(`BFF error: ${res.status}`)
   return res.json() as Promise<HeroStatsMap>
 }

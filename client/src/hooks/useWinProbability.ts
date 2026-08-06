@@ -1,5 +1,5 @@
 import { useQuery, type Query } from '@tanstack/react-query'
-import { API_BASE } from '../lib/apiBase'
+import { apiFetch } from '../lib/apiFetch'
 
 // BFF response shape for GET /api/live/winprob/:matchId
 export interface WinProbResponse {
@@ -29,7 +29,7 @@ export function computeWinProbInterval(
 }
 
 async function fetchWinProb(matchId: string): Promise<WinProbResponse> {
-  const res = await fetch(`${API_BASE}/api/live/winprob/${matchId}`)
+  const res = await apiFetch(`/api/live/winprob/${matchId}`)
   if (!res.ok) throw new Error(`BFF error: ${res.status}`)
   return res.json() as Promise<WinProbResponse>
 }

@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { format } from 'date-fns'
-import { API_BASE } from '../lib/apiBase'
+import { apiFetch } from '../lib/apiFetch'
 
 export interface PlayerDetail {
   account_id?: number
@@ -59,7 +59,7 @@ export interface LiveGamesResponse {
 }
 
 async function fetchLiveGames(): Promise<LiveGamesResponse> {
-  const res = await fetch(`${API_BASE}/api/live/games`)
+  const res = await apiFetch('/api/live/games')
   if (!res.ok) throw new Error(`BFF error: ${res.status}`)
   return res.json() as Promise<LiveGamesResponse>
 }

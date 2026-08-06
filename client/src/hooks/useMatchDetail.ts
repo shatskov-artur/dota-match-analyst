@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router'
 import { buildingDecoder } from '@shared/buildingDecoder'
-import { API_BASE } from '../lib/apiBase'
+import { apiFetch } from '../lib/apiFetch'
 import type { LiveGamesResponse } from './useLiveGames'
 
 /**
@@ -44,7 +44,7 @@ export function useMatchDetail(matchId: string | undefined) {
   const query = useQuery<LiveGamesResponse>({
     queryKey: ['live-games'],
     queryFn: async () => {
-      const r = await fetch(`${API_BASE}/api/live/games`)
+      const r = await apiFetch('/api/live/games')
       if (!r.ok) throw new Error(`BFF error: ${r.status}`)
       return r.json()
     },
