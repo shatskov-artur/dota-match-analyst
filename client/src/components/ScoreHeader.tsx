@@ -17,11 +17,23 @@ interface ScoreHeaderProps {
     radiant_team?: { team_name?: string }
     dire_team?: { team_name?: string }
     players?: Array<{ team?: number; net_worth?: number }>
-    scoreboard?: object | null
+    scoreboard?: {
+      radiant?: { score?: number; [key: string]: unknown }
+      dire?: { score?: number; [key: string]: unknown }
+      [key: string]: unknown
+    } | null
   }
 }
 
 export default function ScoreHeader({ match }: ScoreHeaderProps) {
+  // Valve stopped sending radiant_score/dire_score at the top level — across a 20-match live
+  // payload not one game carried them, while 16 had scoreboard.{radiant,dire}.score. Reading
+  // only the top-level fields rendered every in-game match as 0–0.
+  // MatchCard already falls back this way; this mirrors it so the detail page agrees with the
+  // card the user just clicked.
+  const radiantScore = match.scoreboard?.radiant?.score ?? match.radiant_score ?? 0
+  const direScore = match.scoreboard?.dire?.score ?? match.dire_score ?? 0
+
   const radiantNW = match.players
     ?.filter((p) => p.team === 0)
     .reduce((sum, p) => sum + (p.net_worth ?? 0), 0) ?? 0
@@ -56,7 +68,7 @@ export default function ScoreHeader({ match }: ScoreHeaderProps) {
             {match.radiant_team?.team_name ?? 'TBD'}
           </span>
           <span className="text-[40px] md:text-[44px] lg:text-[56px] font-mono font-extrabold tabular-nums leading-none text-text">
-            {match.radiant_score ?? 0}
+            {radiantScore}
           </span>
           <span className="text-[11px] tabular-nums tracking-[0.08em] text-text-dim">
             {seriesScore}
@@ -99,7 +111,7 @@ export default function ScoreHeader({ match }: ScoreHeaderProps) {
             {match.dire_team?.team_name ?? 'TBD'}
           </span>
           <span className="text-[40px] md:text-[44px] lg:text-[56px] font-mono font-extrabold tabular-nums leading-none text-text">
-            {match.dire_score ?? 0}
+            {direScore}
           </span>
           <span className="text-[11px] tabular-nums tracking-[0.08em] text-text-dim">
             {seriesScore}
