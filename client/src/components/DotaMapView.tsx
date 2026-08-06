@@ -45,18 +45,23 @@ export default function DotaMapView({ buildings: b, heroPositions, size = 420 }:
       className="block"
       style={{ width: '100%', maxWidth: size, aspectRatio: '1 / 1', borderRadius: 6 }}
     >
-      {/* Solid backdrop — visible only if /minimap.jpg fails to load */}
+      {/* Solid backdrop — visible only if the minimap fails to load */}
       <rect width={S} height={S} fill="var(--color-surface)" rx={6} />
 
       {/* Real Dota 2 minimap (Liquipedia game-map asset, downscaled to 640x640).
-          clipPath rounds the corners to match the 6px border radius. */}
+          clipPath rounds the corners to match the 6px border radius.
+
+          BASE_URL, not a bare "/minimap.jpg": the demo is served from a GitHub Pages project
+          subdirectory, where a root-absolute path resolves to the domain root and 404s. Vite
+          substitutes BASE_URL per build, so this stays correct for both the '/' build and the
+          relative-base demo. */}
       <defs>
         <clipPath id="map-clip">
           <rect width={S} height={S} rx={6} />
         </clipPath>
       </defs>
       <image
-        href="/minimap.jpg"
+        href={`${import.meta.env.BASE_URL}minimap.jpg`}
         x={0} y={0}
         width={S} height={S}
         preserveAspectRatio="xMidYMid slice"
