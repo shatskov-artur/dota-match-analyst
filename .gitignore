@@ -1,8 +1,11 @@
 node_modules/
 dist/
+dist-demo/
 .env
 *.local
 .claude
 .env.production
 
 # GSD workflow artifacts are tracked — do not add .planning/ here
+# demo-data/ IS tracked on purpose — the captured snapshot is the demo's evidence.
+# client/.env.demo IS tracked on purpose — it is build config, not a secret.
