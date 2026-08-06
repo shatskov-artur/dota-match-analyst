@@ -1,0 +1,68 @@
+name: Deploy demo to GitHub Pages
+
+# Builds the static snapshot demo and publishes it to Pages.
+#
+# The build needs no secrets: the recording it replays lives in demo-data/ in this
+# repository, and the demo makes no match-data API calls. So this workflow never touches a
+# Valve, OpenDota, Stratz or Redis credential — that is the whole point of the snapshot.
+
+on:
+  push:
+    branches: [master]
+    # Only rebuild when something that affects the demo actually changes.
+    paths:
+      - 'client/**'
+      - 'shared/**'
+      - 'demo-data/**'
+      - '.github/workflows/deploy-demo.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deploy finish rather than cancelling it half-published.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # shared/ is imported by the client through the @shared alias and declares its own
+      # dependencies, so it has to be installed as well as client/.
+      - name: Install dependencies
+        run: |
+          npm install --include=dev --prefix shared
+          npm install --include=dev --prefix client
+
+      - name: Build demo
+        run: npm run build:demo --prefix client
+
+      # Pages serves files starting with an underscore only when Jekyll is disabled.
+      - name: Disable Jekyll
+        run: touch client/dist-demo/.nojekyll
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: client/dist-demo
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
