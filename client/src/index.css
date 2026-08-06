@@ -1,5 +1,11 @@
 @import "tailwindcss";
 
+/* Self-hosted Plus Jakarta Sans + JetBrains Mono (scripts/fetch-fonts.mjs).
+   Imported here rather than <link>ed from fonts.googleapis.com in index.html so the app
+   makes no third-party requests — a hard requirement for the offline snapshot demo, and
+   one less external dependency for the normal build. */
+@import "./fonts/fonts.css";
+
 /* Neon Bento token layer — canonical source: .planning/sketches/redesign-2026/neon-bento/_theme.css.
    Modular OLED dashboard: Plus Jakarta Sans, deep-black surfaces, violet + gold accents.
    Token NAMES preserved from the prior theme so existing component utilities re-skin automatically.
