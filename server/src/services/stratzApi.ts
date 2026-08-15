@@ -112,16 +112,24 @@ async function fetchHeroMatchupsStratz(heroId: number): Promise<StratzHeroDryadE
       }),
     })
   } catch (err) {
+    // Rethrown, not swallowed: a network blip is not "this hero has no counters".
     console.error(`[stratzApi] Network error fetching matchups for hero ${heroId}:`, (err as Error).message)
-    return null
+    throw err
   }
   if (!res.ok) {
     // 429 → throw a retryable rate-limit error so cached()'s pRetry backs off (Stratz 500/hr).
     if (res.status === 429) {
       throw Object.assign(new Error('Stratz 429 (matchups)'), { status: 429, retryAfterMs: parseRetryAfter(res) })
     }
-    console.error(`[stratzApi] Hero matchups fetch error: ${res.status} ${res.statusText}`)
-    return null
+    // Anything else is Stratz being unavailable, which says nothing about this hero's
+    // matchups. Returned as null it was cached for SIX HOURS (TTL.HERO_STATS), so a
+    // single 502 emptied the counterpick list for that hero until the next patch-length
+    // window elapsed. A throw is never cached, so the next draft asks again.
+    // (getWinProbability deliberately keeps its null-return: 60s TTL heals itself within
+    // a minute, and "Stratz does not track this match" is a real answer there.)
+    throw Object.assign(new Error(`Stratz matchups unavailable: ${res.status} ${res.statusText}`), {
+      status: res.status,
+    })
   }
   const raw: unknown = await res.json()
   const parsed = StratzMatchupResponseSchema.safeParse(raw)

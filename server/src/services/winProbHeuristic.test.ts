@@ -138,3 +138,74 @@ describe('extractScoreboardInputs', () => {
     expect(result.raxAdv).toBe(6)
   })
 })
+
+// ─── A-1 regression: the same moment must produce the same number ────────────────────
+//
+// The bug: /api/live/winprob handed extractScoreboardInputs a RAW Valve game, whose
+// tower_state/barracks_state are undefined at the top level — Valve puts them per team
+// under scoreboard.{radiant,dire}. Both sides therefore defaulted to "all buildings
+// standing", towerAdv and raxAdv were ALWAYS 0, and the multi-factor "Est." bar silently
+// degraded to the gold-only one. Meanwhile snapshotWriter fed the same function an
+// ENRICHED payload with the masks packed, and wrote a different number for the same
+// second into match_timeline.win_prob_estimate. Two answers, one moment.
+describe('extractScoreboardInputs — raw and enriched payloads agree (A-1)', () => {
+  // Radiant has lost nothing, Dire has lost 8 towers and 4 barracks.
+  const radiantTowers = 0x7ff
+  const direTowers = 0x007 // 3 of 11 left
+  const radiantRax = 0x3f
+  const direRax = 0x03 // 2 of 6 left
+
+  const scoreboard = {
+    radiant: {
+      score: 30,
+      tower_state: radiantTowers,
+      barracks_state: radiantRax,
+      players: [{ net_worth: 20000 }],
+    },
+    dire: {
+      score: 20,
+      tower_state: direTowers,
+      barracks_state: direRax,
+      players: [{ net_worth: 15000 }],
+    },
+  }
+
+  /** What Valve actually sends: masks per team, nothing at the top level. */
+  const rawGame = { scoreboard }
+  /** What liveAggregator produces and the archive stores: the same masks, packed. */
+  const enrichedGame = {
+    scoreboard,
+    tower_state: (radiantTowers & 0xffff) | ((direTowers & 0xffff) << 16),
+    barracks_state: (radiantRax & 0xff) | ((direRax & 0xff) << 8),
+  }
+
+  it('reads the building advantage out of a raw Valve payload', async () => {
+    const { extractScoreboardInputs } = await import('./winProbHeuristic.js')
+    const raw = extractScoreboardInputs(rawGame as Record<string, unknown>)
+    // 11 standing vs 3, and 6 barracks vs 2 — this used to come out 0/0.
+    expect(raw.towerAdv).toBe(8)
+    expect(raw.raxAdv).toBe(4)
+  })
+
+  it('produces identical inputs for the raw and the enriched shape', async () => {
+    const { extractScoreboardInputs } = await import('./winProbHeuristic.js')
+    expect(extractScoreboardInputs(rawGame as Record<string, unknown>)).toEqual(
+      extractScoreboardInputs(enrichedGame as Record<string, unknown>),
+    )
+  })
+
+  it('therefore yields the same Est. probability from both — the live bar and the archived curve agree', async () => {
+    const { extractScoreboardInputs, computeEstWinProb } = await import('./winProbHeuristic.js')
+    const fromRaw = computeEstWinProb(extractScoreboardInputs(rawGame as Record<string, unknown>))
+    const fromEnriched = computeEstWinProb(extractScoreboardInputs(enrichedGame as Record<string, unknown>))
+    expect(fromRaw).toBe(fromEnriched)
+  })
+
+  it('still reports no building advantage when Valve reports no masks at all', async () => {
+    const { extractScoreboardInputs } = await import('./winProbHeuristic.js')
+    const draft = { scoreboard: { radiant: { players: [] }, dire: { players: [] } } }
+    const result = extractScoreboardInputs(draft as Record<string, unknown>)
+    expect(result.towerAdv).toBe(0)
+    expect(result.raxAdv).toBe(0)
+  })
+})

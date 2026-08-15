@@ -106,11 +106,33 @@ export const LiveGameSchema = z
   })
   .passthrough() // CRITICAL: never remove .passthrough()
 
+/**
+ * ISteamRemoteStorage/GetUGCFileDetails/v1 — resolves a Workshop `ugcid` to a public asset URL.
+ * Used as the fallback source for team logos when OpenDota does not know the team.
+ * `data` is absent when the ugcid is unknown; `url` is the only field this project reads.
+ */
+export const UgcFileDetailsSchema = z
+  .object({
+    data: z
+      .object({
+        url: z.string().optional(),
+      })
+      .passthrough()
+      .optional(),
+  })
+  .passthrough()
+
 export const LiveLeagueGamesSchema = z
   .object({
     result: z
       .object({
-        games: z.array(LiveGameSchema),
+        // Optional, matching what the callers already assume. Every reader writes
+        // `games ?? []` — a defence that could never fire while the schema demanded the
+        // field, because .parse() would have thrown first. That mismatch had one outcome:
+        // if Valve ever omits `games` on a quiet night, the ZodError is not a 429, so
+        // cached() does not retry it, /api/live/games answers 503, and the ingest tick
+        // logs a failure — the whole app dark because nothing was being played.
+        games: z.array(LiveGameSchema).optional(),
         status: z.number().optional(),
       })
       .passthrough(),

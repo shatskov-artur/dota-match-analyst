@@ -4,7 +4,9 @@ import { cors } from 'hono/cors'
 import { env } from './env.js'
 import liveRoutes from './routes/live.js'
 import heroRoutes from './routes/heroes.js'
-import { startSampler, stopSampler } from './services/historySamplerJob.js'
+import archiveRoutes from './routes/archive.js'
+import { startIngest, stopIngest } from './services/ingest/ingestJob.js'
+import { closeDb } from './db/index.js'
 import { logger } from './logger.js'
 
 const app = new Hono()
@@ -19,13 +21,17 @@ app.get('/api/health', (c) => {
 
 app.route('/api/live', liveRoutes)
 app.route('/api', heroRoutes)
+// v2.0 archive: tournaments, brackets, series, per-minute timelines and time travel.
+app.route('/api', archiveRoutes)
 
 const port = Number(env.PORT)
 
-// Phase 10.1 D-01: start the background history sampler before the listener
-// binds so it is alive as soon as Node accepts requests. Idempotent and
-// env-gated by HISTORY_SAMPLER_DISABLED inside the module.
-startSampler()
+// Phase 10.1 D-01 (v2.0: now the ingest job): start the background tick before the
+// listener binds so it is alive as soon as Node accepts requests. Idempotent and
+// env-gated by INGEST_DISABLED / HISTORY_SAMPLER_DISABLED inside the module.
+// It subsumes the old history sampler — enrichLiveGames still writes the Redis
+// timeseries — and additionally archives every tracked match to Postgres.
+startIngest()
 
 const httpServer = serve({ fetch: app.fetch, port }, () => {
   console.log(`BFF listening on http://localhost:${port}`)
@@ -35,7 +41,8 @@ const httpServer = serve({ fetch: app.fetch, port }, () => {
 // before SIGKILL. Drain the in-flight sampler tick and close HTTP sockets.
 async function shutdown(signal: 'SIGTERM' | 'SIGINT'): Promise<void> {
   logger.info({ signal }, 'shutdown initiated')
-  await stopSampler()
+  await stopIngest()
+  await closeDb()
   httpServer.close(() => process.exit(0))
   // Hard-timeout safety net — never block longer than Railway grants.
   setTimeout(() => process.exit(1), 9000).unref()

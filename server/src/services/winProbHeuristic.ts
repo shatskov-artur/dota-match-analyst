@@ -1,4 +1,4 @@
-import { buildingDecoder } from '../../../shared/buildingDecoder.js'
+import { buildingDecoder, packBuildingState } from '../../../shared/buildingDecoder.js'
 
 // Sigmoid helper — used by all heuristic estimators
 function sigmoid(x: number): number {
@@ -76,10 +76,25 @@ export function extractScoreboardInputs(
         : 0
   const killDiff = radiantScore - direScore
 
-  // Building advantage via buildingDecoder
-  const towerState = typeof game.tower_state === 'number' ? game.tower_state : undefined
-  const barracksState =
-    typeof game.barracks_state === 'number' ? game.barracks_state : undefined
+  // Building advantage.
+  //
+  // Accepts BOTH shapes on purpose. An enriched payload (liveAggregator, and every archived
+  // snapshot) carries the packed masks at the top level; a RAW Valve game does not — there
+  // the masks live per team under scoreboard.{radiant,dire}. /api/live/winprob passed the
+  // raw object, so tower_state was always undefined, towerAdv and raxAdv were always 0, and
+  // the multi-factor "Est." bar was silently identical to the gold-only one no matter how
+  // many barracks had fallen. Falling back to the per-team masks makes the function correct
+  // for whichever shape it is handed, rather than correct only for the caller that
+  // remembered to pack first.
+  const num = (v: unknown): number | undefined => (typeof v === 'number' ? v : undefined)
+  const packed = packBuildingState(
+    num(sbRadiant?.tower_state),
+    num(sbDire?.tower_state),
+    num(sbRadiant?.barracks_state),
+    num(sbDire?.barracks_state),
+  )
+  const towerState = num(game.tower_state) ?? packed.towerState
+  const barracksState = num(game.barracks_state) ?? packed.barracksState
 
   // Invoke buildingDecoder for type validation (D-09: unavailable flag handling)
   const buildings = buildingDecoder(towerState, barracksState)

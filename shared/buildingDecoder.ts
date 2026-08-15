@@ -77,6 +77,40 @@ function cloneTeam(t: TeamBuildings): TeamBuildings {
   }
 }
 
+/**
+ * The inverse of buildingDecoder: two PER-TEAM masks → the single packed pair.
+ *
+ * Valve's live feed carries `tower_state` / `barracks_state` under
+ * `scoreboard.{radiant,dire}` and leaves the top level undefined (CLAUDE.md pitfall),
+ * while everything downstream expects the packed layout — Radiant in the low bits, Dire
+ * shifted up. That packing existed in three separate copies: liveAggregator (which feeds
+ * the UI), reconstruct (which rebuilds an archived minute), and NOWHERE in the /winprob
+ * route — so the "Est." bar read `tower_state: undefined`, defaulted both sides to "all
+ * standing", and silently dropped the tower and barracks terms from its own formula for
+ * the entire life of the feature. One packer, so a consumer cannot quietly miss it.
+ *
+ * `undefined` in means "Valve did not report it", and is preserved rather than defaulted:
+ * buildingDecoder distinguishes an absent mask (unavailable) from a zero one (everything
+ * destroyed), and that distinction must survive packing.
+ */
+export function packBuildingState(
+  radiantTowers: number | undefined,
+  direTowers: number | undefined,
+  radiantBarracks: number | undefined,
+  direBarracks: number | undefined,
+): { towerState: number | undefined; barracksState: number | undefined } {
+  return {
+    towerState:
+      radiantTowers === undefined && direTowers === undefined
+        ? undefined
+        : ((radiantTowers ?? 0) & 0xffff) | (((direTowers ?? 0) & 0xffff) << 16),
+    barracksState:
+      radiantBarracks === undefined && direBarracks === undefined
+        ? undefined
+        : ((radiantBarracks ?? 0x3f) & 0xff) | (((direBarracks ?? 0x3f) & 0xff) << 8),
+  }
+}
+
 export function buildingDecoder(
   towerState: number | undefined,
   barracksState: number | undefined,

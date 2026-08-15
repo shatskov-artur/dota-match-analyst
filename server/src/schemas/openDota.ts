@@ -10,6 +10,20 @@ export const LeagueSchema = z.object({
 
 export type League = z.infer<typeof LeagueSchema>
 
+// GET /api/teams/{teamId} — team profile. Used for team logos (HOME-01/MATCH-04 avatars).
+// logo_url is served from two different Valve hosts depending on how the team uploaded it:
+// steamcdn-a.akamaihd.net/apps/dota2/images/team_logos/{id}.png (legacy) or
+// cdn.steamusercontent.com/ugc/... (Workshop upload). Both are keyless public assets.
+// Nullable AND optional: OpenDota omits the field for teams that never uploaded one.
+export const TeamProfileSchema = z.object({
+  team_id: z.number().optional(),
+  name: z.string().nullable().optional(),
+  tag: z.string().nullable().optional(),
+  logo_url: z.string().nullable().optional(),
+}).passthrough()
+
+export type TeamProfile = z.infer<typeof TeamProfileSchema>
+
 // Phase 5: Hero & Player Intel schemas
 // All fields .optional() — OpenDota adds fields without notice.
 // All schemas .passthrough() — preserve unknown fields silently.

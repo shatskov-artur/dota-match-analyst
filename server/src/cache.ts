@@ -12,9 +12,17 @@ import { logThrottle } from './logger.js'
 export let redis: Redis | null = null
 
 try {
-  const redisUrl = `rediss://:${env.UPSTASH_REDIS_TOKEN}@${new URL(env.UPSTASH_REDIS_URL).host}`
+  // v2.0: REDIS_URL (a plain redis://host:port, e.g. docker-compose.local.yml) wins over
+  // the Upstash pair. Upstash keeps its bespoke construction: only the HOST is taken from
+  // UPSTASH_REDIS_URL and the token is embedded as the password (DEPLOY.md — never append
+  // a port, Upstash's TLS endpoint answers on ioredis's default 6379).
+  const redisUrl = env.REDIS_URL
+    ? env.REDIS_URL
+    : `rediss://:${env.UPSTASH_REDIS_TOKEN}@${new URL(env.UPSTASH_REDIS_URL as string).host}`
+  // TLS is an Upstash requirement, not a Redis one — a local redis:// container has none.
+  const useTls = redisUrl.startsWith('rediss://')
   redis = new Redis(redisUrl, {
-    tls: {},
+    ...(useTls ? { tls: {} } : {}),
     maxRetriesPerRequest: 1,
     enableReadyCheck: false,
     lazyConnect: false,
@@ -39,6 +47,16 @@ export const TTL = {
   HERO_STATS: 21_600,  // 6 hours
   PLAYER_STATS: 900,   // 15 minutes
   WIN_PROB: 60,        // D-07: 2× the 30s client poll cadence → 1 Stratz call/min per match
+  TEAM_LOGO: 604_800,  // 7 days — a team logo only changes on a rebrand; keeps steady-state cost at zero
+  // A team's own match history. Was filed under HERO_STATS (6h) with the note "the window
+  // only moves after a game" — which is exactly what happens two or three times on a
+  // tournament day, so the H2H panel spent the evening showing form that predated the
+  // morning's series. 20 minutes is still one call per team per twenty minutes, and the
+  // endpoint is keyless.
+  TEAM_HISTORY: 1_200,
+  LEAGUE_DATA: 300,    // v2.0 — bracket/schedule sync tick; the tree only moves when a series ends
+  MATCH_DETAIL: 300,   // v2.0 — post-match OpenDota body. Short on purpose: an unparsed replay
+                       // must be re-asked soon. Permanence lives in post_match_raw, not here.
   STALE: 86_400,       // 24h long-lived stale copy for D-03 429-exhaustion fallback
 } as const
 
@@ -65,17 +83,26 @@ function sleep(ms: number): Promise<void> {
  * @param fn         Async function that fetches the upstream data.
  * @param opts       Optional per-upstream queue + label. When `queue` is provided the fetch runs
  *                   inside that PQueue (rate-limit envelope). `upstream` tags throttle logs.
+ *                   `shouldCache` vetoes storing a particular result — see below.
  *                   Backward-compatible: existing 3-arg calls behave exactly as before.
  *
  * On a 429 the fetch is retried with exponential backoff (honoring Retry-After when present);
  * non-429 errors are NOT retried. When retries are exhausted, a long-lived `stale:<key>` copy is
  * served if one exists, otherwise the error rethrows so the route emits 503 (D-03).
+ *
+ * WHAT MUST NOT BE CACHED
+ * A throw is never stored — that is what lets a fetcher signal "the upstream was down"
+ * instead of "there is no data" (see openDotaApi.upstreamFailure). But some callers ASSEMBLE
+ * a result from several upstreams and degrade gracefully instead of throwing: the intel
+ * payload keeps the players it could resolve and drops the ones it could not. Storing that
+ * for the full TTL pins a half-empty answer in place long after the upstream recovered, so
+ * those callers pass `shouldCache` and the incomplete result is returned but not stored.
  */
 export async function cached<T>(
   key: string,
   ttlSeconds: number,
   fn: () => Promise<T>,
-  opts?: { queue?: PQueue; upstream?: string },
+  opts?: { queue?: PQueue; upstream?: string; shouldCache?: (result: T) => boolean },
 ): Promise<T> {
   if (redis) {
     try {
@@ -122,7 +149,7 @@ export async function cached<T>(
     throw err
   }
 
-  if (redis) {
+  if (redis && (opts?.shouldCache?.(result) ?? true)) {
     try {
       await redis.set(key, JSON.stringify(result), 'EX', ttlSeconds)
       // Long-lived stale copy for the 429-exhaustion fallback (Pitfall 1: fresh key expires,

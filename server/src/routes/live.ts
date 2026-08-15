@@ -1,17 +1,13 @@
 import { Hono } from 'hono'
 import { getLiveLeagueGames, getLiveLeagueGamesFast } from '../services/valveApi.js'
-import { getLeagueName, getPlayerHeroes } from '../services/openDotaApi.js'
+import { getPlayerHeroes } from '../services/openDotaApi.js'
 import { applyKnownToPlay, rankCountersStratz } from '../services/intel.js'
 import { getWinProbability, getHeroMatchupsStratz } from '../services/stratzApi.js'
 import type { StratzHeroDryadEntry } from '../schemas/stratz.js'
 import { hiddenProfile } from '../../../shared/hiddenProfile.js'
 import { cached, TTL } from '../cache.js'
 import { extractScoreboardInputs, computeGoldWinProb, computeEstWinProb } from '../services/winProbHeuristic.js'
-import { detectRoshanKill, readRoshanState, writeRoshanState } from '../services/roshanState.js'
-import { readHistory, tryWriteSample, deleteHistory, buildSample } from '../services/historySampler.js'
-import type { HistorySample } from '../schemas/bff.js'
-import { lookupRoshanLoot } from '../../../shared/roshanLoot.js'
-import { logger } from '../logger.js'
+import { enrichLiveGames } from '../services/liveAggregator.js'
 
 const liveRoutes = new Hono()
 
@@ -33,174 +29,12 @@ liveRoutes.get('/games', async (c) => {
     return c.json({ error: 'upstream_unavailable' }, 503)
   }
   const games = data.result.games ?? []
-
-  // De-duplicate league IDs before fetching to minimise upstream calls
-  const uniqueLeagueIds = [...new Set(games.map((g) => g.league_id))]
-
-  // Fetch all league names concurrently — each individually cached 6h
-  const nameEntries = await Promise.all(
-    uniqueLeagueIds.map(async (id) => {
-      const name = await getLeagueName(id)
-      // D-08: fallback label when OpenDota returns null or unknown league
-      return [id, name ?? `League #${id}`] as const
-    }),
-  )
-  const nameMap = Object.fromEntries(nameEntries)
-
-  const enriched = await Promise.all(games.map(async (g) => {
-    // Valve puts combat stats in scoreboard.{radiant,dire}.players[], NOT in top-level players[].
-    // Top-level players[] only carries: account_id, hero_id, name, team.
-    // Merge scoreboard stats into top-level players so downstream components read one array.
-    const sbRadiant = (g.scoreboard?.radiant as Record<string, unknown> | undefined)
-    const sbDire = (g.scoreboard?.dire as Record<string, unknown> | undefined)
-
-    // Valve omits game_state and duration at top level (observed 2026-04-26 — field moved to scoreboard).
-    // Infer game_state: scoreboard.radiant.players[] present → in-game (5); else draft (2).
-    const hasInGamePlayers = Array.isArray(sbRadiant?.players) && (sbRadiant?.players as unknown[]).length > 0
-    const derivedGameState = g.game_state ?? (hasInGamePlayers ? 5 : 2)
-    // Derive duration from scoreboard.duration when absent at top level.
-    const sb = g.scoreboard as Record<string, unknown> | undefined
-    const sbDuration = typeof sb?.duration === 'number' ? sb.duration as number : undefined
-    const sbRoshanTimer = typeof sb?.roshan_respawn_timer === 'number' ? sb.roshan_respawn_timer as number : undefined
-    const sbPlayers = [
-      ...((sbRadiant?.players as unknown[]) ?? []),
-      ...((sbDire?.players as unknown[]) ?? []),
-    ] as Array<Record<string, unknown>>
-
-    const statsByAccountId = new Map<number, Record<string, unknown>>()
-    for (const sp of sbPlayers) {
-      if (typeof sp.account_id === 'number') {
-        statsByAccountId.set(sp.account_id, sp)
-      }
-    }
-
-    const players = (g.players ?? []).map((p) => {
-      const stats = p.account_id !== undefined ? statsByAccountId.get(p.account_id) : undefined
-      if (!stats) return p
-      return {
-        ...p,
-        kills: stats.kills ?? p.kills,
-        death: stats.death ?? p.death,
-        assists: stats.assists ?? p.assists,
-        net_worth: stats.net_worth ?? p.net_worth,
-        level: stats.level ?? p.level,
-        respawn_timer: stats.respawn_timer ?? p.respawn_timer,
-        gpm: stats.gold_per_min ?? p.gpm,
-        xpm: stats.xp_per_min ?? p.xpm,
-        lh: stats.last_hits ?? p.lh,
-        dn: stats.denies ?? p.dn,
-        item0: stats.item0 ?? p.item0,
-        item1: stats.item1 ?? p.item1,
-        item2: stats.item2 ?? p.item2,
-        item3: stats.item3 ?? p.item3,
-        item4: stats.item4 ?? p.item4,
-        item5: stats.item5 ?? p.item5,
-        item_neutral: stats.item_neutral ?? p.item_neutral,
-        item6: stats.item6 ?? p.item6,
-        item7: stats.item7 ?? p.item7,
-        item8: stats.item8 ?? p.item8,
-        // Phase 8 fields — surface scoreboard position + ultimate state into top-level players[]
-        position_x: stats.position_x ?? p.position_x,
-        position_y: stats.position_y ?? p.position_y,
-        ultimate_state: stats.ultimate_state ?? p.ultimate_state,
-        ultimate_cooldown: stats.ultimate_cooldown ?? p.ultimate_cooldown,
-      }
-    })
-
-    // Phase 9 Roshan: read prev state → detect → conditionally write
-    let roshan: { killCount: number; alive: boolean; respawnIn: number | null; lastKillLoot: number[] | null } | null = null
-    if (typeof g.match_id === 'number') {
-      const matchId = g.match_id
-      const prevState = await readRoshanState(matchId)
-      const gameTime = sbDuration ?? g.duration ?? 0
-      const { state: nextState, killed } = detectRoshanKill(
-        prevState,
-        sbRoshanTimer,
-        gameTime,
-        Date.now(),
-      )
-      // Write only on meaningful transitions, not on every timer tick:
-      //   - first observation (no prev state at all)
-      //   - kill detected (killCount changed)
-      //   - respawn boundary crossed (prev>0 → cur=0): we need to clear prevTimer so the
-      //     NEXT kill (cur 0 → >0) is detectable
-      // Skip writes when Roshan is dead and the timer is just decrementing — that's
-      // ~16 unnecessary writes per respawn cycle per match.
-      const crossedRespawnBoundary = !!prevState && prevState.prevTimer > 0 && nextState.prevTimer === 0
-      const shouldWrite = !prevState || killed || crossedRespawnBoundary
-      if (shouldWrite && sbRoshanTimer !== undefined) {
-        await writeRoshanState(matchId, nextState)
-      }
-      if (killed) {
-        logger.info(
-          {
-            matchId,
-            killNumber: nextState.killCount,
-            prevTimer: prevState?.prevTimer ?? 0,
-            curTimer: sbRoshanTimer ?? 0,
-          },
-          'roshan kill detected',
-        )
-      }
-      if (nextState.killCount > 0 || sbRoshanTimer !== undefined) {
-        roshan = {
-          killCount: nextState.killCount,
-          alive: (sbRoshanTimer ?? 0) === 0,
-          respawnIn: (sbRoshanTimer ?? 0) > 0 ? sbRoshanTimer ?? null : null,
-          lastKillLoot: nextState.killCount > 0 ? Array.from(lookupRoshanLoot(nextState.killCount)) : null,
-        }
-      }
-    }
-
-    // Phase 10: history sampler — fire-and-forget piggyback (D-05, D-09).
-    // MUST NOT throw. MUST run AFTER derivedGameState is computed.
-    let history: HistorySample[] = []
-    if (typeof g.match_id === 'number') {
-      const matchId = g.match_id
-      try {
-        if (derivedGameState === 6) {
-          // D-13: explicit cleanup on post-game observation
-          await deleteHistory(matchId)
-        } else if (derivedGameState === 5) {
-          const sample = buildSample({
-            scoreboard: g.scoreboard as never,
-            duration: g.duration,
-            game_state: derivedGameState,
-          })
-          if (sample) {
-            const wrote = await tryWriteSample(matchId, sample)
-            if (wrote) {
-              logger.info(
-                { matchId, t: sample.t, gold: sample.gold, xp: sample.xp },
-                'history sample written',
-              )
-            }
-          }
-        }
-        history = await readHistory(matchId)
-      } catch (err) {
-        // D-09: fire-and-forget — never break the live response
-        logger.error(
-          { matchId, err: (err as Error).message },
-          'history sampler failed',
-        )
-      }
-    }
-
-    return {
-      ...g,
-      game_state: derivedGameState,
-      duration: g.duration ?? sbDuration,
-      roshan_respawn_timer: sbRoshanTimer,
-      roshan,
-      players,
-      league_name: nameMap[g.league_id] ?? `League #${g.league_id}`,
-      history,
-    }
-  }))
-
+  // v2.0: enrichment moved to services/liveAggregator.ts so the archive ingest can
+  // persist byte-identical payloads. Behaviour here is unchanged.
+  const enriched = await enrichLiveGames(games)
   return c.json({ games: enriched })
 })
+
 
 /**
  * GET /api/live/draft/:matchId
@@ -321,25 +155,47 @@ liveRoutes.get('/intel/:matchId', async (c) => {
     const game = data.result.games?.find((g) => g.match_id === parsedId)
     if (!game) return c.json({ error: 'Match not live' }, 404)
 
-    // Outer cache: entire intel payload keyed by match_id (not per-user — T-5-04)
-    const payload = await cached(`intel:v2:${parsedId}`, TTL.PLAYER_STATS, async () => {
-      // Extract picks from both teams (Pitfall 5: use scoreboard, not picks_bans)
-      const radiantPicks = game.scoreboard?.radiant?.picks ?? []
-      const direPicks = game.scoreboard?.dire?.picks ?? []
-      const allPicks = [...radiantPicks, ...direPicks]
+    // Extract picks from both teams (Pitfall 5: use scoreboard, not picks_bans)
+    const radiantPicks = game.scoreboard?.radiant?.picks ?? []
+    const direPicks = game.scoreboard?.dire?.picks ?? []
+    const allPicks = [...radiantPicks, ...direPicks]
 
-      // Players list from Valve payload — team 0 = Radiant, team 1 = Dire
-      const players = (game.players ?? []).filter(
-        p => p.team === 0 || p.team === 1
-      )
+    // Players list from Valve payload — team 0 = Radiant, team 1 = Dire
+    const players = (game.players ?? []).filter(
+      p => p.team === 0 || p.team === 1
+    )
 
-      // Unique hero IDs — combine scoreboard picks with players[].hero_id so counters
-      // remain available post-draft (Valve sometimes evicts scoreboard.*.picks after game_state→5).
-      const uniqueHeroIds = [...new Set([
-        ...allPicks.map(p => p.hero_id).filter((id): id is number => id !== undefined),
-        ...players.map(p => p.hero_id).filter((id): id is number => id !== undefined && id > 0),
-      ])]
+    // Unique hero IDs — combine scoreboard picks with players[].hero_id so counters
+    // remain available post-draft (Valve sometimes evicts scoreboard.*.picks after game_state→5).
+    const uniqueHeroIds = [...new Set([
+      ...allPicks.map(p => p.hero_id).filter((id): id is number => id !== undefined),
+      ...players.map(p => p.hero_id).filter((id): id is number => id !== undefined && id > 0),
+    ])]
 
+    /**
+     * The cache key has to move when its inputs move.
+     *
+     * Keyed on match id alone, whatever was computed FIRST was served for the next fifteen
+     * minutes — and the first request lands during the draft, where Valve has not yet
+     * attached heroes to players and every `players[].hero_id` is 0. The whole payload was
+     * therefore filed under hero 0, so once the game started no portrait could find its own
+     * intel and the hover card never appeared. The same staleness froze the counter list at
+     * whichever picks existed on that first call.
+     *
+     * Signing the key with the heroes on the board and the number of players holding one
+     * busts it exactly when the board changes and never otherwise. The expensive parts —
+     * per-account hero histories and per-hero matchups — keep their own caches underneath,
+     * so a recompute is mostly cache hits.
+     */
+    const assigned = players.filter(p => (p.hero_id ?? 0) > 0).length
+    const heroSignature = `${[...uniqueHeroIds].sort((a, b) => a - b).join('.')}:${assigned}`
+
+    // Outer cache: entire intel payload keyed by match_id + board state (not per-user — T-5-04).
+    // shouldCache: the two allSettled fan-outs below deliberately keep whatever resolved, so a
+    // Stratz or OpenDota outage produces a REAL but incomplete payload. Storing that for 15
+    // minutes left hover cards half-empty long after the upstream came back, so an incomplete
+    // payload is served once and not memoised.
+    const payload = await cached(`intel:v3:${parsedId}:${heroSignature}`, TTL.PLAYER_STATS, async () => {
       // Batch fetch: all hero matchups + all player full hero histories concurrently
       const [matchupResults, playerResults] = await Promise.all([
         // Hero matchups (6h cached per hero) — one per unique picked hero
@@ -375,6 +231,12 @@ liveRoutes.get('/intel/:matchId', async (c) => {
           })
         ),
       ])
+
+      // Whether every upstream actually answered. A rejection here is an outage, not an
+      // absence — the payload below is still worth serving, but not worth remembering.
+      const complete =
+        matchupResults.every((r) => r.status === 'fulfilled') &&
+        playerResults.every((r) => r.status === 'fulfilled')
 
       // Build matchup lookup: heroId → ranked counters
       const matchupByHero = new Map<number, ReturnType<typeof rankCountersStratz>>()
@@ -442,8 +304,8 @@ liveRoutes.get('/intel/:matchId', async (c) => {
         }
       })
 
-      return { players: output }
-    })
+      return { players: output, complete }
+    }, { shouldCache: (p) => p.complete })
 
     // game_state must live OUTSIDE the 15-min cache — otherwise a stale game_state===2
     // would keep useMatchIntel polling forever past draft end.
@@ -451,7 +313,9 @@ liveRoutes.get('/intel/:matchId', async (c) => {
     const hasInGamePlayers = Array.isArray(sbRadiant?.players) && (sbRadiant?.players as unknown[]).length > 0
     const derivedGameState = game.game_state ?? (hasInGamePlayers ? 5 : 2)
 
-    return c.json({ ...payload, game_state: derivedGameState })
+    // `complete` is a caching decision, not part of the client contract.
+    const { complete: _complete, ...body } = payload
+    return c.json({ ...body, game_state: derivedGameState })
   } catch {
     return c.json({ error: 'Upstream error' }, 502)
   }

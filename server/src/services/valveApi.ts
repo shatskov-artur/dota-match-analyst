@@ -2,9 +2,13 @@ import { cached, TTL } from '../cache.js'
 import { valveQueue } from '../queues.js'
 import { parseRetryAfter } from './retryAfter.js'
 import { LiveLeagueGamesSchema, type LiveLeagueGames } from '../schemas/valve.js'
+import { LeagueDataSchema, type LeagueData } from '../schemas/leagueData.js'
 import { env } from '../env.js'
 
 const STEAM_API_BASE = 'https://api.steampowered.com'
+// Separate host and no API key: the league/bracket data lives on the storefront web API,
+// not on api.steampowered.com. Undocumented but keyless, verified against TI 2026.
+const DOTA2_WEBAPI_BASE = 'https://www.dota2.com/webapi'
 
 async function fetchLiveLeagueGames(): Promise<LiveLeagueGames> {
   // SECURITY: T-04-04 — log status/statusText only, never log the full URL (contains API key)
@@ -42,4 +46,51 @@ export function getLiveLeagueGames(): Promise<LiveLeagueGames> {
  */
 export function getLiveLeagueGamesFast(): Promise<LiveLeagueGames> {
   return cached('live_games:draft', TTL.DRAFT, fetchLiveLeagueGames, { queue: valveQueue, upstream: 'valve' })
+}
+
+// ─── League / bracket data (v2.0) ────────────────────────────────────────────
+
+async function fetchLeagueData(leagueId: number): Promise<LeagueData | null> {
+  const url = `${DOTA2_WEBAPI_BASE}/IDOTA2League/GetLeagueData/v001/?league_id=${leagueId}`
+  const res = await fetch(url, {
+    headers: { accept: 'application/json' },
+    signal: AbortSignal.timeout(15_000),
+  })
+  if (!res.ok) {
+    if (res.status === 429) {
+      throw Object.assign(new Error('dota2.com webapi 429'), { status: 429, retryAfterMs: parseRetryAfter(res) })
+    }
+    // Thrown rather than returned as null: cached() would have stored the null for the
+    // full 5-minute TTL, so a single blip froze the bracket for five minutes AFTER Valve
+    // had recovered. syncLeagues() already wraps every league in its own try/catch, so
+    // the ingest tick survives this exactly as before — it just does not memoise it.
+    console.error(`[valveApi] GetLeagueData error: ${res.status} ${res.statusText}`)
+    throw Object.assign(new Error(`GetLeagueData unavailable: ${res.status} ${res.statusText}`), {
+      status: res.status,
+    })
+  }
+  const raw: unknown = await res.json()
+  // .safeParse, not .parse: this endpoint carries no contract, and a shape surprise
+  // mid-tournament must degrade the bracket, never take the ingest tick down with it.
+  const parsed = LeagueDataSchema.safeParse(raw)
+  if (!parsed.success) {
+    console.error(`[valveApi] LeagueDataSchema parse failure for league ${leagueId}`)
+    return null
+  }
+  return parsed.data
+}
+
+/**
+ * Tournament structure: bracket nodes, schedule, standings, streams.
+ * Cached 5 min — the tree only moves when a series finishes, and tournamentSync
+ * ticks at the same cadence.
+ *
+ * Returns null when the endpoint is unreachable or reshapes; callers keep whatever
+ * they already persisted rather than wiping the bracket.
+ */
+export function getLeagueData(leagueId: number): Promise<LeagueData | null> {
+  return cached(`league_data:${leagueId}`, TTL.LEAGUE_DATA, () => fetchLeagueData(leagueId), {
+    queue: valveQueue,
+    upstream: 'dota2-webapi',
+  })
 }
