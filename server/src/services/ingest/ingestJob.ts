@@ -5,7 +5,7 @@ import { syncLeagues, discoverTrackedMatches, linkOrphanLiveMatches } from './to
 import { closeStaleLiveMatches, runBackfillTick } from './postMatchBackfill.js'
 import { db, pingDb } from '../../db/index.js'
 import { env, archivedLeagueTiers, trackedLeagueIds } from '../../env.js'
-import { shouldArchiveLeague, filterArchivableLeagues } from './archivePolicy.js'
+import { shouldArchiveLeague, filterArchivableLeagues, reportSkippedLeagues } from './archivePolicy.js'
 import { getLeaguesOfInterest } from './leaguesOfInterest.js'
 import { seedAnnouncedLeagues } from './seedAnnouncedLeagues.js'
 import { logger, briefError } from '../../logger.js'
@@ -91,6 +91,8 @@ export async function runOnce(): Promise<TickResult> {
       const decisions = await Promise.all(inArchivableState.map((g) => shouldArchiveLeague(g.league_id)))
       const archivable = inArchivableState.filter((_, i) => decisions[i])
       result.skipped = enriched.length - archivable.length
+      // One line saying WHAT was turned away, rather than a silent recorder.
+      reportSkippedLeagues()
 
       const writes = await Promise.allSettled(
         archivable.map(async (g) => {

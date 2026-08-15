@@ -25,9 +25,30 @@ import { logger, briefError } from '../../logger.js'
 /** Per-process memo, so one tick asking about the same league ten times costs one lookup. */
 const decisions = new Map<number, boolean>()
 
+/**
+ * What was turned away, by tier, since the last report.
+ *
+ * The per-league reason is logged at debug, and production runs at info — so the operator
+ * saw a recorder that had quietly decided to write nothing and no line saying why. One
+ * summary per tick at info answers the question the silence raises: not "which league",
+ * but "is it skipping things, and what kind".
+ */
+const skipped = new Map<string, number>()
+
 /** Exported for tests, and for the case where the operator changes the env and restarts. */
 export function resetArchivePolicyCache(): void {
   decisions.clear()
+  skipped.clear()
+}
+
+/**
+ * Emit and clear the skip tally. Called once per ingest tick, and silent when nothing was
+ * turned away — a quiet log is the normal state and should stay readable.
+ */
+export function reportSkippedLeagues(): void {
+  if (skipped.size === 0) return
+  logger.info({ byTier: Object.fromEntries(skipped) }, 'archive policy: leagues not recorded')
+  skipped.clear()
 }
 
 export async function shouldArchiveLeague(leagueId: number | undefined): Promise<boolean> {
@@ -43,6 +64,8 @@ export async function shouldArchiveLeague(leagueId: number | undefined): Promise
     const ok = shouldArchiveTier(info?.tier)
     decisions.set(leagueId, ok)
     if (!ok) {
+      const tier = info?.tier ?? 'unknown'
+      skipped.set(tier, (skipped.get(tier) ?? 0) + 1)
       logger.debug(
         { leagueId, tier: info?.tier ?? null, name: info?.name ?? null },
         'archive policy: league below the recorded tier, skipping',

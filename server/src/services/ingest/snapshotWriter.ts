@@ -513,13 +513,27 @@ export async function writeSnapshot(game: EnrichedLiveGame): Promise<WriteResult
       })
 
     // ─── raw snapshot ──────────────────────────────────────────────────────────
+    //
+    // `history` is dropped before storing, and it is the only field that is.
+    //
+    // It is the Redis gold/XP series AS OF THIS TICK — so snapshot 2 holds two points,
+    // snapshot 90 holds ninety, and the same series is written again, one point longer,
+    // every thirty seconds. The cost is quadratic in the length of the match: a 45-minute
+    // game stores roughly four thousand copies of points it already had, for a series the
+    // archive is keeping properly in match_timeline anyway.
+    //
+    // Nothing reads it back: useMatchState prefers the per-minute rows and falls back to
+    // the payload only when they are shorter, which is never true of a match that has been
+    // recorded — the timeline row exists for every minute the snapshot does.
+    const { history: _redisSeries, ...payload } = game
+
     await tx
       .insert(matchSnapshots)
       .values({
         matchId,
         t: facts.t,
         gameState: num(game.game_state),
-        payload: game,
+        payload,
       })
       // Same game second = same state. Valve's feed can repeat a duration across ticks.
       .onConflictDoNothing({ target: [matchSnapshots.matchId, matchSnapshots.t] })
