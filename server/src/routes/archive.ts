@@ -106,6 +106,26 @@ archiveRoutes.get('/tournaments/:leagueId/schedule', async (c) => {
   // Maps this league has actually decided, which outranks whatever Valve's node still says.
   const tally = await tallySeriesWins(d, { leagueId })
 
+  /*
+   * WHEN THIS BRACKET WAS LAST HEARD FROM.
+   *
+   * Everything above is a cache of one undocumented, keyless Valve endpoint, and that
+   * endpoint fails in the quietest possible way: HTTP 200 with the body `null`. Verified
+   * on 2026-08-15 — six calls, every league id, with and without browser headers, all of
+   * them `null`. syncLeague treats that as "keep what is stored", which is right, so the
+   * page carried on showing an hour-old bracket while looking exactly like a working one.
+   *
+   * The owner had no way to tell the difference and came to ask why nothing had updated.
+   * `last_synced_at` only moves on a SUCCESSFUL sync, so its age is the honest answer, and
+   * the client now shows it. This does not fix Valve; it stops the app from implying that
+   * a stale schedule is a current one.
+   */
+  const [league] = await d
+    .select({ lastSyncedAt: leagues.lastSyncedAt, name: leagues.name })
+    .from(leagues)
+    .where(eq(leagues.leagueId, leagueId))
+    .limit(1)
+
   const wanted = c.req.query('status')
   const shaped = rows.map((r) => {
     const n = r.node
@@ -138,7 +158,14 @@ archiveRoutes.get('/tournaments/:leagueId/schedule', async (c) => {
     }
   })
 
-  return c.json({ schedule: wanted ? shaped.filter((s) => s.status === wanted) : shaped })
+  return c.json({
+    schedule: wanted ? shaped.filter((s) => s.status === wanted) : shaped,
+    /**
+     * Freshness of the source, not of this response. The bracket sync runs every 5 minutes,
+     * so an age past that means Valve has stopped answering — see the note above.
+     */
+    lastSyncedAt: league?.lastSyncedAt ?? null,
+  })
 })
 
 /** Raw bracket graph + standings, for the client to lay out. */

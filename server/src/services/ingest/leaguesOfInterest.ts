@@ -49,10 +49,21 @@ export const MAX_LEAGUES_OF_INTEREST = 12
 /**
  * Active tournaments from the archive, filtered by the same policy that decides recording.
  *
- * Ordered by end date, latest first, so the cap keeps what is most current. A league with no
- * end date at all is kept rather than dropped — Valve leaves it unset often enough that
- * treating "unknown" as "over" would silently lose tournaments — and the tier policy is what
- * stops that from meaning "every amateur ladder ever seen".
+ * ORDERED BY WHICH ENDS SOONEST, and that is not the obvious choice.
+ *
+ * "Latest end date first" reads like "most current" and is the opposite. Checked against the
+ * real archive: of 60 league rows, the top of that ordering was `All Stars League` ending in
+ * 2036, `DNDL` in 2032, `Ti 18 内战` in 2030 — community leagues that register an end date
+ * years out and run forever. The International, ending the same week, sorted BELOW all of
+ * them and would have been cut off by the cap.
+ *
+ * A date far in the future is not currency, it is a placeholder. Ascending order puts the
+ * tournament that ends soonest — the one being played now, or that finished yesterday and is
+ * still inside the grace window — at the front, which is what the cap should keep.
+ *
+ * A league with no end date at all is kept rather than dropped (Valve leaves it unset often
+ * enough that treating "unknown" as "over" would lose tournaments) but sorts last, because
+ * "no date" is the weakest claim of the three.
  */
 export async function getLeaguesOfInterest(
   nowSeconds: number = Math.floor(Date.now() / 1000),
@@ -66,9 +77,9 @@ export async function getLeaguesOfInterest(
       .select({ leagueId: leagues.leagueId })
       .from(leagues)
       .where(or(isNull(leagues.endTimestamp), gt(leagues.endTimestamp, cutoff)))
-      // NULLS LAST: a dated, currently-running tournament outranks one whose dates Valve
-      // never filled in.
-      .orderBy(sql`${leagues.endTimestamp} desc nulls last`, desc(leagues.leagueId))
+      // Soonest-ending first; undated last. See the note above — the reverse ordering buries
+      // a live tournament under community leagues that claim to end in 2036.
+      .orderBy(sql`${leagues.endTimestamp} asc nulls last`, desc(leagues.leagueId))
   } catch (err) {
     // The schedule sync must survive an unreachable archive exactly as it did before this
     // existed: fall back to "nothing extra", never throw into the ingest tick.

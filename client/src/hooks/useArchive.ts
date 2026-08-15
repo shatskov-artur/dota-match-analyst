@@ -181,7 +181,18 @@ export function useTournaments() {
 export function useSchedule(leagueId: number | string | undefined) {
   return useQuery({
     queryKey: ['schedule', String(leagueId)],
-    queryFn: () => getJson<{ schedule: ScheduleEntry[] }>(`/api/tournaments/${leagueId}/schedule`),
+    queryFn: () =>
+      getJson<{
+        schedule: ScheduleEntry[]
+        /**
+         * When the bracket was last successfully read from Valve — null if never.
+         *
+         * The whole schedule is a cache of one undocumented keyless endpoint that fails by
+         * answering HTTP 200 with the body `null`, so a broken upstream and a quiet
+         * tournament looked identical on screen. This is what lets the page say which.
+         */
+        lastSyncedAt: string | null
+      }>(`/api/tournaments/${leagueId}/schedule`),
     // Matches start and finish during a tournament day — keep this fresher than the league row.
     staleTime: 30_000,
     refetchInterval: 60_000,

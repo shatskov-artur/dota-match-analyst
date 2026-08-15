@@ -57,6 +57,45 @@ const SCHEDULE_SECTIONS: Array<{
   { id: 'finished', label: 'Finished', match: (e) => e.status === 'finished' },
 ]
 
+/**
+ * How long ago this bracket was actually read from Valve.
+ *
+ * Everything on this page is a cache of one undocumented, keyless Valve endpoint, and it
+ * fails in the quietest way there is: HTTP 200 with the body `null`. Verified on 2026-08-15
+ * — six calls, every league id, with and without browser headers, all `null`. The sync
+ * correctly keeps what it already has, so the page went on showing an hour-old bracket
+ * looking exactly like a current one, and the only way to find out was to compare it with
+ * another site by hand.
+ *
+ * The sync runs every 5 minutes, so anything past ~10 means the upstream has stopped
+ * answering. This cannot conjure fixtures Valve is not publishing — it stops the page from
+ * implying that what it has is up to date.
+ */
+function ScheduleFreshness({ at }: { at: string | null }) {
+  if (!at) return null
+  const ageMin = Math.floor((Date.now() - new Date(at).getTime()) / 60_000)
+  if (Number.isNaN(ageMin)) return null
+
+  const stale = ageMin >= 10
+  const label = ageMin < 1 ? 'just now' : ageMin < 60 ? `${ageMin} min ago` : `${Math.floor(ageMin / 60)} h ago`
+
+  return (
+    <span
+      className="inline-flex items-center gap-1.5 text-[11px] tabular-nums"
+      style={{ color: stale ? 'var(--color-danger)' : 'var(--color-text-dim)' }}
+      title={
+        stale
+          ? `Valve's bracket endpoint has not answered since ${format(new Date(at), 'HH:mm')}. ` +
+            'Fixtures published since then are missing — this is an upstream outage, not an empty schedule.'
+          : `Bracket read from Valve at ${format(new Date(at), 'HH:mm')}`
+      }
+    >
+      {stale && <span aria-hidden="true">⚠</span>}
+      Schedule {label}
+    </span>
+  )
+}
+
 function when(ts: number | null | undefined, withDay = true): string {
   if (!ts) return 'TBD'
   return format(new Date(ts * 1000), withDay ? 'EEE d MMM, HH:mm' : 'HH:mm')
@@ -306,12 +345,15 @@ export default function TournamentPage() {
         </>
       }
       status={
-        counts.live > 0 ? (
-          <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.12em] text-text-muted">
-            <span className="w-[5px] h-[5px] rounded-full bg-dire animate-pulse" />
-            {counts.live} live
-          </span>
-        ) : null
+        <>
+          {counts.live > 0 && (
+            <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.12em] text-text-muted">
+              <span className="w-[5px] h-[5px] rounded-full bg-dire animate-pulse" />
+              {counts.live} live
+            </span>
+          )}
+          <ScheduleFreshness at={schedule.data?.lastSyncedAt ?? null} />
+        </>
       }
       toolbar={
         <div className="flex flex-wrap items-center gap-2">

@@ -46,8 +46,8 @@ function chain(cutoff?: number): Record<string, unknown> {
     if (queryThrows) throw new Error('Connection terminated unexpectedly')
     // Mirrors the SQL predicate: end_timestamp IS NULL OR end_timestamp > cutoff.
     const kept = rows.filter((r) => r.endTimestamp === null || r.endTimestamp > NOW - 3 * DAY)
-    // ...and its ordering: latest end date first, nulls last.
-    kept.sort((a, b) => (b.endTimestamp ?? -Infinity) - (a.endTimestamp ?? -Infinity))
+    // ...and its ordering: soonest-ending first, undated last.
+    kept.sort((a, b) => (a.endTimestamp ?? Infinity) - (b.endTimestamp ?? Infinity))
     return Promise.resolve(kept.map((r) => ({ leagueId: r.leagueId })))
   }
   return p
@@ -124,17 +124,32 @@ describe('getLeaguesOfInterest', () => {
     await expect(getLeaguesOfInterest(NOW)).resolves.toEqual([19719])
   })
 
-  it('caps the set, keeping the most current tournaments', async () => {
+  it('caps the set, keeping the tournaments that end soonest', async () => {
     rows = Array.from({ length: MAX_LEAGUES_OF_INTEREST + 5 }, (_, i) => ({
       leagueId: 1000 + i,
-      // Higher i = later end date = more current.
       endTimestamp: NOW + i * DAY,
     }))
     archivable = new Set(rows.map((r) => r.leagueId))
     const kept = await getLeaguesOfInterest(NOW)
     expect(kept).toHaveLength(MAX_LEAGUES_OF_INTEREST)
-    // The latest-ending league must survive the cap.
-    expect(kept[0]).toBe(1000 + MAX_LEAGUES_OF_INTEREST + 4)
+    // The one ending first is the one being played now.
+    expect(kept[0]).toBe(1000)
+  })
+
+  it('does not let a community league claiming to end in 2036 push out a live tournament', async () => {
+    // Measured against the real archive: 60 league rows, and the ones with the LATEST end
+    // dates were All Stars League (2036), DNDL (2032) and Ti 18 内战 (2030) — placeholders
+    // on leagues that run forever. Ordering by latest-first buried The International under
+    // them and the cap then dropped it, which is the opposite of following what is on.
+    const ti = { leagueId: 19719, endTimestamp: NOW + 7 * DAY }
+    const forever = Array.from({ length: MAX_LEAGUES_OF_INTEREST + 3 }, (_, i) => ({
+      leagueId: 90_000 + i,
+      endTimestamp: NOW + (3650 + i) * DAY,
+    }))
+    rows = [...forever, ti]
+    archivable = new Set(rows.map((r) => r.leagueId))
+    const kept = await getLeaguesOfInterest(NOW)
+    expect(kept[0]).toBe(19719)
   })
 
   it('returns an empty list, not a throw, when the archive is off', async () => {
