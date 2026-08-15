@@ -118,6 +118,66 @@ const FINISHED: BracketNode[] = SWISS.map((n) => {
   return { ...base, isCompleted: true, hasStarted: true, team1Wins: w1, team2Wins: w2 }
 })
 
+describe('buildSwissModel — leftover slots are not a round', () => {
+  /**
+   * Taken from the owner's live archive on 2026-08-15, after the Swiss stage had finished.
+   *
+   * Valve publishes a Swiss stage with more node slots than it needs. When the stage ends,
+   * the unused ones are marked completed and started — and left with no teams in them.
+   * The real payload for TI 2026 held 47 Swiss nodes: 39 real pairings across five rounds,
+   * and eight of these:
+   *
+   *   node 59..66 | no name | scheduled 1786811785 | is_completed true | has_started true
+   *               | team_1_id NULL | team_2_id NULL
+   *
+   * They landed in the unseeded tail, which packs leftovers into rounds by size, and seven
+   * of them opened a column headed "Round 6" over a five-round stage that was already over.
+   * The owner saw it on screen and asked where round six came from.
+   */
+  const SPENT_SLOTS: BracketNode[] = Array.from({ length: 8 }, (_, i) => ({
+    nodeId: 59 + i,
+    name: null,
+    nodeGroupId: null,
+    nodeGroupName: 'Swiss',
+    team1Id: null,
+    team2Id: null,
+    team1Wins: null,
+    team2Wins: null,
+    seriesId: null,
+    nodeType: 2,
+    bestOf: 3,
+    scheduledTime: 1786811785,
+    actualTime: null,
+    isCompleted: true,
+    hasStarted: true,
+    winningNodeId: null,
+    incomingNodeId1: null,
+    incomingNodeId2: null,
+  }))
+
+  it('does not invent a sixth round out of slots Valve closed empty', () => {
+    const { rounds } = buildSwissModel([...FINISHED, ...SPENT_SLOTS])
+    expect(rounds.map((r) => r.round)).toEqual([1, 2, 3, 4, 5])
+  })
+
+  it('leaves the real rounds untouched by their presence', () => {
+    const before = buildSwissModel(FINISHED)
+    const after = buildSwissModel([...FINISHED, ...SPENT_SLOTS])
+    expect(after.rounds.map((r) => r.round)).toEqual(before.rounds.map((r) => r.round))
+    expect(after.rounds.map((r) => r.buckets.reduce((n, b) => n + b.nodes.length, 0))).toEqual(
+      before.rounds.map((r) => r.buckets.reduce((n, b) => n + b.nodes.length, 0)),
+    )
+  })
+
+  it('still shows a placeholder round that has NOT been played', () => {
+    // The distinction the fix rests on: an unplayed slot is not completed. Round 5 of the
+    // unfinished fixture is exactly that, and it must keep its column.
+    const { rounds } = buildSwissModel(SWISS)
+    expect(rounds.map((r) => r.round)).toEqual([1, 2, 3, 4, 5])
+    expect(rounds[4].seeded).toBe(false)
+  })
+})
+
 describe('buildSwissModel', () => {
   it('derives five rounds from games played, not from kick-off slots', () => {
     const { rounds } = buildSwissModel(SWISS)

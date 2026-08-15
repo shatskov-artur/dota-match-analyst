@@ -321,9 +321,30 @@ export function buildSwissModel(
   /** teamId → Valve's published placement for this stage, when it has one. */
   standings?: Map<number, number>,
 ): SwissModel {
+  /*
+   * SLOTS VALVE ALLOCATED AND NEVER USED ARE NOT A ROUND.
+   *
+   * A Swiss stage is published with more node slots than it ends up needing, and when the
+   * stage finishes Valve marks the leftovers `is_completed` without ever putting teams in
+   * them. Measured on TI 2026: 47 Swiss nodes, 39 real pairings across five rounds, and
+   * eight team-less nodes all carrying is_completed = true, has_started = true and one
+   * shared timestamp.
+   *
+   * Those eight fell into the unseeded tail below, which packs leftovers into rounds by
+   * size — so seven of them opened a column headed "Round 6" on a Swiss stage that has five
+   * rounds and is over. The top-up rule that already lives there was written for the
+   * opposite case (a round being seeded a few pairings at a time) and cannot help: it only
+   * absorbs what fits under the per-round ceiling.
+   *
+   * The distinction is in the data and needs no guessing. A slot that will still be played
+   * is NOT completed; a completed slot with nobody in it was never used. Dropping those is
+   * the difference between reporting the stage and inventing a round in it.
+   */
+  const real = nodes.filter((n) => !(n.isCompleted === true && (!n.team1Id || !n.team2Id)))
+
   // Chronological, so a team's games are tallied in the order they were played. Nodes
   // without a time sort last — they are the unseeded tail of the stage.
-  const ordered = [...nodes].sort(
+  const ordered = [...real].sort(
     (a, b) => (a.scheduledTime ?? Infinity) - (b.scheduledTime ?? Infinity) || a.nodeId - b.nodeId,
   )
 

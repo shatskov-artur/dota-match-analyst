@@ -246,6 +246,27 @@ describe('tierBucket', () => {
     expect(tierBucket(' Premium ')).toBe('tier1')
     expect(tierBucket('PROFESSIONAL')).toBe('tier23')
   })
+
+  it("falls back to Valve's own number when OpenDota's tier is not stored yet", () => {
+    // The case that put The International in Other: Valve's bracket endpoint was down, so
+    // the sync never reached the line that stores the OpenDota tier, while the Valve number
+    // had been in the archive all along. Measured: TI carries Valve tier 5.
+    expect(tierBucket(null, 5)).toBe('tier1')
+    expect(tierBucket(undefined, 5)).toBe('tier1')
+  })
+
+  it('does not guess at the middle of a scale the data never showed', () => {
+    // 60 real league rows carried only tier 1 and tier 5. Anything else is unverified and
+    // is treated as unknown rather than invented.
+    expect(tierBucket(null, 1)).toBe('other')
+    expect(tierBucket(null, 3)).toBe('other')
+    expect(tierBucket(null, null)).toBe('other')
+  })
+
+  it('lets OpenDota override the number, since it is the finer scale', () => {
+    expect(tierBucket('professional', 1)).toBe('tier23')
+    expect(tierBucket('amateur', 5)).toBe('other')
+  })
 })
 
 describe('applyFilters — by tier', () => {

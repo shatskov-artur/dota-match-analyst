@@ -48,8 +48,10 @@ const synced = await syncLeagues([...trackedLeagueIds, ...liveLeagues])
 Единственный источник — сиюминутный эфир.
 
 **Сопутствующее — тир турнира негде показать.**
-`leagues.tier` ([db/schema.ts:38](server/src/db/schema.ts#L38)) хранит **валвовский integer**
-(1=amateur, 2=professional, 3=premium — их шкала). OpenDota-строка (`premium`/`professional`/
+`leagues.tier` ([db/schema.ts:38](server/src/db/schema.ts#L38)) хранит **валвовский integer**.
+⚠️ **Шкала в этой строке была выдумана мной и неверна** — я написал «1=amateur, 2=professional,
+3=premium», не проверив. По живому архиву (60 лиг): The International = **5**, все 59
+общественных лиг = **1**; середина шкалы в данных не встречается вовсе и остаётся неизвестной. OpenDota-строка (`premium`/`professional`/
 `amateur`), по которой работает `archivePolicy`, никуда не сохраняется — `getLeagueInfo` получает
 её и использует только в моменте. UI не может показать тир, потому что BFF его не отдаёт.
 

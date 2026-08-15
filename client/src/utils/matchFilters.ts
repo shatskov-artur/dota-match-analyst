@@ -25,11 +25,30 @@ export type StatusFilter = 'all' | 'live' | 'draft' | 'finished' | 'upcoming'
  */
 export type TierFilter = 'all' | 'tier1' | 'tier23' | 'other'
 
-/** OpenDota tier name → bucket. Anything unknown, including null, lands in 'other'. */
-export function tierBucket(tier: string | null | undefined): Exclude<TierFilter, 'all'> {
+/**
+ * OpenDota tier name → bucket, with Valve's own number as the fallback.
+ *
+ * The fallback exists because the two sources fail at different times and the app should
+ * not lose the answer when only one of them is down. It matters: on 2026-08-15 Valve's
+ * bracket endpoint went quiet, the OpenDota tier had not been stored yet, and The
+ * International — the most obviously Tier 1 event there is — sat in "Other".
+ *
+ * Only the two values the archive actually proves are mapped. Measured across 60 real
+ * league rows: The International carries Valve tier 5, and all 59 community leagues carry
+ * tier 1. The middle of Valve's scale never appeared in the data, so it is NOT guessed —
+ * an unrecognised number falls through to 'other' exactly like a missing one, and the
+ * OpenDota name (which does distinguish `professional`) remains the primary source.
+ */
+export function tierBucket(
+  tier: string | null | undefined,
+  valveTier?: number | null,
+): Exclude<TierFilter, 'all'> {
   const t = (tier ?? '').trim().toLowerCase()
   if (t === 'premium') return 'tier1'
   if (t === 'professional') return 'tier23'
+  if (t === 'amateur' || t === 'excluded') return 'other'
+  // Nothing usable from OpenDota — fall back to what Valve published.
+  if (valveTier != null && valveTier >= 5) return 'tier1'
   return 'other'
 }
 

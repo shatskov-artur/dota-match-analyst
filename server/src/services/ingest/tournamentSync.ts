@@ -92,8 +92,38 @@ async function purgeLeague(leagueId: number): Promise<void> {
   await db.delete(leagues).where(eq(leagues.leagueId, leagueId))
 }
 
+/**
+ * Record what OpenDota calls this league's tier, independently of anything Valve says.
+ *
+ * It has to be independent, and that was a real bug: the tier was written inside syncLeague
+ * AFTER the `if (!data) return null` guard, so a league's tier could only be learned on a
+ * tick where VALVE's bracket endpoint answered. On 2026-08-15 that endpoint spent hours
+ * returning `null`, and the consequence was visible on screen — The International sat in
+ * the "Other" bucket of the tier filter, because the one fact needed to place it comes from
+ * OpenDota (which was up the whole time) and was gated behind an unrelated upstream.
+ *
+ * UPDATE, never INSERT: a league nothing else knows about should not get a bare row here.
+ * The full sync creates rows; this only fills in a column on ones that exist.
+ */
+async function recordLeagueTier(leagueId: number): Promise<void> {
+  if (!db) return
+  try {
+    const info = await getLeagueInfo(leagueId)
+    const tier = info?.tier ?? null
+    if (!tier) return
+    await db.update(leagues).set({ odTier: tier }).where(eq(leagues.leagueId, leagueId))
+  } catch (err) {
+    // Best-effort: a tier we could not read is not a reason to fail a sync tick.
+    logger.debug({ leagueId, err: briefError(err) }, 'tournament sync: tier lookup failed')
+  }
+}
+
 export async function syncLeague(leagueId: number): Promise<SyncResult | null> {
   if (!db) return null
+
+  // Before the Valve call, and deliberately not after it — see recordLeagueTier.
+  await recordLeagueTier(leagueId)
+
   const data = await getLeagueData(leagueId)
   if (!data) {
     logger.warn({ leagueId }, 'tournament sync: no league data (upstream miss) — keeping what is stored')
