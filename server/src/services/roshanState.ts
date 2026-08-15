@@ -1,9 +1,18 @@
 import { redis } from '../cache.js'
 
+/** One Roshan kill: which number it was, and when — in game time, not wall clock. */
+export interface RoshanKill {
+  n: number
+  /** Game seconds at which the kill was observed. */
+  gameTime: number
+  /** Wall-clock epoch ms, for debugging the sampler; never shown to a reader. */
+  timestamp: number
+}
+
 export interface RoshanState {
   killCount: number
   prevTimer: number
-  kills: Array<{ n: number; gameTime: number; timestamp: number }>
+  kills: RoshanKill[]
 }
 
 const TTL_SECONDS = 6 * 60 * 60 // D-07: 6 hours
