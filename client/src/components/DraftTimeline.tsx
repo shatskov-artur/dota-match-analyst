@@ -36,7 +36,7 @@ export default function DraftTimeline({ slots, gameState, heroStatsMap, playerIn
 
       {/* 24 columns — one per CM step. Horizontal scroll on narrow screens (UX: overflow-x-auto
           over wrapping — wrapping a 24-col chess timeline produces ragged rows with spacer gaps). */}
-      <div className="flex gap-1 flex-nowrap overflow-x-auto pb-1 min-w-0">
+      <div className="flex gap-1 flex-nowrap overflow-x-auto pb-1 min-w-0 scroll-slim">
         {slots.map((slot) => {
           const heroInfo = slot.heroId !== undefined ? heroMapper(slot.heroId) : null
           const isActiveEmpty = slot.isActive && isDraft && !heroInfo

@@ -1,7 +1,7 @@
 export default function SkeletonPlayerRow() {
   return (
     <div
-      className="flex items-center gap-4 px-0 border-b border-border"
+      className="flex items-center gap-2 px-0 border-b border-border"
       style={{ minHeight: 52 }}
     >
       {/* Portrait skeleton — 48px wide to match PlayerRow portrait column */}

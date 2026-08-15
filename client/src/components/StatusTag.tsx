@@ -4,7 +4,7 @@ interface StatusTagProps {
   status: Status
 }
 
-// Token-driven status styling — all colors resolve to Tactical Slate var(--...) props.
+// Token-driven status styling — all colors resolve to design-token var(--...) props.
 //   Live → Dire-red, Draft → gold (primary), Strategy → steel (accent), Starting → radiant.
 //   Glow applies only where a status calls for it (gold for Draft, steel for Strategy).
 const styleMap: Record<Status, { color: string; glow?: string; pulse?: boolean }> = {

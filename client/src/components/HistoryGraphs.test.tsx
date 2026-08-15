@@ -6,7 +6,6 @@ import HistoryGraphs from './HistoryGraphs'
 // Drives UAT-CHART-01..06 from 10.2-RESEARCH.md §"Validation Architecture".
 // Tests use RELATIVE assertions only — no hard-coded internal geometry constants.
 
-const PAD_TOP = 28 // matches component constant; only used as a *lower bound* for headroom checks
 
 afterEach(() => {
   vi.useRealTimers()
@@ -15,25 +14,25 @@ afterEach(() => {
 describe('HistoryGraphs — skeleton state', () => {
   it('returns skeleton text when history is empty (D-23)', () => {
     render(<HistoryGraphs history={[]} gameDuration={120} gameState={5} />)
-    expect(screen.getByText(/Накапливаем историю/)).toBeTruthy()
+    expect(screen.getByText(/Collecting history/)).toBeTruthy()
   })
 
   it('stays in skeleton when history has only 1 sample (D-24)', () => {
     const { container } = render(
       <HistoryGraphs history={[{ t: 60, gold: 1000, xp: 500 }]} gameDuration={120} gameState={5} />,
     )
-    expect(screen.getByText(/Накапливаем историю/)).toBeTruthy()
+    expect(screen.getByText(/Collecting history/)).toBeTruthy()
     expect(container.querySelector('polyline')).toBeNull()
   })
 
   it('skeleton elapsed counter ticks every 1s without unmount', () => {
     vi.useFakeTimers()
     render(<HistoryGraphs history={[]} gameDuration={5} gameState={5} />)
-    expect(screen.getByText(/Накапливаем историю… \(\d+\/30с\)/)).toBeTruthy()
+    expect(screen.getByText(/Collecting history… \d+\/30s/)).toBeTruthy()
     act(() => {
       vi.advanceTimersByTime(2000)
     })
-    expect(screen.getByText(/Накапливаем историю… \(\d+\/30с\)/)).toBeTruthy()
+    expect(screen.getByText(/Collecting history… \d+\/30s/)).toBeTruthy()
   })
 })
 
@@ -194,8 +193,13 @@ describe('HistoryGraphs — rendered chart', () => {
       .map(p => p.split(',').map(Number))
     // points[0] corresponds to the first sample (gold=5000) on the radiant outline (max(0, v) = 5000)
     const yOfMax = points[0][1]
-    // With peak * 1.20 headroom, yOfMax should be strictly GREATER than PAD_TOP (28) — the line never touches the top.
-    expect(yOfMax).toBeGreaterThan(PAD_TOP + 8)
+    // Derived from the rendered SVG, not a hard-coded constant: the extreme must keep visible
+    // headroom below the top edge, and must sit above the zero line since the value is positive.
+    const svg = container.querySelector('svg')!
+    const svgH = Number(svg.getAttribute('height'))
+    expect(svgH).toBeGreaterThan(0)
+    expect(yOfMax).toBeGreaterThan(0.05 * svgH)
+    expect(yOfMax).toBeLessThan(svgH / 2)
   })
 
   it('renders 5-min gridlines and minute labels when samples span >5 min', () => {
@@ -209,7 +213,7 @@ describe('HistoryGraphs — rendered chart', () => {
         gameState={5}
       />,
     )
-    const gridLines = Array.from(container.querySelectorAll('line[stroke-dasharray="2 4"]'))
+    const gridLines = Array.from(container.querySelectorAll('[data-testid="gridline"]'))
     expect(gridLines.length).toBeGreaterThanOrEqual(1)
     const minuteLabels = Array.from(container.querySelectorAll('text')).filter(t =>
       /^\d+m$/.test(t.textContent ?? ''),

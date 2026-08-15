@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { heroMapper } from '../utils/heroMapper'
 // CRITICAL: import from '../utils/heroMapper' — NOT '@shared/heroMapper' (Vite bundler compat)
 import type { PlayerIntel } from '../hooks/useMatchIntel'
@@ -13,13 +14,21 @@ interface IntelTooltipProps {
 /**
  * Positioned floating card for pick portrait hover (DRAFT-04, PLAYER-01, PLAYER-02).
  *
- * Positioning (D-07):
- *   - Default: above portrait (bottom: calc(100% + 8px))
- *   - Flip: below portrait (top: calc(100% + 8px)) when anchorRef.top < 180px
- *   useLayoutEffect fires before browser paint — prevents single-frame position flash (Pitfall 3).
+ * Rendered into document.body, NOT beside the portrait.
  *
- * Must be rendered OUTSIDE the overflow-hidden portrait div (Pitfall 4).
- * Parent wrapper must be `position: relative` WITHOUT `overflow-hidden`.
+ * Keeping it in place only guaranteed that the portrait itself did not clip it, and that
+ * was never the element doing the clipping. The draft strip scrolls sideways, and CSS
+ * gives `overflow-x: auto` a computed `overflow-y: auto` as well — a horizontal scroller
+ * is a vertical clipper too. The card sat fully formed at y 214-410 with opacity 1 while
+ * its scroller occupied y 418-528, so every pixel of it was cut away: present in the DOM,
+ * correct in content, and invisible on screen. No amount of z-index reaches out of an
+ * ancestor's overflow box; leaving the box is the only fix.
+ *
+ * Positioning (D-07) therefore switches from `absolute` inside the strip to `fixed`
+ * against the viewport, measured from the anchor:
+ *   - Default: above the portrait
+ *   - Flip: below it when the anchor sits within 180px of the viewport top
+ *   useLayoutEffect fires before browser paint — prevents single-frame position flash (Pitfall 3).
  */
 export default function IntelTooltip({
   playerIntel,
@@ -27,7 +36,8 @@ export default function IntelTooltip({
   anchorRef,
   isLoading = false,
 }: IntelTooltipProps) {
-  const [positionAbove, setPositionAbove] = useState(true)
+  // Viewport coordinates, because the card is portalled out to document.body.
+  const [place, setPlace] = useState<{ left: number; top: number; above: boolean } | null>(null)
 
   // CRITICAL: useLayoutEffect fires synchronously after DOM updates, before browser paint.
   // This prevents the single-frame position flash that useEffect would cause (Pitfall 3).
@@ -35,12 +45,23 @@ export default function IntelTooltip({
     if (!anchorRef.current) return
     const rect = anchorRef.current.getBoundingClientRect()
     // D-07 threshold: if portrait top < 180px from viewport top, flip tooltip below
-    setPositionAbove(rect.top >= 180)
+    const above = rect.top >= 180
+    setPlace({
+      left: rect.left + rect.width / 2,
+      top: above ? rect.top - 8 : rect.bottom + 8,
+      above,
+    })
   }, [anchorRef])
 
-  const positionStyle: React.CSSProperties = positionAbove
-    ? { bottom: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)' }
-    : { top: 'calc(100% + 8px)', left: '50%', transform: 'translateX(-50%)' }
+  // Nothing to draw until measured — one frame, and it avoids a card at 0,0.
+  if (!place) return null
+
+  const positionStyle: React.CSSProperties = {
+    position: 'fixed',
+    left: place.left,
+    top: place.top,
+    transform: place.above ? 'translate(-50%, -100%)' : 'translate(-50%, 0)',
+  }
 
   // Stat line — handles hidden profile (null) and loading states
   const renderStatLine = () => {
@@ -64,10 +85,9 @@ export default function IntelTooltip({
 
   const hasCounters = playerIntel.counters.length > 0
 
-  return (
+  return createPortal(
     <div
       style={{
-        position: 'absolute',
         zIndex: 50,
         minWidth: 160,
         maxWidth: 220,
@@ -221,6 +241,7 @@ export default function IntelTooltip({
           })}
         </>
       )}
-    </div>
+    </div>,
+    document.body,
   )
 }

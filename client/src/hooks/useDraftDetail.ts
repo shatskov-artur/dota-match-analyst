@@ -66,13 +66,19 @@ export function computeDraftInterval(gameState: number | undefined): number | fa
  * cannot be uniquely derived from per-team counts. DraftColumn + DraftTurnIndicator
  * render a best-guess-with-marker rather than hiding the indicator.
  */
-export function useDraftDetail(matchId: string | undefined) {
+export function useDraftDetail(matchId: string | undefined, options: { enabled?: boolean } = {}) {
   const query = useQuery<DraftResponse>({
     queryKey: ['draft', matchId],
     queryFn: () => fetchDraft(matchId!),
-    enabled: !!matchId,
+    // `enabled` lets the caller skip this entirely for a match that is not in the live
+    // feed. The route answers 404 there, and the default three retries turned every
+    // archived match page into a burst of pointless requests — each one going through
+    // getLiveLeagueGamesFast on the server.
+    enabled: !!matchId && (options.enabled ?? true),
     refetchInterval: (q: Query<DraftResponse>) => computeDraftInterval(q.state.data?.game_state),
     staleTime: 4_000, // PF-2 — strictly below draft cadence
+    // A 404 here means "not live", which is a settled answer, not a flake.
+    retry: false,
   })
 
   const scoreboard = query.data?.scoreboard

@@ -50,13 +50,16 @@ async function fetchMatchIntel(matchId: string): Promise<MatchIntelResponse> {
  * CRITICAL (v5): refetchInterval callback reads `q.state.data` NOT a select-transformed view.
  * CRITICAL: returns undefined while loading or on error — UI handles gracefully (D-03, D-07).
  */
-export function useMatchIntel(matchId: string | undefined) {
+export function useMatchIntel(matchId: string | undefined, options: { enabled?: boolean } = {}) {
   return useQuery<MatchIntelResponse>({
     queryKey: ['match-intel', matchId],
     queryFn: () => fetchMatchIntel(matchId!),
-    enabled: !!matchId,
+    // Skippable for a match that is not in the live feed — this route 404s there.
+    enabled: !!matchId && (options.enabled ?? true),
     refetchInterval: (q: Query<MatchIntelResponse>) =>
       computeIntelInterval(q.state.data?.game_state),
     staleTime: 4_000,  // PF-2: strictly below 5s cadence
+    // "Not live" is an answer, not a failure worth retrying three times.
+    retry: false,
   })
 }

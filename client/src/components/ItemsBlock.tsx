@@ -66,8 +66,9 @@ function ItemSlot({ itemId, variant = 'main' }: { itemId?: number; variant?: 'ma
 export default function ItemsBlock({ players }: ItemsBlockProps) {
   if (players.length === 0) return null
 
+  // `@container`: the optional neutral/backpack slots gate on this card's width, not the window's.
   return (
-    <div className="flex flex-col flex-1">
+    <div className="@container flex flex-col flex-1">
       {/* Section header — matches HeroPlayerGrid label style */}
       <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-4 text-text-dim">
         Items
@@ -148,16 +149,19 @@ export default function ItemsBlock({ players }: ItemsBlockProps) {
               ))}
             </div>
 
-            {/* Neutral item slot (D-04: show if item_neutral field present) */}
+            {/* Neutral item slot (D-04: show if item_neutral field present).
+                Also space-gated: the six main slots are the point of this panel, and a neutral
+                slot appearing mid-game must not push them past the card edge. */}
             {hasNeutral && (
-              <div style={{ marginLeft: 8 }}>
+              <div className="hidden @min-[400px]:block" style={{ marginLeft: 8 }}>
                 <ItemSlot itemId={player.item_neutral} variant="neutral" />
               </div>
             )}
 
-            {/* Backpack group (D-04: show if item6 field present, opacity 0.6) */}
+            {/* Backpack group (D-04: show if item6 field present, opacity 0.6) — lowest priority,
+                so it needs the most room before it earns its place. */}
             {hasBackpack && (
-              <div className="flex" style={{ gap: 4, marginLeft: 16, opacity: 0.6 }}>
+              <div className="hidden @min-[540px]:flex" style={{ gap: 4, marginLeft: 16, opacity: 0.6 }}>
                 <ItemSlot itemId={player.item6} variant="backpack" />
                 <ItemSlot itemId={player.item7} variant="backpack" />
                 <ItemSlot itemId={player.item8} variant="backpack" />

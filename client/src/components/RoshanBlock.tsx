@@ -9,7 +9,11 @@ interface RoshanBlockProps {
     alive: boolean
     respawnIn: number | null
     lastKillLoot: number[] | null
+    /** Every Roshan of the match. Absent on snapshots recorded before this was captured. */
+    kills?: Array<{ n: number; gameTime: number; loot: number[] }>
   } | null
+  /** The map is over: no countdown, no next-drop prediction. */
+  matchOver?: boolean
 }
 
 function LootIcon({ itemId, size = 28, dimmed = false }: { itemId: number; size?: number; dimmed?: boolean }) {
@@ -55,7 +59,7 @@ function formatMmSs(seconds: number): string {
 // the local 1Hz tick to avoid the visible "jump" at every 30s backend resync.
 const RESYNC_DRIFT_THRESHOLD_SECONDS = 5
 
-export default function RoshanBlock({ roshan }: RoshanBlockProps) {
+export default function RoshanBlock({ roshan, matchOver = false }: RoshanBlockProps) {
   const killCountRef = useRef<number>(-1)
   const anchorRespawnRef = useRef<number>(0) // server-reported respawnIn at last anchor
   const anchorAtRef = useRef<number>(Date.now()) // wall clock when we anchored
@@ -96,7 +100,13 @@ export default function RoshanBlock({ roshan }: RoshanBlockProps) {
   return (
     <div className="flex flex-col flex-1">
       <div className="max-w-[360px] mx-auto w-full">
-        {roshan.alive ? (
+        {/* A finished match has no next Roshan and nothing left to respawn. What stays is
+            what actually happened: how many were killed and what dropped. */}
+        {matchOver ? (
+          <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-3 text-center" style={{ color: 'var(--color-text-dim)' }}>
+            {roshan.killCount === 0 ? 'Roshan untouched' : `Roshan ×${roshan.killCount}`}
+          </p>
+        ) : roshan.alive ? (
           <>
             <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-3" style={{ color: 'var(--color-text-dim)' }}>
               Roshan #{nextKillNumber}
@@ -120,7 +130,10 @@ export default function RoshanBlock({ roshan }: RoshanBlockProps) {
                 letterSpacing: '0.05em',
               }}
             >
-              {formatMmSs(remaining)}
+              {/* A reconstructed minute knows Roshan is down but not for how long — the
+                  objective log has no respawn timer. "0:00" there would read as "up any
+                  second now", which is a claim the data does not support. */}
+              {roshan.respawnIn != null ? formatMmSs(remaining) : '--:--'}
             </div>
             <div className="flex items-center justify-center gap-2 mb-4">
               {nextKillLoot.map((id, i) => <LootIcon key={`next-dim-${i}`} itemId={id} size={28} dimmed />)}
@@ -128,15 +141,43 @@ export default function RoshanBlock({ roshan }: RoshanBlockProps) {
           </>
         )}
 
-        {roshan.killCount >= 1 && roshan.lastKillLoot && (
-          <div className="flex flex-col gap-1 mt-2 pt-3 border-t" style={{ borderColor: 'var(--color-border)' }}>
+        {/* The full log, when the recording carries one.
+            "Roshan ×3" says how many; it does not say that one died at 18:20 and the next
+            at 41:05, which is most of what the number is worth to someone reading the game.
+            Each row is the kill number, its game time, and what it actually dropped —
+            the drop table changes with the number, so the two belong on the same line. */}
+        {roshan.kills && roshan.kills.length > 0 ? (
+          <div className="flex flex-col gap-2 mt-2 pt-3 border-t" style={{ borderColor: 'var(--color-border)' }}>
             <p className="text-[9px] uppercase tracking-[0.25em]" style={{ color: 'var(--color-text-dim)' }}>
-              Last Drop
+              Kills this match
             </p>
-            <div className="flex items-center gap-1">
-              {roshan.lastKillLoot.map((id, i) => <LootIcon key={`last-${i}`} itemId={id} size={20} />)}
-            </div>
+            <ul className="flex flex-col gap-1.5">
+              {roshan.kills.map((k) => (
+                <li key={k.n} className="flex items-center gap-2">
+                  <span className="text-[10px] tabular-nums shrink-0" style={{ color: 'var(--color-text-dim)', minWidth: 16 }}>
+                    #{k.n}
+                  </span>
+                  <span className="font-mono text-[11px] tabular-nums shrink-0" style={{ color: 'var(--color-text)', minWidth: 42 }}>
+                    {formatMmSs(k.gameTime)}
+                  </span>
+                  <span className="flex items-center gap-1 min-w-0">
+                    {k.loot.map((id, i) => <LootIcon key={`k${k.n}-${i}`} itemId={id} size={18} />)}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
+        ) : (
+          roshan.killCount >= 1 && roshan.lastKillLoot && (
+            <div className="flex flex-col gap-1 mt-2 pt-3 border-t" style={{ borderColor: 'var(--color-border)' }}>
+              <p className="text-[9px] uppercase tracking-[0.25em]" style={{ color: 'var(--color-text-dim)' }}>
+                Last Drop
+              </p>
+              <div className="flex items-center gap-1">
+                {roshan.lastKillLoot.map((id, i) => <LootIcon key={`last-${i}`} itemId={id} size={20} />)}
+              </div>
+            </div>
+          )
         )}
       </div>
     </div>

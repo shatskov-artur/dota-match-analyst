@@ -28,6 +28,23 @@ export function computeWinProbInterval(
   return false
 }
 
+/**
+ * Which clock decides the cadence: the match's, or this query's own last answer.
+ *
+ * Exported because the precedence IS the bug fix. `live` (the match page's own 30s poll)
+ * must win, because the fallback path can only ever repeat the state that already
+ * switched the polling off — the definition of a stuck query.
+ */
+export function resolveWinProbInterval(
+  live: { gameState?: number; duration?: number } | undefined,
+  data: { gameState?: number | null; duration?: number | null } | undefined,
+): number | false {
+  return computeWinProbInterval(
+    live?.gameState ?? data?.gameState ?? undefined,
+    live?.duration ?? data?.duration ?? undefined,
+  )
+}
+
 async function fetchWinProb(matchId: string): Promise<WinProbResponse> {
   const res = await apiFetch(`/api/live/winprob/${matchId}`)
   if (!res.ok) throw new Error(`BFF error: ${res.status}`)
@@ -39,20 +56,32 @@ async function fetchWinProb(matchId: string): Promise<WinProbResponse> {
  * Dynamic refetchInterval: 30s when in-game past 5 min, false otherwise.
  * staleTime: 25_000 — slightly below 30s cadence (mirrors useMatchDetail pattern).
  *
- * CRITICAL (v5): refetchInterval callback reads q.state.data — NOT a select-transformed view.
- * CRITICAL: returns undefined while loading or on error — WinProbBar handles gracefully.
+ * THE CADENCE IS DRIVEN FROM OUTSIDE, AND IT HAS TO BE.
+ * Reading gameState/duration out of `q.state.data` — this query's OWN last response —
+ * is a deadlock: the interval says `false` for anything short of 5 minutes in-game, so
+ * no refetch happens, so the state that would lift the gate never arrives. Opening a
+ * match during the draft therefore froze the panel on its first answer FOR THE WHOLE
+ * GAME (only a window refocus broke it). `live` comes from useMatchState, which polls on
+ * its own 30s clock, so the moment the real match passes 5 minutes the interval starts.
+ * The query's own data stays as the fallback for callers that pass nothing.
+ *
+ * CRITICAL: returns undefined while loading or on error — callers must not substitute
+ * a neutral 50/50, which reads as a real prediction (see MatchPage).
  * SECURITY: T-6-05 — computeWinProbInterval returns false for gameState===6 (stops polling).
  */
-export function useWinProbability(matchId: string | undefined) {
+export function useWinProbability(
+  matchId: string | undefined,
+  live?: { gameState?: number; duration?: number },
+  options: { enabled?: boolean } = {},
+) {
   return useQuery<WinProbResponse>({
     queryKey: ['win-prob', matchId],
     queryFn: () => fetchWinProb(matchId!),
-    enabled: !!matchId,
-    refetchInterval: (q: Query<WinProbResponse>) =>
-      computeWinProbInterval(
-        q.state.data?.gameState ?? undefined,
-        q.state.data?.duration ?? undefined,
-      ),
+    // Skippable for a match that is not in the live feed: there is no live probability for
+    // a game that already has a winner, and the panel is hidden then anyway.
+    enabled: !!matchId && (options.enabled ?? true),
+    refetchInterval: (q: Query<WinProbResponse>) => resolveWinProbInterval(live, q.state.data),
     staleTime: 25_000,
+    retry: false,
   })
 }

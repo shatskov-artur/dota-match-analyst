@@ -1,6 +1,7 @@
 import type { BuildingState } from '@shared/buildingDecoder'
 import { heroMapper } from '../utils/heroMapper'
 import { normalizeMapCoords } from '../utils/mapCoords'
+import { DIRE_LAYOUT, RADIANT_LAYOUT, type Point } from '../utils/mapBuildings'
 
 interface HeroPosition {
   hero_id: number
@@ -22,16 +23,43 @@ interface Props {
 
 const S = 320
 
-function Dot({
-  x, y, alive, team, r = 4,
-}: { x: number; y: number; alive: boolean; team: 'radiant' | 'dire'; r?: number }) {
-  const color = alive
-    ? team === 'radiant' ? 'var(--color-radiant)' : 'var(--color-dire)'
-    : 'var(--color-border)'
-  const shadow = alive
-    ? team === 'radiant' ? '0 0 5px var(--color-radiant-soft)' : '0 0 5px var(--color-dire-soft)'
+type Side = 'radiant' | 'dire'
+
+const fillFor = (alive: boolean, team: Side) =>
+  alive ? (team === 'radiant' ? 'var(--color-radiant)' : 'var(--color-dire)') : 'var(--color-border)'
+
+const glowFor = (alive: boolean, team: Side) =>
+  alive
+    ? `drop-shadow(0 0 5px ${team === 'radiant' ? 'var(--color-radiant-soft)' : 'var(--color-dire-soft)'})`
     : 'none'
-  return <circle cx={x} cy={y} r={r} fill={color} style={{ filter: alive ? `drop-shadow(${shadow})` : 'none' }} />
+
+function Tower({ p, alive, team, r = 4 }: { p: Point; alive: boolean; team: Side; r?: number }) {
+  return <circle cx={p.x} cy={p.y} r={r} fill={fillFor(alive, team)} style={{ filter: glowFor(alive, team) }} />
+}
+
+/** Square, so a barracks is never mistaken for a tower at four pixels across. */
+function Rax({ p, alive, team }: { p: Point; alive: boolean; team: Side }) {
+  const size = 5.5
+  return (
+    <rect
+      x={p.x - size / 2}
+      y={p.y - size / 2}
+      width={size}
+      height={size}
+      rx={1}
+      fill={fillFor(alive, team)}
+      style={{ filter: glowFor(alive, team) }}
+    />
+  )
+}
+
+function Ancient({ p, alive, team }: { p: Point; alive: boolean; team: Side }) {
+  return (
+    <g>
+      <circle cx={p.x} cy={p.y} r={7} fill="none" stroke={fillFor(alive, team)} strokeWidth={1.5} />
+      <circle cx={p.x} cy={p.y} r={4} fill={fillFor(alive, team)} style={{ filter: glowFor(alive, team) }} />
+    </g>
+  )
 }
 
 export default function DotaMapView({ buildings: b, heroPositions, size = 420 }: Props) {
@@ -68,57 +96,29 @@ export default function DotaMapView({ buildings: b, heroPositions, size = 420 }:
         clipPath="url(#map-clip)"
       />
 
-      {/* ── RADIANT buildings ── */}
-      {/* Top lane (left edge, top to bottom from T1→T3→Rax) */}
-      <Dot x={26} y={78}  alive={r.top.tier1}     team="radiant" />
-      <Dot x={26} y={138} alive={r.top.tier2}     team="radiant" />
-      <Dot x={26} y={192} alive={r.top.tier3}     team="radiant" />
-      <Dot x={48} y={224} alive={r.top.meleeRax}  team="radiant" r={3} />
-      <Dot x={60} y={224} alive={r.top.rangedRax} team="radiant" r={3} />
-      {/* Mid lane (diagonal) */}
-      <Dot x={158} y={162} alive={r.mid.tier1}     team="radiant" />
-      <Dot x={120} y={200} alive={r.mid.tier2}     team="radiant" />
-      <Dot x={84}  y={237} alive={r.mid.tier3}     team="radiant" />
-      <Dot x={48}  y={243} alive={r.mid.meleeRax}  team="radiant" r={3} />
-      <Dot x={60}  y={243} alive={r.mid.rangedRax} team="radiant" r={3} />
-      {/* Bot lane (bottom edge) */}
-      <Dot x={218} y={294} alive={r.bot.tier1}     team="radiant" />
-      <Dot x={168} y={294} alive={r.bot.tier2}     team="radiant" />
-      <Dot x={116} y={291} alive={r.bot.tier3}     team="radiant" />
-      <Dot x={48}  y={263} alive={r.bot.meleeRax}  team="radiant" r={3} />
-      <Dot x={60}  y={263} alive={r.bot.rangedRax} team="radiant" r={3} />
-      {/* Ancient towers */}
-      <Dot x={38}  y={248} alive={r.ancientTop}    team="radiant" r={3.5} />
-      <Dot x={38}  y={270} alive={r.ancientBottom} team="radiant" r={3.5} />
-      {/* Ancient */}
-      <circle cx={52} cy={258} r={7} fill="none" stroke={r.ancientTop || r.ancientBottom ? 'var(--color-radiant)' : 'var(--color-border)'} strokeWidth={1.5} />
-      <Dot x={52}  y={258} alive={r.ancientTop || r.ancientBottom} team="radiant" r={4} />
-
-      {/* ── DIRE buildings ── */}
-      {/* Top lane (top edge, left→right from T1→T3→Rax) */}
-      <Dot x={102} y={26}  alive={d.top.tier1}     team="dire" />
-      <Dot x={158} y={26}  alive={d.top.tier2}     team="dire" />
-      <Dot x={212} y={26}  alive={d.top.tier3}     team="dire" />
-      <Dot x={260} y={48}  alive={d.top.meleeRax}  team="dire" r={3} />
-      <Dot x={272} y={48}  alive={d.top.rangedRax} team="dire" r={3} />
-      {/* Mid lane */}
-      <Dot x={162} y={158} alive={d.mid.tier1}     team="dire" />
-      <Dot x={200} y={120} alive={d.mid.tier2}     team="dire" />
-      <Dot x={236} y={83}  alive={d.mid.tier3}     team="dire" />
-      <Dot x={260} y={68}  alive={d.mid.meleeRax}  team="dire" r={3} />
-      <Dot x={272} y={68}  alive={d.mid.rangedRax} team="dire" r={3} />
-      {/* Bot lane (right edge) */}
-      <Dot x={294} y={242} alive={d.bot.tier1}     team="dire" />
-      <Dot x={294} y={182} alive={d.bot.tier2}     team="dire" />
-      <Dot x={291} y={128} alive={d.bot.tier3}     team="dire" />
-      <Dot x={260} y={88}  alive={d.bot.meleeRax}  team="dire" r={3} />
-      <Dot x={272} y={88}  alive={d.bot.rangedRax} team="dire" r={3} />
-      {/* Ancient towers */}
-      <Dot x={282} y={60}  alive={d.ancientTop}    team="dire" r={3.5} />
-      <Dot x={282} y={72}  alive={d.ancientBottom} team="dire" r={3.5} />
-      {/* Ancient */}
-      <circle cx={268} cy={62} r={7} fill="none" stroke={d.ancientTop || d.ancientBottom ? 'var(--color-dire)' : 'var(--color-border)'} strokeWidth={1.5} />
-      <Dot x={268} y={62} alive={d.ancientTop || d.ancientBottom} team="dire" r={4} />
+      {/* Buildings. Towers are circles, barracks are squares — at this size a shape is
+          the only difference the eye picks up reliably, and "which of these dots is a
+          rax" was not answerable before. Positions come from mapBuildings.ts. */}
+      {([['radiant', RADIANT_LAYOUT, r], ['dire', DIRE_LAYOUT, d]] as const).map(([side, L, state]) => (
+        <g key={side}>
+          {(['top', 'mid', 'bot'] as const).map((laneName) => {
+            const lane = L[laneName]
+            const s = state[laneName]
+            return (
+              <g key={laneName}>
+                <Tower p={lane.tier1} alive={s.tier1} team={side} />
+                <Tower p={lane.tier2} alive={s.tier2} team={side} />
+                <Tower p={lane.tier3} alive={s.tier3} team={side} />
+                <Rax p={lane.meleeRax} alive={s.meleeRax} team={side} />
+                <Rax p={lane.rangedRax} alive={s.rangedRax} team={side} />
+              </g>
+            )
+          })}
+          <Tower p={L.ancientTop} alive={state.ancientTop} team={side} r={3} />
+          <Tower p={L.ancientBottom} alive={state.ancientBottom} team={side} r={3} />
+          <Ancient p={L.ancient} alive={state.ancientTop || state.ancientBottom} team={side} />
+        </g>
+      ))}
 
       {/* Phase 8: hero positions — clipPath defs, then images, then team-colored stroke rings. */}
       {heroPositions && heroPositions.length > 0 && (

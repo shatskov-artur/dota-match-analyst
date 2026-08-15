@@ -18,6 +18,19 @@ export function computeMatchInterval(gameState: number | undefined): number | fa
 }
 
 /**
+ * Whether this poller still has anything to wait for.
+ *
+ * `computeMatchInterval(undefined)` is 30s, which is right while the first response is in
+ * flight and wrong forever afterwards: a match that is NOT in Valve's live feed is a match
+ * that has finished, and an archived one is never coming back. Opening a match from last
+ * month therefore left a tab asking Valve for the live list every 30 seconds for as long
+ * as it stayed open. Once a fetch has completed and the match is not in it, stop.
+ */
+export function shouldPollLiveFeed(hasFetched: boolean, matchPresent: boolean): boolean {
+  return !hasFetched || matchPresent
+}
+
+/**
  * Returns detailed data for a single live match, derived from the shared ['live-games'] cache.
  *
  * Data flow (per D-11, D-12, D-14, D-15):
@@ -30,7 +43,19 @@ export function computeMatchInterval(gameState: number | undefined): number | fa
  * CRITICAL (TQ v5): onSuccess removed — derive all state from query.data reactively.
  * CRITICAL: Do NOT set enabled: !!matchFromCache — that prevents refetch on cache miss (breaks D-15).
  */
-export function useMatchDetail(matchId: string | undefined) {
+export interface UseMatchDetailOptions {
+  /**
+   * v2.0: useMatchState needs the live probe WITHOUT the redirect, because a finished
+   * match is legitimately absent from the live feed while still fully archived.
+   * Defaults to true so every pre-existing caller behaves exactly as before.
+   */
+  redirectOnMissing?: boolean
+  /** Stop polling while the viewer is scrubbing the past — the live payload is unused then. */
+  paused?: boolean
+}
+
+export function useMatchDetail(matchId: string | undefined, options: UseMatchDetailOptions = {}) {
+  const { redirectOnMissing = true, paused = false } = options
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 
@@ -49,7 +74,12 @@ export function useMatchDetail(matchId: string | undefined) {
       return r.json()
     },
     // D-12: plain 30s interval. D-14: stop polling when post-game (game_state === 6).
-    refetchInterval: computeMatchInterval(matchFromCache?.game_state),
+    // Also stop once a completed fetch has shown the match is not in the feed at all —
+    // that is an archived match, and it will not reappear.
+    refetchInterval: (q) =>
+      paused || !shouldPollLiveFeed(q.state.data !== undefined, q.state.data?.games?.some((g) => String(g.match_id) === matchId) ?? false)
+        ? false
+        : computeMatchInterval(matchFromCache?.game_state),
     staleTime: 25_000, // matches useLiveGames — avoids redundant refetch on back-navigation
   })
 
@@ -58,10 +88,11 @@ export function useMatchDetail(matchId: string | undefined) {
   // D-15: redirect to home if match absent after fetch completes.
   // isFetched guard prevents premature redirect before the network call settles.
   useEffect(() => {
+    if (!redirectOnMissing) return
     if (!query.isFetching && query.isSuccess && !match) {
       navigate('/')
     }
-  }, [query.isFetching, query.isSuccess, match, navigate])
+  }, [query.isFetching, query.isSuccess, match, navigate, redirectOnMissing])
 
   // Filter strictly to team === 0 (Radiant) and team === 1 (Dire).
   // Exclude team === 2 (Broadcaster) and team === 4 (Unassigned).

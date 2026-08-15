@@ -20,9 +20,20 @@
   --color-border-glow: #8B5CF6;
   --color-text: #F4F2FF;
   --color-text-muted: #A39FCC;
-  --color-text-dim: #615C8E;
+  /* Lifted from #615C8E, which measured 2.92:1 against --color-surface — well below the
+     4.5:1 WCAG AA needs for small text, and this token dresses the SMALLEST text in the
+     app: 9–11px uppercase labels on the calendar, the scrubber, timestamps, series lines.
+     Measured, not guessed: #827DB1 is 4.70:1 on surface (#16152A) and 5.24:1 on bg
+     (#08080F). Still clearly the quiet tier — --color-text-muted sits at 7.14:1 — so the
+     three-step hierarchy text → muted → dim survives intact. */
+  --color-text-dim: #827DB1;
   --color-primary: #8B5CF6;
   --color-accent: #FBBF24;
+  /* COPIED, and the copy cannot be automated away: HistoryGraphs.tsx needs these two as
+     literal hex because jsdom does not resolve var() inside SVG attributes, so its tests
+     could not assert a fill otherwise. If you change either value, change RADIANT_GREEN /
+     DIRE_RED in components/HistoryGraphs.tsx and the expectations in its test file — the
+     charts are the only place in the app that will not re-skin on its own. */
   --color-radiant: #4ADE80;
   --color-dire: #F87171;
   --color-gold: #FBBF24;
@@ -72,5 +83,38 @@
   }
   .bento-card:hover {
     border-color: var(--color-primary);
+  }
+}
+
+/* Themed scrollbar for the app's own scroll containers.
+   The browser default is a light grey slab that reads as a piece of the operating system
+   dropped onto a dark panel — the event log's was the worst of them, a bright bar down the
+   side of the one list people actually scroll.
+   Both syntaxes are needed: the standard properties cover Firefox and Chrome 121+, the
+   -webkit- pseudo-elements cover Safari and older Chromium. */
+@layer components {
+  .scroll-slim {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+  }
+  .scroll-slim::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scroll-slim::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scroll-slim::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 999px;
+    /* Inset the thumb so it reads as a hairline rather than a bar filling the gutter. */
+    border: 2px solid transparent;
+    background-clip: content-box;
+  }
+  .scroll-slim:hover::-webkit-scrollbar-thumb {
+    background-color: var(--color-primary);
+  }
+  .scroll-slim::-webkit-scrollbar-corner {
+    background: transparent;
   }
 }

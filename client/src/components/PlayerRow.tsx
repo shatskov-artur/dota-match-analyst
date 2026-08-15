@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { heroMapper } from '../utils/heroMapper'
 import { hiddenProfile } from '@shared/hiddenProfile'
 import IntelTooltip from './IntelTooltip'
+import { COL, NAME_MIN_PX, SHOW_GPM, SHOW_XPM, SHOW_LHDN, STAT_CELL } from './playerColumns'
 import type { PlayerIntel } from '../hooks/useMatchIntel'
 
 interface PlayerRowProps {
@@ -25,9 +26,11 @@ interface PlayerRowProps {
   hasXpm: boolean        // controlled at grid level
   hasLhDn: boolean       // controlled at grid level
   playerIntel?: PlayerIntel  // counterpick + player stats; tooltip on portrait hover (all match stages)
+  /** The map is over — no respawn countdown. */
+  matchOver?: boolean
 }
 
-export default function PlayerRow({ player, hasGpm, hasXpm, hasLhDn, playerIntel }: PlayerRowProps) {
+export default function PlayerRow({ player, hasGpm, hasXpm, hasLhDn, playerIntel, matchOver = false }: PlayerRowProps) {
   const heroInfo = player.hero_id !== undefined ? heroMapper(player.hero_id) : null
   const portraitRef = useRef<HTMLDivElement>(null)
   const [showTooltip, setShowTooltip] = useState(false)
@@ -35,7 +38,9 @@ export default function PlayerRow({ player, hasGpm, hasXpm, hasLhDn, playerIntel
   // isDraftSlot: hero_id is explicitly absent (undefined), not an unknown ID
   const isDraftSlot = player.hero_id === undefined
   // isDead: respawn_timer > 0 means dead with countdown; 0 means alive; undefined = treat as alive
-  const isDead = player.respawn_timer !== undefined && player.respawn_timer > 0
+  // A finished match still carries whatever respawn timer the last snapshot happened to
+  // catch; counting it down forever reads as a game still in progress.
+  const isDead = !matchOver && player.respawn_timer !== undefined && player.respawn_timer > 0
   // Hidden profile: show Valve name + portrait + KDA; never crash; do not fetch OpenDota stats
   const isHidden = player.account_id !== undefined && hiddenProfile(player.account_id)
   // isHidden is declared to satisfy the threat model guard — rendering is unchanged (silently skip missing data)
@@ -43,7 +48,7 @@ export default function PlayerRow({ player, hasGpm, hasXpm, hasLhDn, playerIntel
 
   return (
     <div
-      className="flex items-center gap-4 px-0 border-b border-border transition-colors duration-150 hover:bg-surface-2"
+      className="flex items-center gap-2 px-0 border-b border-border transition-colors duration-150 hover:bg-surface-2"
       style={{ minHeight: 52 }}
     >
       {/* Portrait column — 48px fixed, dead overlay, respawn countdown.
@@ -51,7 +56,7 @@ export default function PlayerRow({ player, hasGpm, hasXpm, hasLhDn, playerIntel
       <div
         ref={portraitRef}
         className="relative shrink-0"
-        style={{ width: 48 }}
+        style={{ width: COL.portrait }}
         onMouseEnter={() => canShowTooltip && setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
       >
@@ -85,8 +90,9 @@ export default function PlayerRow({ player, hasGpm, hasXpm, hasLhDn, playerIntel
         )}
       </div>
 
-      {/* Name column — flex-1, two lines: player name + hero name */}
-      <div className="flex-1 min-w-0">
+      {/* Name column — flex-1 with a floor: it is the only elastic column, so without a minimum
+          the fixed stat columns squeeze it to zero and the panel shows numbers for nobody. */}
+      <div className="flex-1 min-w-0" style={{ minWidth: NAME_MIN_PX }}>
         <p className="text-sm leading-none truncate text-text">
           {isDraftSlot ? '—' : (player.name ?? '—')}
         </p>
@@ -97,13 +103,13 @@ export default function PlayerRow({ player, hasGpm, hasXpm, hasLhDn, playerIntel
         )}
       </div>
 
-      {/* LVL column — 28px */}
-      <span className="text-[12px] tabular-nums shrink-0 text-right text-text-muted" style={{ width: 28 }}>
+      {/* LVL column */}
+      <span className={`text-[12px] tabular-nums text-text-muted ${STAT_CELL}`} style={{ width: COL.lvl }}>
         {isDraftSlot ? '—' : (player.level ?? '—')}
       </span>
 
-      {/* K/D/A column — 64px */}
-      <span className="text-[12px] font-mono tabular-nums shrink-0" style={{ width: 64 }}>
+      {/* K/D/A column */}
+      <span className={`text-[12px] font-mono tabular-nums ${STAT_CELL}`} style={{ width: COL.kda }}>
         <span className="text-text">{isDraftSlot ? '—' : (player.kills ?? '—')}</span>
         <span className="text-text-dim">/</span>
         <span style={{ color: 'var(--color-dire)' }}>{isDraftSlot ? '—' : (player.death ?? '—')}</span>
@@ -111,29 +117,29 @@ export default function PlayerRow({ player, hasGpm, hasXpm, hasLhDn, playerIntel
         <span className="text-text">{isDraftSlot ? '—' : (player.assists ?? '—')}</span>
       </span>
 
-      {/* NW column — 56px, gold mono per UI-SPEC */}
-      <span className="text-[12px] font-mono tabular-nums shrink-0 text-right" style={{ width: 56, color: 'var(--color-gold)' }}>
+      {/* NW column — gold mono per UI-SPEC */}
+      <span className={`text-[12px] font-mono tabular-nums ${STAT_CELL}`} style={{ width: COL.nw, color: 'var(--color-gold)' }}>
         {isDraftSlot ? '—' : (player.net_worth !== undefined ? player.net_worth.toLocaleString() : '—')}
       </span>
 
-      {/* Optional GPM column — 40px */}
+      {/* Optional GPM column — present only when the data exists AND the card is wide enough */}
       {hasGpm && (
-        <span className="text-[10px] tabular-nums shrink-0 text-right text-text-muted" style={{ width: 40 }}>
+        <span className={`text-[10px] tabular-nums text-text-muted ${STAT_CELL} ${SHOW_GPM}`} style={{ width: COL.gpm }}>
           {isDraftSlot ? '—' : (player.gpm ?? '—')}
         </span>
       )}
 
-      {/* Optional XPM column — 40px */}
+      {/* Optional XPM column */}
       {hasXpm && (
-        <span className="text-[10px] tabular-nums shrink-0 text-right text-text-muted" style={{ width: 40 }}>
+        <span className={`text-[10px] tabular-nums text-text-muted ${STAT_CELL} ${SHOW_XPM}`} style={{ width: COL.xpm }}>
           {isDraftSlot ? '—' : (player.xpm ?? '—')}
         </span>
       )}
 
-      {/* Optional LH/DN column — 48px */}
+      {/* Optional LH/DN column — first to go when space runs out */}
       {hasLhDn && (
-        <span className="text-[10px] tabular-nums shrink-0 text-right text-text-muted" style={{ width: 48 }}>
-          {isDraftSlot ? '—' : (player.lh !== undefined ? `${player.lh} / ${player.dn ?? '—'}` : '—')}
+        <span className={`text-[10px] tabular-nums text-text-muted ${STAT_CELL} ${SHOW_LHDN}`} style={{ width: COL.lhdn }}>
+          {isDraftSlot ? '—' : (player.lh !== undefined ? `${player.lh}/${player.dn ?? '—'}` : '—')}
         </span>
       )}
     </div>

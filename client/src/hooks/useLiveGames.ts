@@ -26,6 +26,8 @@ export interface EnrichedGame {
   match_id: number
   league_id: number
   league_name: string
+  /** OpenDota tier name: 'premium' | 'professional' | 'amateur'. Null when unknown. */
+  league_tier?: string | null
   game_state?: number
   duration?: number
   series_type?: number
@@ -41,11 +43,21 @@ export interface EnrichedGame {
     alive: boolean
     respawnIn: number | null
     lastKillLoot: number[] | null
+    /**
+     * Every Roshan of the match: which number it was, the game second it died at, and what
+     * it dropped. Optional because an archived snapshot recorded before this field existed
+     * replays without it — those matches show the counter alone, as they always did.
+     */
+    kills?: Array<{ n: number; gameTime: number; loot: number[] }>
   } | null
   stream_delay_s?: number
   players?: PlayerDetail[]
-  radiant_team?: { team_name?: string }
-  dire_team?: { team_name?: string }
+  // team_id rides along through the schema's .passthrough() and is the only reliable way
+  // to recognise a side — Valve's team_name carries stray whitespace ("Nigma Galaxy ").
+  radiant_team?: { team_name?: string; team_id?: number }
+  dire_team?: { team_name?: string; team_id?: number }
+  /** Server-resolved team avatars; either side is null when the team has no usable logo. */
+  team_logos?: { radiant: string | null; dire: string | null }
   scoreboard?: {
     radiant?: { score?: number; [key: string]: unknown }
     dire?: { score?: number; [key: string]: unknown }
@@ -58,7 +70,8 @@ export interface LiveGamesResponse {
   games: EnrichedGame[]
 }
 
-async function fetchLiveGames(): Promise<LiveGamesResponse> {
+/** Exported so callers can share the ['live-games'] cache entry with their own useQuery. */
+export async function fetchLiveGames(): Promise<LiveGamesResponse> {
   const res = await apiFetch('/api/live/games')
   if (!res.ok) throw new Error(`BFF error: ${res.status}`)
   return res.json() as Promise<LiveGamesResponse>
