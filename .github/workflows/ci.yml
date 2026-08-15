@@ -1,0 +1,83 @@
+name: CI
+
+# Runs both test suites plus a typecheck on every push and pull request.
+#
+# Why this exists: deploy-demo.yml publishes to Pages on any push to master that touches
+# client/, shared/ or demo-data/. Without this workflow a broken suite reaches the published
+# demo unnoticed, because the suites only ever ran on a developer machine, by hand.
+#
+# No secrets: the server suite mocks ioredis and env, so nothing here needs a Valve, OpenDota,
+# Stratz or Redis credential. Anything that does need one does not belong in CI.
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+  workflow_dispatch:
+
+# A newer push supersedes an in-flight run on the same ref — nothing is published from here.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  server:
+    name: Server — tests + tsc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # shared/ is imported through the @shared alias and declares its own dependencies.
+      - name: Install dependencies
+        run: |
+          npm install --include=dev --prefix shared
+          npm install --include=dev --prefix server
+
+      - name: Test
+        run: npm test --prefix server -- --run
+
+      # `build` is tsc — it fails the run on any type error, including in test files.
+      - name: Typecheck
+        run: npm run build --prefix server
+
+  client:
+    name: Client — tests + build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: |
+          npm install --include=dev --prefix shared
+          npm install --include=dev --prefix client
+
+      - name: Test
+        run: npm test --prefix client -- --run
+
+      # `build` runs tsc before vite build, so this covers typecheck and bundling in one step.
+      - name: Build
+        run: npm run build --prefix client
+
+  shared:
+    name: Shared — tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm install --include=dev --prefix shared
+
+      - name: Test
+        run: npm test --prefix shared -- --run

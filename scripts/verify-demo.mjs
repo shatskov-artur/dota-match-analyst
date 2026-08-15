@@ -291,7 +291,15 @@ for (const s of EXTRA_SHOTS) {
  * separately rather than filtered out silently, because the disclosure banner makes a claim
  * about it and that claim has to stay checkable.
  */
-const ALLOWED_ASSET_HOSTS = ['cdn.cloudflare.steamstatic.com', 'cdn.steamstatic.com']
+const ALLOWED_ASSET_HOSTS = [
+  'cdn.cloudflare.steamstatic.com',
+  'cdn.steamstatic.com',
+  // Team logos. OpenDota returns one of two Valve-hosted URLs depending on how the team uploaded
+  // its logo: the legacy team_logos path, or a Workshop UGC blob. Same argument as the art CDN —
+  // keyless public assets, no quota — so allowed and reported, never silently filtered.
+  'steamcdn-a.akamaihd.net',
+  'cdn.steamusercontent.com',
+]
 
 const pageOrigin = new URL(URL_UNDER_TEST.replace(/#.*$/, '')).origin
 const offOrigin = requests.filter((r) => {

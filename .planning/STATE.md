@@ -2,63 +2,73 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-last_updated: "2026-07-07T20:26:33.139Z"
+status: shipped
+last_updated: "2026-08-11T00:00:00.000Z"
 progress:
-  total_phases: 15
-  completed_phases: 14
-  total_plans: 70
-  completed_plans: 66
-  percent: 93
+  total_phases: 18
+  completed_phases: 18
+  total_plans: 68
+  completed_plans: 68
+  percent: 100
 ---
 
 # Project State
 
 ## Current Status
 
-Phase: Phase 10.3 complete — both waves landed (Wave 1: MatchPage 3-row restructure per sketch 002-C; Wave 2: per-component sanity sweep — RoshanBlock content clamp, HistoryGraphs label size bump, BuildingsSection justify-center, CooldownsBlock no-op); 105/105 client tests GREEN, tsc + build green
-Last updated: 2026-05-15
+All planned phases are complete. The public artifact is a **static snapshot demo** on GitHub Pages
+(Phase 12) — a replay of real tournament data captured 2026-08-06. The live split-origin service
+(Vercel + Railway + Upstash) is configured and committed but intentionally not running; see
+README §Live demo.
+
+Last work: Phase 13 — team avatars, resolved server-side with a monogram fallback (2026-08-11).
+
+Last updated: 2026-08-11 — this file had been stale since 2026-05-15, still reporting Phase 10.3
+as current and Phase 11 as blocked on a deploy checkpoint, through three shipped phases.
 
 ## Project Reference
 
 See: .planning/PROJECT.md
 
-**Core value:** You open a live match and instantly understand who's winning and why — from draft through final push.
-**Current focus:** Phase 11 — harden-deploy
+**Core value:** You open a live match and instantly understand who's winning and why — from draft
+through final push.
+**Open question (see PROJECT.md):** whether v1.1 restarts the live service or the project stays a
+portfolio artifact. Every doc below describes what exists; nothing here assumes an answer.
 
 ## Phase Progress
 
 | # | Phase | Status |
 |---|-------|--------|
-| 1 | Foundations | Complete — all 4 plans done, verified 2026-04-23 |
-| 2 | Live Matches List | Complete — all 4 plans done, verified 2026-04-24 |
-| 3 | Match Core | Complete — all 4 plans done, verified 2026-04-24 |
-| 4 | Draft UX | Complete — all 6 plans done, verified 2026-04-25 |
-| 5 | Hero & Player Intel | Complete — all 6 plans done, verified 2026-04-25 |
-| 6 | Win Probability | Complete — all 5 plans done, verified 2026-04-26 |
-| 7 | In-Game Item Intel | Complete — all 4 plans done, verified 2026-04-28 |
-| 8 | Ability Cooldowns & Map | Complete — all 5 plans done, human checkpoint approved 2026-04-29 |
-| 9 | Roshan Tracker | Complete — all 6 plans done 2026-05-04; 35/35 phase tests GREEN; manual UAT deferred |
-| 10 | Historical Graphs | Complete — all 4 plans done 2026-05-09; verifier 5/5 success criteria MET; live UAT deferred |
-| 10.1 | background-history-sampler | Complete — all 3 plans done 2026-05-14; 100/100 server tests GREEN; SIGTERM/SIGINT graceful drain wired |
-| 10.2 | HistoryGraphs polish + XP fix | Complete — all 3 waves landed 2026-05-15; 102/102 server + 105/105 client tests GREEN; manual UAT-LAYOUT-01/03 deferred to phase gate |
-| 10.3 | Match page layout restructure | Complete — both waves landed 2026-05-15 (2/2); 105/105 client tests GREEN, tsc+build green; manual UAT-LAYOUT-10.3-01..07 deferred to phase gate |
+| 1 | Foundations | Complete — 4/4, verified 2026-04-23 |
+| 2 | Live Matches List | Complete — 4/4, verified 2026-04-24 |
+| 3 | Match Core | Complete — 4/4, verified 2026-04-24 |
+| 4 | Draft UX | Complete — 4/4, verified 2026-04-25 |
+| 5 | Hero & Player Intel | Complete — 6/6, verified 2026-04-25 |
+| 6 | Win Probability | Complete — 7/7 (incl. gap-closure heuristic bars), 2026-04-26 |
+| 7 | In-Game Item Intel | Complete — 4/4, 2026-04-28 |
+| 8 | Ability Cooldowns & Map | Complete — 5/5, human checkpoint approved 2026-04-29 |
+| 9 | Roshan Tracker | Complete — 6/6, 2026-05-04; manual UAT deferred |
+| 10 | Historical Graphs | Complete — 4/4, 2026-05-09 |
+| 10.1 | background-history-sampler | Complete — 3/3, 2026-05-14 |
+| 10.2 | HistoryGraphs polish + XP fix | Complete — 3/3, 2026-05-15 |
+| 10.3 | Match page layout restructure | Complete — 2/2, 2026-05-15 |
+| 10.4 | Visual redesign + responsive | Complete — 8/8, 2026-06-14 (skin superseded by 10.5) |
+| 10.5 | Neon Bento redesign | Complete — shipped directly, 2026-06-14 |
+| 11 | Harden & Deploy | Complete — 4/4, 2026-07-10 |
+| 12 | Snapshot Demo | Complete — shipped directly, 2026-08-06 |
+| 13 | Team Avatars | Complete — shipped directly, 2026-08-11 |
 
 ## Current Position
 
-Phase: 11 (harden-deploy) — EXECUTING (Plan 04 at blocking human-action deploy checkpoint)
-Plan: 4 of 4
-Plans: 4 of 4 (all autonomous code/config done; live deploy = outstanding human-action)
-
-- **Phase:** 11
-- **Status:** Executing Phase 11 — awaiting human deploy (Railway + Vercel + Upstash) per DEPLOY.md
-- **Progress:** [█████████░] 99%
+No phase in flight. Tests: 131 server + 131 client, all green; `tsc` and both builds clean; the
+demo verifier reports 0 external API requests and 0 console errors.
 
 ## Performance Metrics
 
-- Phases complete: 6/7
-- v1 requirements delivered: MATCH-01–06, HOME-01–03, DRAFT-01–04, PLAYER-01–02, infra
-- Requirement coverage in roadmap: 15/15 (100%)
+- Phases complete: 18/18
+- Requirements delivered: 32/32 mapped (HOME, MATCH, DRAFT, PLAYER, ITEM, CD, MAP, ROSH, GRAPH,
+  UI, DEMO, TEAM)
+- Requirement coverage in roadmap: 32/32 (100%)
 
 ## Accumulated Context
 
@@ -77,49 +87,48 @@ Plans: 4 of 4 (all autonomous code/config done; live deploy = outstanding human-
 - Phase 3: browser-safe heroMapper uses Vite native JSON import (NOT @shared/heroMapper which uses createRequire)
 - Phase 3: useMatchDetail reads ['live-games'] cache key shared with useLiveGames — no duplicate fetch
 - Phase 3: buildingDecoder called with tower_state (NOT building_state) — field name matters
-- Phase 3: color palette upgraded — white headings (#ffffff), 52px kill scores, secondary text ≥ #555555
 - Rule 3 fix: server/tsconfig.json rootDir changed from ./src to .. to allow shared/hiddenProfile.ts import
 - heroRoutes mounted at /api (not /api/live) for correct GET /api/heroes/stats URL — D-10
 - intel route outer cache key intel:{matchId} (not per-user) — T-5-04 DoS mitigation
 - useHeroStats uses staleTime: Infinity + refetchInterval: false — patch data never polls (T-5-04 DoS mitigation)
-- computeIntelInterval mirrors computeDraftInterval pattern exactly — game_state 2 = 5000ms, else false
-- pick_rate display in badge strip: raw pro_pick count shown as '{N}P' suffix (not percentage) — BFF returns raw count, normalization requires total pro games
-- React 19 useRef returns RefObject<T | null> — IntelTooltip anchorRef prop must be typed RefObject<HTMLDivElement | null>
-- DraftPortrait outer wrapper has no overflow-hidden — only inner portrait div clips; allows IntelTooltip (absolute) to escape clip boundary
 - Phase 6: Valve omits game_state for draft AND in-game phases — distinguish by scoreboard.radiant.players[] presence
-- Phase 6: getStatusLabel scoreboard fallback `scoreboard != null → 'Live'` was too broad; replaced with players-array check
-- Phase 6: ScoreHeader now shows formatDuration(match.duration) as game clock between StatusTag and gold diff
-- Phase 6: WinProbBar self-gates: gameState===5 AND duration>300 AND radiantWinProb!==null — no wrapper needed in MatchPage
-- Phase 6: Stratz live.match returns null for matches it doesn't track — expected, bar silently hides
-- radiance item id is 137 in OpenDota data (plan had 119 which was stale); itemMapper test corrected
-- Phase 11 D-09: split-origin base URL via client/src/lib/apiBase.ts — API_BASE = import.meta.env.VITE_API_URL ?? ''; '' fallback keeps the Vite dev proxy, a set value inlines the Railway origin at build time (VITE_* is build-time only)
+- Phase 6: Stratz live.match returns null for matches it doesn't track — hence the gold + heuristic bars alongside it
+- Phase 11 D-09: split-origin base URL via client/src/lib/apiBase.ts — API_BASE = import.meta.env.VITE_API_URL ?? ''
 - Phase 11 D-09: CORS_ORIGIN is z.string().optional() in env.ts; index.ts CORS scoped to /api/* with exact origin + credentials false (no '*') — T-11-08
-- Phase 11 A5: canonical server `start` = `node dist/index.js` (no --env-file; Railway injects env via process.env); dev path preserved as `start:local`; PORT stays Railway-injected
-- Phase 11 D-08: railway.json pins builder NIXPACKS explicitly (Railpack is 2026 Railway default); healthcheck /api/health
 - Phase 11 A4: Railway Root Directory = server/, Vercel Root Directory = client/; secrets live only in dashboards (repo carries *.example only) — T-11-10
+- Phase 12: the capture records BFF responses, not raw upstream, so the demo re-derives nothing; apiFetch is the single seam between network and snapshot
+- Phase 13: team logos resolve OpenDota-first (keyless) with Valve UGC as fallback; the live route reads the 7-day cache and warms misses in the background so avatars never delay the match list
+- Phase 13: a `team_logo` ugcid past Number.MAX_SAFE_INTEGER is already corrupted by JSON.parse and is dropped instead of looked up (verified against GetUGCFileDetails)
+- Phase 13: OpenDota answers 200 with an EMPTY body for unknown teams — a 2xx with an unusable body is treated as a cacheable miss, not a transient failure
 
 ### Todos
 
 - "Known to play" threshold resolved: games >= 10 AND win/games > 0.5 (server-side, D-09).
-- Phase 4 refetchInterval: use dynamic `(query) => ...` callback form for 5s draft polling (TQ v5 supports this for Phase 4+).
+- Snapshot in demo-data/ predates team avatars, so the published demo shows monograms only.
+  Re-capturing (`npm run capture:snapshot`) is the fix — it rewrites 546 committed files, so it is
+  a deliberate call, not a chore.
+- No CI runs the test suites; the only workflow builds and publishes the demo.
+- BFF has no per-IP rate limit or auth — irrelevant while the service is off, decisive if it returns.
 
 ### Blockers
 
-- **Plan 11-04 deploy checkpoint (human-action, blocking):** All split-origin deploy code/config is committed (apiBase.ts + 6 hooks, env-driven CORS, railway.json/vercel.json, .env.production.example, DEPLOY.md). The LIVE deploy is outstanding — it needs the owner to create Upstash/Railway/Vercel accounts, set dashboard secrets, and run the deploy per DEPLOY.md. ROADMAP criterion 4 is config-complete but not yet live-verified.
+- None.
 
 ### Roadmap Evolution
 
-- Phase 10.1 inserted after Phase 10: background-history-sampler — server-side setInterval(30s) polls GetLiveLeagueGames so any viewer joining mid-game sees gold/XP history from minute 0 (URGENT — Phase 10 only sampled while a viewer's request hit /api/live/games).
-- Phase 10.2 inserted after Phase 10.1: HistoryGraphs polish + right-column equalize + XP fix (URGENT — live UAT feedback 2026-05-14: XP graph stuck at 0.0k, charts hard to read at a glance, right-column blocks have uneven heights). Sketch 001 winner = variant C captured in `.claude/skills/sketch-findings-dota-stats/`.
-- Phase 10.3 inserted after Phase 10.2: Match page layout restructure (URGENT — live UAT feedback 2026-05-15: 3-column row needs to become heroes | items | cooldowns flex-1; Map/Roshan/Buildings/HistoryGraphs redistribute below). Sketch 002 winner = variant C (Map+Roshan 50/50 Row 2; Buildings+HistoryGraphs 50/50 Row 3).
+- Phase 10.1 inserted after Phase 10: background-history-sampler — server-side setInterval(30s) polls GetLiveLeagueGames so any viewer joining mid-game sees gold/XP history from minute 0.
+- Phase 10.2 inserted after Phase 10.1: HistoryGraphs polish + right-column equalize + XP fix (live UAT feedback 2026-05-14). Sketch 001 winner = variant C.
+- Phase 10.3 inserted after Phase 10.2: Match page layout restructure (live UAT feedback 2026-05-15). Sketch 002 winner = variant C.
+- Phase 10.5 recorded retroactively 2026-08-11: the Neon Bento redesign shipped 2026-06-14 and superseded Phase 10.4's Tactical Slate skin the same day, but existed only in a commit message.
+- Phase 12 recorded retroactively 2026-08-11: the snapshot demo shipped 2026-08-06 with no roadmap entry, and changed what the project's public artifact is.
+- Phase 13 added 2026-08-11: team avatars.
 
 ## Session Continuity
 
-- Last session: 2026-07-07 — Phase 11 Wave 2 (11-04) split-origin deploy config landed (railway.json, vercel.json, .env templates, DEPLOY.md); Tasks 1-3 committed, Task 4 (live deploy) is a blocking human-action checkpoint
-- Next action: Human deploy per DEPLOY.md (Upstash → Railway root=server/ → Vercel root=client/ w/ VITE_API_URL before build → cross-wire CORS_ORIGIN → smoke test), then run the phase-11 verifier
+- Last session: 2026-08-11 — Phase 13 (team avatars) shipped; planning docs reconciled against the
+  codebase after an audit found statuses, requirement ids, the theme name and the stack description
+  all diverged from what is built.
+- Next action: decide the v1.1 question in PROJECT.md (restart the live service vs. stay a portfolio
+  artifact), then add a CI workflow that runs both test suites.
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
-
-**Completed Plan:** 11-04 autonomous tasks (apiBase + 6 hooks, env-driven CORS + Railway prod start, railway.json/vercel.json/env templates/DEPLOY.md) — 2026-07-07; live deploy outstanding as human-action checkpoint
-
-**Next Plan:** None — Phase 11 is the last planned phase; awaiting human deploy-smoke to close ROADMAP criterion 4

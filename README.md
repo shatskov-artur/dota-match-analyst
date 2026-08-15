@@ -61,9 +61,12 @@ The demo makes **no calls to any match-data API** — not Valve, not OpenDota, n
 carries no API key. Every `/api/*` request is answered from bundled JSON.
 
 Hero portraits, item icons and ability icons still load from Valve's public asset CDN
-(`cdn.cloudflare.steamstatic.com`), exactly as the live app does. That host needs no key and
-consumes no quota, so the "no quota spent" claim holds — but it is a third-party request and the
-banner says so rather than claiming the page touches nothing.
+(`cdn.cloudflare.steamstatic.com`), exactly as the live app does. Team logos come from the same
+family of hosts (`steamcdn-a.akamaihd.net` or `cdn.steamusercontent.com`, depending on how the
+team uploaded its logo) — the URL itself is resolved server-side and baked into the recording, so
+the demo never asks OpenDota for it. None of these hosts needs a key or consumes quota, so the
+"no quota spent" claim holds — but they are third-party requests and the banner says so rather
+than claiming the page touches nothing.
 
 This is verified automatically, not by eyeballing DevTools:
 
@@ -131,6 +134,98 @@ the tooltips go quiet.
 
 ---
 
+## Recording a tournament (v2.0)
+
+The app can record every match of a tournament minute by minute and replay it afterwards:
+map tabs for a Bo3, a scrubber over the whole game, the bracket and schedule, head-to-head
+history, and a post-match read of where the game turned.
+
+This runs entirely on one machine. Nothing is published and no cloud account is needed.
+
+```bash
+# 1. Start the archive database. Embedded Postgres — no Docker, no admin rights.
+#    Leave it running in its own terminal.
+npm run pg:start --prefix server
+
+# 2. Apply the schema (once, and after any schema change)
+npm run db:migrate
+
+# 3. Find the league you want to record — never hardcode the id
+npm run find:league -- --name="The International 2026"
+#    → prints candidates; put the winner in server/.env as TRACKED_LEAGUE_IDS=19719
+#    npm run find:league -- --live   lists whatever is being played right now
+
+# 4. Run it
+npm run dev
+```
+
+Once set up, `npm run dev:all` starts the database, the BFF and the client together — that is
+the one command to leave running for the length of a tournament.
+
+**Stop it with Ctrl+C**, not by killing the window. Postgres shuts down cleanly on Ctrl+C; if
+it is force-killed, Windows keeps the socket bound to the dead process for a few minutes and
+the next start reports the port as busy. Nothing is damaged and nothing needs repairing —
+wait it out, or run `PG_PORT=55433 npm run pg:start --prefix server` and point `DATABASE_URL`
+at the new port.
+
+`docker-compose.local.yml` is the equivalent for machines that have Docker (Postgres **and**
+Redis, on the standard ports); set `DATABASE_URL`/`REDIS_URL` accordingly. Both paths create a
+**UTF8** database — that is not optional, a locale-default database on Windows cannot store
+Cyrillic player names.
+
+**What gets recorded.** Every 30 seconds the ingest job stores the full enriched payload for
+each tracked live match, plus derived per-minute rows for the teams and all ten players, and
+diff-detected tower / barracks / Roshan events. Every 5 minutes it syncs the bracket, schedule
+and standings from Valve's keyless league endpoint. Every 10 minutes it pulls finished matches
+from OpenDota's parsed replay.
+
+**If the machine was off.** Matches are discovered two independent ways — Valve's bracket and
+OpenDota's league match list — so a game that nobody watched is still found, with its series
+grouping intact. The backfill then recovers per-minute gold, XP and last hits, the exact kill
+log and the full objective list. The minute scrubber still works: with no snapshot to replay,
+the state is rebuilt from the per-minute rows and the event log — heroes, net worth, level,
+last hits, kills, score and which buildings were standing. What cannot be recovered is the
+live-only detail: item slots, ability cooldowns, hero positions, denies and assists. The page
+says so instead of showing those panels empty. Rows carry a `source` of `live` or `opendota`.
+
+**Storage.** Roughly 3 MB of raw snapshots per match before compression; a full tournament day
+of one event is well under a gigabyte.
+
+### Checking what is in the archive
+
+```bash
+npm run db:peek                       # leagues, series, latest matches, coverage per match
+npm run db:peek -- --league=19719     # one tournament
+npm run db:peek -- --match=8942152024 # one game: coverage, event breakdown, first events
+```
+
+The column that matters is **snaps**. A match with snapshots was watched live and can be
+scrubbed minute by minute; one with `snaps 0` was recovered from OpenDota afterwards and has
+minutes and events but no replay. `db:peek --match=` says so in words.
+
+`npm run db:prune` reports match rows belonging to leagues you are not recording, and
+deletes them with `-- --apply`. Only rows with nothing in them — no snapshots, no timeline,
+no events — are ever touched. Useful after changing `TRACKED_LEAGUE_IDS`.
+
+`npm run db:studio` opens Drizzle Studio — a browser table browser over the same database,
+for poking at raw rows. There is no `psql` in the project; the system PostgreSQL install has
+one if you want a SQL prompt:
+
+```bash
+"/c/Program Files/PostgreSQL/18/bin/psql.exe" "$DATABASE_URL" -c "select count(*) from match_snapshots"
+```
+
+Over HTTP, without any tooling:
+
+```bash
+curl localhost:3001/api/archive/status
+curl 'localhost:3001/api/tournaments/19719/schedule?status=upcoming'
+curl 'localhost:3001/api/matches/<id>/timeline'
+curl 'localhost:3001/api/matches/<id>/at?minute=15'
+```
+
+---
+
 ## Capturing a new snapshot
 
 ```bash
@@ -179,9 +274,13 @@ scripts/         capture-snapshot, verify-demo, fetch-fonts, seed helpers
 ## Tests
 
 ```bash
-npm test --prefix server    # 114 tests
-npm test --prefix client    # 123 tests
+npm test --prefix server    # 131 tests
+npm test --prefix client    # 136 tests
+npm test --prefix shared    # 22 tests
 ```
+
+All three run on every push and pull request (`.github/workflows/ci.yml`). The shared suite had
+no `test` script until 2026-08-11, so its 22 tests had never actually executed anywhere.
 
 ## Notable implementation details
 

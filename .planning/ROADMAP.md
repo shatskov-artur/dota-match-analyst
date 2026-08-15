@@ -3,7 +3,8 @@
 **Project:** Dota 2 Match Analyst
 **Version:** v1
 **Granularity:** standard
-**Last updated:** 2026-04-28
+**Last updated:** 2026-08-11 (reconciled against the codebase — statuses, plan checkboxes, and the
+two undocumented phases 10.5 / 12 were wrong or missing)
 
 ## Overview
 
@@ -15,11 +16,14 @@
 | 4 | Draft UX | User watches the draft unfold in real time with clear turn indication | DRAFT-01–02 | 3 criteria |
 | 5 | Hero & Player Intel | User sees contextual stats layered onto drafted heroes and players | DRAFT-03–04, PLAYER-01–02 | 5 criteria |
 | 6 | Win Probability | User sees a Stratz-powered win-probability bar that degrades gracefully | MATCH-06 | 4 criteria |
-| 7 | In-Game Item Intel | User sees all heroes ranked by net worth with their 6 item slots | TBD | 4 criteria |
-| 8 | Ability Cooldowns | User sees which ultimates are on cooldown, sorted by time remaining | TBD | 4 criteria |
-| 9 | Roshan Tracker | User sees Roshan kill count and exact loot for next kill | TBD | 4 criteria |
-| 10 | Historical Graphs | User sees gold and XP lead charts over the full game duration | TBD | 5 criteria |
-| 11 | Harden & Deploy | 4/4 | Complete   | 2026-07-10 |
+| 7 | In-Game Item Intel | User sees all heroes ranked by net worth with their 6 item slots | ITEM-01–02 | 4 criteria |
+| 8 | Ability Cooldowns & Map | User sees which ultimates are on cooldown and where every hero is on the map | CD-01, MAP-01 | 5 criteria |
+| 9 | Roshan Tracker | User sees Roshan kill count and exact loot for next kill | ROSH-01–02 | 4 criteria |
+| 10 | Historical Graphs | User sees gold and XP lead charts over the full game duration | GRAPH-01–02 | 5 criteria |
+| 10.5 | Neon Bento redesign | Replace the Tactical Slate skin with the shipped Neon Bento design system + match-grid filters | UI-01–03 | 4 criteria |
+| 11 | Harden & Deploy | Ship a public build that survives a full tournament day without crashes or quota exhaustion | — (hardening) | 4 criteria |
+| 12 | Snapshot Demo | Publish a verifiable static replay of real tournament data as the public artifact | DEMO-01–03 | 4 criteria |
+| 13 | Team Avatars | User can tell teams apart by their logo, not just by name | TEAM-01–02 | 3 criteria |
 
 ## Phases
 
@@ -27,14 +31,17 @@
 - [x] **Phase 2: Live Matches List** - Home page with active tournaments and live matches auto-refreshing every 30s ✓ 2026-04-24
 - [x] **Phase 3: Match Core** - In-game match screen with score, gold diff, hero grid, towers/rax, K/D/A, series score, delay disclosure ✓ 2026-04-24
 - [x] **Phase 4: Draft UX** - Live picks/bans grid with 5s polling and whose-turn indicator ✓ 2026-04-25
-- [ ] **Phase 5: Hero & Player Intel** - Hero patch winrate, counterpick tooltip with "known to play" cross-reference, per-player hero stats, hidden-profile safety
+- [x] **Phase 5: Hero & Player Intel** - Hero patch winrate, counterpick tooltip with "known to play" cross-reference, per-player hero stats, hidden-profile safety ✓ 2026-04-25
 - [x] **Phase 6: Win Probability** - Stratz win-probability bar gated to >5min game time, degrades silently on failure ✓ 2026-04-26
 - [x] **Phase 7: In-Game Item Intel** - Heroes sorted by net worth with 6 item slots each, item icons from Valve CDN ✓ 2026-04-28
 - [x] **Phase 8: Ability Cooldowns & Map** - Ultimates on cooldown block + hero positions on minimap, updating every 30s ✓ 2026-04-29
 - [x] **Phase 9: Roshan Tracker** - Kill counter (Redis), loot prediction by kill number, respawn countdown ✓ 2026-05-04 (manual UAT deferred)
 - [x] **Phase 10: Historical Graphs** - Gold diff and XP diff line charts accumulated server-side in Redis every 30s ✓ 2026-05-09
-- [x] **Phase 10.4: Visual redesign (Tactical Slate) + responsive** - Full restyle to Tactical Slate theme via design tokens + responsive across phone/tablet/laptop/desktop (sketches 003-B / 004-B) (completed 2026-06-14)
+- [x] **Phase 10.4: Visual redesign (Tactical Slate) + responsive** - Full restyle to Tactical Slate theme via design tokens + responsive across phone/tablet/laptop/desktop (sketches 003-B / 004-B) (completed 2026-06-14) — **skin superseded same day by Phase 10.5; the responsive work survives**
+- [x] **Phase 10.5: Neon Bento redesign** - Post-UAT restyle to the Neon Bento design system (OLED + violet/gold), Home rebuilt as a bento grid with filters, self-hosted webfonts ✓ 2026-06-14
 - [x] **Phase 11: Harden & Deploy** - Rate-limit queues, error boundaries, 429 backoff, deploy to Vercel + Railway (completed 2026-07-10)
+- [x] **Phase 12: Snapshot Demo** - Captured replay of real tournament data, disclosure banner, headless verification, GitHub Pages publish ✓ 2026-08-06
+- [x] **Phase 13: Team Avatars** - Server-resolved team logos (OpenDota primary, Valve UGC fallback) with a monogram fallback, on the match list and match header ✓ 2026-08-11
 
 ## Phase Details
 
@@ -103,7 +110,7 @@ Plans:
 - [x] 04-01-PLAN.md — Wave 0: red-state test scaffolds (valve.test.ts scoreboard, draftOrder.test.ts CM 7.40 sequence, useDraftDetail.test.ts refetchInterval cadence)
 - [x] 04-02-PLAN.md — Wave 1 backend: extend LiveGameSchema with ScoreboardSchema (D-17), add TTL.DRAFT=4 (D-15), getLiveLeagueGamesFast() + GET /api/live/draft/:matchId route (D-16)
 - [x] 04-03-PLAN.md — Wave 2 client logic: draftOrder.ts pure turn inference (D-08), useDraftDetail.ts hook with dynamic refetchInterval (D-12), stale-comment cleanup in useMatchDetail.ts (D-13) — turns Wave 0 tests GREEN
-- [ ] 04-04-PLAN.md — Wave 3 client UI: DraftPortrait, DraftColumn, DraftTurnIndicator, DraftSection, MatchPage composition (D-03), includes human checkpoint for live-draft verification
+- [x] 04-04-PLAN.md — Wave 3 client UI: DraftPortrait, DraftColumn, DraftTurnIndicator, DraftSection, MatchPage composition (D-03), includes human checkpoint for live-draft verification
 **UI hint:** yes
 
 ### Phase 5: Hero & Player Intel
@@ -119,11 +126,11 @@ Plans:
 **Plans:** 6 plans
 Plans:
 - [x] 05-01-PLAN.md — Wave 0: test stubs RED state (winrateColor.test.ts, openDotaApi.test.ts extension, intel.test.ts, useMatchIntel.test.ts)
-- [ ] 05-02-PLAN.md — Wave 1 BFF schemas + services (HeroStatsSchema, PlayerHeroSchema, HeroMatchupSchema, getHeroStats, getPlayerHeroes, getHeroMatchups, intel.ts pure helpers)
-- [ ] 05-03-PLAN.md — Wave 1 BFF routes (GET /api/heroes/stats + GET /api/live/intel/:matchId — Promise.allSettled aggregator, cached by match_id)
-- [ ] 05-04-PLAN.md — Wave 2 client utils + hooks (winrateColor.ts, useHeroStats.ts, useMatchIntel.ts — turns client tests GREEN)
+- [x] 05-02-PLAN.md — Wave 1 BFF schemas + services (HeroStatsSchema, PlayerHeroSchema, HeroMatchupSchema, getHeroStats, getPlayerHeroes, getHeroMatchups, intel.ts pure helpers)
+- [x] 05-03-PLAN.md — Wave 1 BFF routes (GET /api/heroes/stats + GET /api/live/intel/:matchId — Promise.allSettled aggregator, cached by match_id)
+- [x] 05-04-PLAN.md — Wave 2 client utils + hooks (winrateColor.ts, useHeroStats.ts, useMatchIntel.ts — turns client tests GREEN)
 - [x] 05-05-PLAN.md — Wave 2 client components (IntelTooltip.tsx new, DraftPortrait.tsx extended with badge strip + tooltip trigger)
-- [ ] 05-06-PLAN.md — Wave 2 client wiring (DraftTimeline, DraftColumn, DraftSection, MatchPage prop threading + human checkpoint)
+- [x] 05-06-PLAN.md — Wave 2 client wiring (DraftTimeline, DraftColumn, DraftSection, MatchPage prop threading + human checkpoint)
 **UI hint:** yes
 
 ### Phase 6: Win Probability
@@ -162,14 +169,14 @@ Plans:
 - [x] 06-03-PLAN.md — Wave 2: BFF routes (GET /api/live/winprob/:matchId, update intel aggregator to use getHeroMatchupsStratz + rankCountersStratz, remove OpenDota matchup functions)
 - [x] 06-04-PLAN.md — Wave 3: Client hook + component (useWinProbability.ts, WinProbBar.tsx — turns Wave 0 client tests GREEN)
 - [x] 06-05-PLAN.md — Wave 4: MatchPage wiring (insert WinProbBar after ScoreHeader, wire useWinProbability) + human checkpoint
-- [ ] 06-06-PLAN.md — Gap closure Wave 1 (TDD): heuristic winProbHeuristic.ts (computeGoldWinProb, computeEstWinProb, extractScoreboardInputs) + extend /winprob/:matchId BFF to return { stratz, gold, estimate }
-- [ ] 06-07-PLAN.md — Gap closure Wave 2: update WinProbResponse interface, redesign WinProbBar as three-bar panel (Stratz/Gold/Est.), update MatchPage prop passing
+- [x] 06-06-PLAN.md — Gap closure Wave 1 (TDD): heuristic winProbHeuristic.ts (computeGoldWinProb, computeEstWinProb, extractScoreboardInputs) + extend /winprob/:matchId BFF to return { stratz, gold, estimate }
+- [x] 06-07-PLAN.md — Gap closure Wave 2: update WinProbResponse interface, redesign WinProbBar as three-bar panel (Stratz/Gold/Est.), update MatchPage prop passing
 **UI hint:** yes
 
 ### Phase 7: In-Game Item Intel
 **Goal:** A user watching a live match sees all ten heroes ranked by net worth with their current items displayed as icons, so they can instantly read who is strongest and what power spikes are coming.
 **Depends on:** Phase 3
-**Requirements:** SC-01, SC-02, SC-03, SC-04
+**Requirements:** ITEM-01, ITEM-02 (the `SC-0*` ids this phase used never existed in REQUIREMENTS.md — back-filled 2026-08-11)
 **API reality (verified 2026-04-28):**
 - `item0`–`item5` (integer item IDs) are present on every player in `scoreboard.{radiant,dire}.players[]`
 - Item IDs must be mapped to names/icons via a static JSON (source: OpenDota `/constants/items` endpoint or bundled file)
@@ -177,22 +184,22 @@ Plans:
 - `net_worth` field is present and reliable for sort order
 - **VERIFY during implementation:** confirm item ID → name mapping is stable across patches; check neutral item slot (item_neutral vs item5 vs no field); check backpack slots (item6–item8) availability in live API
 **Success criteria** (what must be TRUE):
-  1. User sees all 10 heroes sorted descending by net worth in a dedicated block (SC-01)
-  2. Each hero row shows 6 item icon slots (empty slot rendered as placeholder) (SC-02)
-  3. Items update on the same 30s polling cycle as the match screen (SC-03)
-  4. Missing or unknown item IDs render as empty slot, not an error (SC-04)
+  1. User sees all 10 heroes sorted descending by net worth in a dedicated block (ITEM-01)
+  2. Each hero row shows 6 item icon slots (empty slot rendered as placeholder) (ITEM-01)
+  3. Items update on the same 30s polling cycle as the match screen (ITEM-01)
+  4. Missing or unknown item IDs render as empty slot, not an error (ITEM-02)
 **Plans:** 4 plans
 Plans:
-- [ ] 07-01-PLAN.md — Wave 0: Download shared/items.json + RED-state test stubs (itemMapper.test.ts, formatNW.test.ts)
-- [ ] 07-02-PLAN.md — Wave 1A: Extend PlayerSchema (item0–item5, item_neutral, item6–item8) + shared/itemMapper.ts (server-side)
-- [ ] 07-03-PLAN.md — Wave 1B: client/src/utils/itemMapper.ts + formatNW.ts (turns tests GREEN) + ItemsBlock.tsx component
-- [ ] 07-04-PLAN.md — Wave 2: MatchPage wiring (ItemsBlock insertion, merge+sort scoreboard players) + human checkpoint
+- [x] 07-01-PLAN.md — Wave 0: Download shared/items.json + RED-state test stubs (itemMapper.test.ts, formatNW.test.ts)
+- [x] 07-02-PLAN.md — Wave 1A: Extend PlayerSchema (item0–item5, item_neutral, item6–item8) + shared/itemMapper.ts (server-side)
+- [x] 07-03-PLAN.md — Wave 1B: client/src/utils/itemMapper.ts + formatNW.ts (turns tests GREEN) + ItemsBlock.tsx component
+- [x] 07-04-PLAN.md — Wave 2: MatchPage wiring (ItemsBlock insertion, merge+sort scoreboard players) + human checkpoint
 **UI hint:** yes
 
 ### Phase 8: Ability Cooldowns & Map
 **Goal:** A user sees which ultimates are on cooldown (sorted by time remaining) and where all 10 heroes are on the minimap, both updating every 30s.
 **Depends on:** Phase 7
-**Requirements:** TBD
+**Requirements:** CD-01, MAP-01 (back-filled 2026-08-11)
 **API reality (verified 2026-04-26):**
 - Valve live API exposes per-player: `ultimate_state` (0=unavailable, 1=ready, 2=on cooldown, 3=charging) and `ultimate_cooldown` (seconds remaining)
 - Regular ability cooldowns are NOT in the live API — `abilities[]` only carries `{ability_id, ability_level}`, no cooldown state
@@ -216,7 +223,7 @@ Plans:
 ### Phase 9: Roshan Tracker
 **Goal:** A user always knows which Roshan kill is next and exactly what loot the killing team will receive, without having to count manually.
 **Depends on:** Phase 3
-**Requirements:** TBD
+**Requirements:** ROSH-01, ROSH-02 (back-filled 2026-08-11)
 **API reality (verified 2026-04-26):**
 - `scoreboard.roshan_respawn_timer` = seconds until Roshan respawns (0 = alive, >0 = dead)
 - Valve does NOT expose a Roshan kill counter — it must be inferred server-side by detecting transitions `timer: 0 → >0`
@@ -245,7 +252,7 @@ Plans:
 ### Phase 10: Historical Graphs
 **Goal:** A user sees how the gold lead and XP lead have evolved over the course of the game as line charts, giving context to whether the current lead is growing, shrinking, or stable.
 **Depends on:** Phase 3
-**Requirements:** TBD
+**Requirements:** GRAPH-01 (back-filled 2026-08-11)
 **API reality (verified 2026-04-26):**
 - Valve live API returns only a **current snapshot** — no historical data per request
 - History must be accumulated server-side: a background job or poll stores `{timestamp, goldDiff, xpDiff}` in Redis as a time-series list per `match_id` every 30s
@@ -262,16 +269,16 @@ Plans:
 **Plans:** 4 plans
 
 Plans:
-- [ ] 10-01-PLAN.md — Server history sampler module (pure buildSample + Redis I/O wrappers + unit tests)
-- [ ] 10-02-PLAN.md — BFF schema extension and live-route inline sampler piggyback
-- [ ] 10-03-PLAN.md — HistoryGraphs SVG component (skeleton, dual chart, hover tooltip + tests)
-- [ ] 10-04-PLAN.md — Hook surfacing and MatchPage mount (autonomous: false, layout-preservation checkpoint)
+- [x] 10-01-PLAN.md — Server history sampler module (pure buildSample + Redis I/O wrappers + unit tests)
+- [x] 10-02-PLAN.md — BFF schema extension and live-route inline sampler piggyback
+- [x] 10-03-PLAN.md — HistoryGraphs SVG component (skeleton, dual chart, hover tooltip + tests)
+- [x] 10-04-PLAN.md — Hook surfacing and MatchPage mount (autonomous: false, layout-preservation checkpoint)
 **UI hint:** yes
 
 ### Phase 10.1: background-history-sampler — server-side setInterval(30s) that polls GetLiveLeagueGames and runs tryWriteSample for every active tournament match independent of user requests, so anyone joining mid-game sees gold/XP history from minute 0 instead of from their join time. NX gate already prevents duplicate writes from this job and from the existing /api/live/games piggyback. (INSERTED)
 
 **Goal:** A server-side setInterval(30s) polls getLiveLeagueGames and runs tryWriteSample/deleteHistory for every active tournament match independent of user requests, so anyone joining mid-game sees gold/XP history accumulated from minute 0; SIGTERM/SIGINT drain in-flight ticks before exit.
-**Requirements:** None (operational/infrastructure phase)
+**Requirements:** GRAPH-02 (back-filled 2026-08-11)
 **Depends on:** Phase 10
 **Plans:** 3 plans
 
@@ -329,6 +336,29 @@ Plans:
 - [x] 10.4-08-PLAN.md — Wave 4: phase gate — no-hex sweep + suite/build green + manual UAT at 375/768/1280/1536 (human checkpoint)
 **UI hint:** yes
 
+### Phase 10.5: Neon Bento redesign
+
+_Recorded retroactively 2026-08-11 — the work shipped 2026-06-14 but was only ever noted in a
+commit message, leaving UI-01 and the 10.4 phase title naming a theme that is no longer in the
+codebase._
+
+**Goal:** Replace the Tactical Slate skin with the Neon Bento design system that actually ships
+(OLED near-black surfaces, violet + gold accents, Plus Jakarta Sans / JetBrains Mono), and rebuild
+Home as a filterable bento grid instead of a league accordion.
+**Requirements:** UI-01, UI-02, UI-03 (UI-01 restated to name Neon Bento)
+**Depends on:** Phase 10.4 (token layer + responsive breakpoints it introduced)
+**Design source:** `.planning/sketches/redesign-2026/` — five directions explored, `05-neon-bento`
+chosen; canonical tokens in `redesign-2026/neon-bento/_theme.css`
+**Success criteria** (what must be TRUE):
+  1. `client/src/index.css` defines the Neon Bento palette in a single `@theme` token layer, and
+     components consume tokens rather than hex literals
+  2. Home renders a bento grid of match tiles (featured tile spans 2×2 on laptop+) instead of the
+     league accordion — `MatchCard`/`MatchBentoGrid` replace `MatchRow`/`LeagueAccordion`
+  3. Home offers status filters, team search, tournament filter and sort, with a visible result count
+  4. Webfonts are self-hosted — the app makes no request to fonts.googleapis.com
+**Plans:** shipped directly (no plan files) — commits 5976e98, 770ecd7, ea8b17e, ee52545, b4c7df0, df50d6e
+**UI hint:** yes
+
 ### Phase 11: Harden & Deploy
 **Goal:** The owner and a small group of friends can hit a public URL and use the tool for a full day of tournament viewing without crashes, quota exhaustion, or manual restarts.
 **Depends on:** Phase 2, Phase 3, Phase 4, Phase 5, Phase 6, Phase 7, Phase 8, Phase 9, Phase 10
@@ -343,8 +373,53 @@ Plans:
 - [x] 11-01-PLAN.md — Rate-limit queues + 429 backoff + stale fallback + structured throttle logs (criterion 2)
 - [x] 11-02-PLAN.md — Per-card + route error boundaries (BentoErrorBoundary, react-error-boundary ^6) (criterion 1)
 - [x] 11-03-PLAN.md — Polling-stop verification: game_state===6 -> false across all four pollers (criterion 3)
-- [~] 11-04-PLAN.md — Split-origin deploy: VITE_API_URL + env CORS + railway.json/vercel.json + DEPLOY.md (criterion 4) — all code/config committed; LIVE deploy is a blocking human-action checkpoint (see DEPLOY.md)
+- [x] 11-04-PLAN.md — Split-origin deploy: VITE_API_URL + env CORS + railway.json/vercel.json + DEPLOY.md (criterion 4) — code/config committed; the public artifact ended up being the Phase 12 static demo rather than a running split-origin service (README §Live demo)
 **UI hint:** no
+
+### Phase 12: Snapshot Demo
+
+_Recorded retroactively 2026-08-11 — shipped 2026-08-06 with no roadmap entry._
+
+**Goal:** Give anyone a public URL that shows the real UI on real tournament data, without running
+the live service or spending API quota — and make the "no quota, no edits" claim checkable rather
+than merely stated.
+**Requirements:** DEMO-01, DEMO-02, DEMO-03
+**Depends on:** Phase 11
+**Success criteria** (what must be TRUE):
+  1. A capture script records BFF responses (not raw upstream) into `demo-data/`, refusing to write
+     if any secret pattern appears in a payload
+  2. The demo build replays the recording through the same client code — `apiFetch` is the only seam
+  3. An always-visible banner discloses that the page is a replay, including the art-CDN exception
+  4. A headless harness fails the build if any non-CDN external request or console error occurs
+**Plans:** shipped directly (no plan files) — commits d6e6e2f, 0ab2a83, cecd62b, b7cceb1, 2417bf0, 845207d, c2f9ef4, b7aac5f
+**UI hint:** yes
+
+### Phase 13: Team Avatars
+
+**Goal:** A user scanning a grid of 30 live matches recognises teams by their logo instead of
+parsing names — including the ones written in scripts they cannot read.
+**Requirements:** TEAM-01, TEAM-02
+**Depends on:** Phase 2 (match list), Phase 3 (match header)
+**API reality (verified 2026-08-11 against live data and Valve's own endpoint):**
+- OpenDota `/teams/{team_id}` carries `logo_url` on two Valve hosts: `steamcdn-a.akamaihd.net`
+  (legacy team_logos path) or `cdn.steamusercontent.com` (Workshop upload). Keyless, no quota.
+- OpenDota answers **200 with an empty body** — not 404 — for team ids it does not carry. Treating
+  that as a transient failure re-fetches every unknown team on every poll, forever.
+- Valve's `team_logo` is a 19-digit Workshop ugcid sent as a JSON *number*: anything past
+  `Number.MAX_SAFE_INTEGER` is already rounded by `JSON.parse`. `GetUGCFileDetails` returns
+  `status.code 15` for the rounded id and the real asset for the true one. Corrupted ids are
+  therefore dropped rather than looked up.
+- Coverage is inherently partial: of 32 identified teams in one live payload, OpenDota knew 7–8.
+  Tier-3 and pickup teams mostly have no logo anywhere.
+**Success criteria** (what must be TRUE):
+  1. Match list and match header show each team's logo when one exists, at a fixed size that cannot
+     shift the layout (TEAM-01)
+  2. A team with no logo, a dead asset, or an unslotted TBD slot renders a monogram instead —
+     never a broken image (TEAM-02)
+  3. Resolution never blocks the live response: the route reads the 7-day cache and warms misses in
+     the background, so a cold cache costs the user nothing
+**Plans:** shipped directly (no plan files)
+**UI hint:** yes
 
 ## Progress
 
@@ -355,16 +430,19 @@ Plans:
 | 3. Match Core | 4/4 | Complete | 2026-04-24 |
 | 4. Draft UX | 6/6 | Complete | 2026-04-25 |
 | 5. Hero & Player Intel | 6/6 | Complete | 2026-04-25 |
-| 6. Win Probability | 5/5 | Complete | 2026-04-26 |
+| 6. Win Probability | 7/7 | Complete | 2026-04-26 |
 | 7. In-Game Item Intel | 4/4 | Complete | 2026-04-28 |
-| 8. Ability Cooldowns | 0/5 | Planned | - |
-| 9. Roshan Tracker | 0/6 | Planned | - |
+| 8. Ability Cooldowns | 5/5 | Complete | 2026-04-29 |
+| 9. Roshan Tracker | 6/6 | Complete | 2026-05-04 |
 | 10. Historical Graphs | 4/4 | Complete | 2026-05-09 |
 | 10.1. background-history-sampler | 3/3 | Complete | 2026-05-14 |
 | 10.2. HistoryGraphs polish + XP fix | 3/3 | Complete | 2026-05-15 |
 | 10.3. Match page layout restructure | 2/2 | Complete | 2026-05-15 |
 | 10.4. Visual redesign (Tactical Slate) + responsive | 8/8 | Complete    | 2026-06-14 |
-| 11. Harden & Deploy | 0/4 | Planned | - |
+| 10.5. Neon Bento redesign | n/a (no plan files) | Complete | 2026-06-14 |
+| 11. Harden & Deploy | 4/4 | Complete | 2026-07-10 |
+| 12. Snapshot Demo | n/a (no plan files) | Complete | 2026-08-06 |
+| 13. Team Avatars | n/a (no plan files) | Complete | 2026-08-11 |
 
 ## Coverage Validation
 
@@ -385,5 +463,42 @@ Plans:
 | DRAFT-04 | 5 |
 | PLAYER-01 | 5 |
 | PLAYER-02 | 5 |
+| ITEM-01 | 7 |
+| ITEM-02 | 7 |
+| CD-01 | 8 |
+| MAP-01 | 8 |
+| ROSH-01 | 9 |
+| ROSH-02 | 9 |
+| GRAPH-01 | 10 |
+| GRAPH-02 | 10.1 |
+| UI-01 | 10.4 → 10.5 |
+| UI-02 | 10.4 |
+| UI-03 | 10.4 |
+| DEMO-01 | 12 |
+| DEMO-02 | 12 |
+| DEMO-03 | 12 |
+| TEAM-01 | 13 |
+| TEAM-02 | 13 |
 
-**Coverage:** 15/15 v1 requirements mapped. No orphans. No duplicates.
+**Coverage:** 32/32 requirements mapped. No orphans. No duplicates.
+_(Was stated as 15/15 while Phases 7–13 shipped 17 further requirements with no ids at all —
+recounted 2026-08-11.)_
+
+---
+
+## Backlog — v2.1 "HLTV for Dota" (not started)
+
+Direction set 2026-08-14: the app should read like a tournament site, not a live-match
+viewer that grew extra pages. Recorded here so it is not lost, not scheduled yet.
+
+- **Team profiles** — a page per team: roster, recent form, tournament placements, head-to-head
+  history. The data already exists (`teams`, `matches`, OpenDota team endpoints already used
+  by H2H); what is missing is the route and the page. Explicitly deferred by the user —
+  "пока это не стоит" — but named as the next thing worth having.
+- **Player profiles** — same idea one level down. Follows from team profiles, not before them.
+- **Main navigation** — partially done: Live / Upcoming / tracked tournaments are promoted and
+  everything else collapsed behind one button (AppNav). Still open: whether the header should
+  carry a persistent live-match ticker the way HLTV does.
+- **Tournament index** — a page listing tournaments rather than only reaching them from the nav.
+
+Standing constraint: local only, nothing published without an explicit decision.
