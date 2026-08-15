@@ -1,0 +1,1338 @@
+{
+  "id": "5c3da9ef-93e0-43ff-9d91-4b65af5c6c49",
+  "prevId": "ea8f235e-44d3-47f0-a9f0-db22d159c048",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.bracket_nodes": {
+      "name": "bracket_nodes",
+      "schema": "",
+      "columns": {
+        "league_id": {
+          "name": "league_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "node_id": {
+          "name": "node_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "node_group_id": {
+          "name": "node_group_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "node_group_name": {
+          "name": "node_group_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "parent_node_group_id": {
+          "name": "parent_node_group_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "phase": {
+          "name": "phase",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_1_id": {
+          "name": "team_1_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_2_id": {
+          "name": "team_2_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "series_id": {
+          "name": "series_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "node_type": {
+          "name": "node_type",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scheduled_time": {
+          "name": "scheduled_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "actual_time": {
+          "name": "actual_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_1_wins": {
+          "name": "team_1_wins",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_2_wins": {
+          "name": "team_2_wins",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "has_started": {
+          "name": "has_started",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_completed": {
+          "name": "is_completed",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "winning_node_id": {
+          "name": "winning_node_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "losing_node_id": {
+          "name": "losing_node_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "incoming_node_id_1": {
+          "name": "incoming_node_id_1",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "incoming_node_id_2": {
+          "name": "incoming_node_id_2",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "stream_ids": {
+          "name": "stream_ids",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "bracket_nodes_league_time_idx": {
+          "name": "bracket_nodes_league_time_idx",
+          "columns": [
+            {
+              "expression": "league_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "scheduled_time",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "bracket_nodes_series_idx": {
+          "name": "bracket_nodes_series_idx",
+          "columns": [
+            {
+              "expression": "series_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "bracket_nodes_league_id_node_id_pk": {
+          "name": "bracket_nodes_league_id_node_id_pk",
+          "columns": [
+            "league_id",
+            "node_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.league_standings": {
+      "name": "league_standings",
+      "schema": "",
+      "columns": {
+        "league_id": {
+          "name": "league_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "node_group_id": {
+          "name": "node_group_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "team_id": {
+          "name": "team_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "standing": {
+          "name": "standing",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "wins": {
+          "name": "wins",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "losses": {
+          "name": "losses",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "score": {
+          "name": "score",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "league_standings_league_idx": {
+          "name": "league_standings_league_idx",
+          "columns": [
+            {
+              "expression": "league_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "league_standings_league_id_node_group_id_team_id_pk": {
+          "name": "league_standings_league_id_node_group_id_team_id_pk",
+          "columns": [
+            "league_id",
+            "node_group_id",
+            "team_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.leagues": {
+      "name": "leagues",
+      "schema": "",
+      "columns": {
+        "league_id": {
+          "name": "league_id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tier": {
+          "name": "tier",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "od_tier": {
+          "name": "od_tier",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "region": {
+          "name": "region",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "start_timestamp": {
+          "name": "start_timestamp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "end_timestamp": {
+          "name": "end_timestamp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_prize_pool": {
+          "name": "total_prize_pool",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "streams": {
+          "name": "streams",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "raw": {
+          "name": "raw",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_synced_at": {
+          "name": "last_synced_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.match_analysis": {
+      "name": "match_analysis",
+      "schema": "",
+      "columns": {
+        "match_id": {
+          "name": "match_id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "computed_at": {
+          "name": "computed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "version": {
+          "name": "version",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 1
+        },
+        "data": {
+          "name": "data",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.match_events": {
+      "name": "match_events",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigserial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "match_id": {
+          "name": "match_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "t": {
+          "name": "t",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "type": {
+          "name": "type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "team": {
+          "name": "team",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'live'"
+        },
+        "dedupe_key": {
+          "name": "dedupe_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "match_events_dedupe_idx": {
+          "name": "match_events_dedupe_idx",
+          "columns": [
+            {
+              "expression": "match_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "dedupe_key",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "match_events_match_t_idx": {
+          "name": "match_events_match_t_idx",
+          "columns": [
+            {
+              "expression": "match_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "t",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.match_snapshots": {
+      "name": "match_snapshots",
+      "schema": "",
+      "columns": {
+        "match_id": {
+          "name": "match_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "t": {
+          "name": "t",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "captured_at": {
+          "name": "captured_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "game_state": {
+          "name": "game_state",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "match_snapshots_match_id_t_pk": {
+          "name": "match_snapshots_match_id_t_pk",
+          "columns": [
+            "match_id",
+            "t"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.match_timeline": {
+      "name": "match_timeline",
+      "schema": "",
+      "columns": {
+        "match_id": {
+          "name": "match_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "minute": {
+          "name": "minute",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "radiant_gold_adv": {
+          "name": "radiant_gold_adv",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "radiant_xp_adv": {
+          "name": "radiant_xp_adv",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "radiant_net_worth": {
+          "name": "radiant_net_worth",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dire_net_worth": {
+          "name": "dire_net_worth",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "radiant_score": {
+          "name": "radiant_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dire_score": {
+          "name": "dire_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "radiant_towers": {
+          "name": "radiant_towers",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dire_towers": {
+          "name": "dire_towers",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "radiant_barracks": {
+          "name": "radiant_barracks",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dire_barracks": {
+          "name": "dire_barracks",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "roshan_kills": {
+          "name": "roshan_kills",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "win_prob_stratz": {
+          "name": "win_prob_stratz",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "win_prob_gold": {
+          "name": "win_prob_gold",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "win_prob_estimate": {
+          "name": "win_prob_estimate",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'live'"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "match_timeline_match_id_minute_pk": {
+          "name": "match_timeline_match_id_minute_pk",
+          "columns": [
+            "match_id",
+            "minute"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.matches": {
+      "name": "matches",
+      "schema": "",
+      "columns": {
+        "match_id": {
+          "name": "match_id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "series_id": {
+          "name": "series_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "league_id": {
+          "name": "league_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "league_name": {
+          "name": "league_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "game_in_series": {
+          "name": "game_in_series",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "radiant_team_id": {
+          "name": "radiant_team_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dire_team_id": {
+          "name": "dire_team_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "radiant_team_name": {
+          "name": "radiant_team_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dire_team_name": {
+          "name": "dire_team_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "radiant_logo_url": {
+          "name": "radiant_logo_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dire_logo_url": {
+          "name": "dire_logo_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "start_time": {
+          "name": "start_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "duration": {
+          "name": "duration",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "radiant_win": {
+          "name": "radiant_win",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "radiant_score": {
+          "name": "radiant_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dire_score": {
+          "name": "dire_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "game_state": {
+          "name": "game_state",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ingest_status": {
+          "name": "ingest_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'live'"
+        },
+        "backfill_attempts": {
+          "name": "backfill_attempts",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "backfill_next_at": {
+          "name": "backfill_next_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "first_snapshot_t": {
+          "name": "first_snapshot_t",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_snapshot_t": {
+          "name": "last_snapshot_t",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "snapshot_count": {
+          "name": "snapshot_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "first_seen_at": {
+          "name": "first_seen_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        },
+        "last_seen_at": {
+          "name": "last_seen_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "matches_league_idx": {
+          "name": "matches_league_idx",
+          "columns": [
+            {
+              "expression": "league_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "matches_series_idx": {
+          "name": "matches_series_idx",
+          "columns": [
+            {
+              "expression": "series_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "matches_status_idx": {
+          "name": "matches_status_idx",
+          "columns": [
+            {
+              "expression": "ingest_status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "matches_start_idx": {
+          "name": "matches_start_idx",
+          "columns": [
+            {
+              "expression": "start_time",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.player_timeline": {
+      "name": "player_timeline",
+      "schema": "",
+      "columns": {
+        "match_id": {
+          "name": "match_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "minute": {
+          "name": "minute",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "player_slot": {
+          "name": "player_slot",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "account_id": {
+          "name": "account_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "hero_id": {
+          "name": "hero_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team": {
+          "name": "team",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "player_name": {
+          "name": "player_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "net_worth": {
+          "name": "net_worth",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "xp": {
+          "name": "xp",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "level": {
+          "name": "level",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kills": {
+          "name": "kills",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "deaths": {
+          "name": "deaths",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "assists": {
+          "name": "assists",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_hits": {
+          "name": "last_hits",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "denies": {
+          "name": "denies",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gpm": {
+          "name": "gpm",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "xpm": {
+          "name": "xpm",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "items": {
+          "name": "items",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "position_x": {
+          "name": "position_x",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "position_y": {
+          "name": "position_y",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ultimate_state": {
+          "name": "ultimate_state",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ultimate_cooldown": {
+          "name": "ultimate_cooldown",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "respawn_timer": {
+          "name": "respawn_timer",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source": {
+          "name": "source",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'live'"
+        }
+      },
+      "indexes": {
+        "player_timeline_account_idx": {
+          "name": "player_timeline_account_idx",
+          "columns": [
+            {
+              "expression": "account_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "player_timeline_hero_idx": {
+          "name": "player_timeline_hero_idx",
+          "columns": [
+            {
+              "expression": "hero_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "player_timeline_match_id_minute_player_slot_pk": {
+          "name": "player_timeline_match_id_minute_player_slot_pk",
+          "columns": [
+            "match_id",
+            "minute",
+            "player_slot"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.post_match_raw": {
+      "name": "post_match_raw",
+      "schema": "",
+      "columns": {
+        "match_id": {
+          "name": "match_id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "fetched_at": {
+          "name": "fetched_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "opendota": {
+          "name": "opendota",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.series": {
+      "name": "series",
+      "schema": "",
+      "columns": {
+        "series_id": {
+          "name": "series_id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "league_id": {
+          "name": "league_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "node_id": {
+          "name": "node_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "series_type": {
+          "name": "series_type",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_1_id": {
+          "name": "team_1_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_2_id": {
+          "name": "team_2_id",
+          "type": "bigint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_1_name": {
+          "name": "team_1_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_2_name": {
+          "name": "team_2_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "start_time": {
+          "name": "start_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scheduled_time": {
+          "name": "scheduled_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_1_wins": {
+          "name": "team_1_wins",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "team_2_wins": {
+          "name": "team_2_wins",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "match_ids": {
+          "name": "match_ids",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "series_league_idx": {
+          "name": "series_league_idx",
+          "columns": [
+            {
+              "expression": "league_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.teams": {
+      "name": "teams",
+      "schema": "",
+      "columns": {
+        "team_id": {
+          "name": "team_id",
+          "type": "bigint",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tag": {
+          "name": "tag",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "abbreviation": {
+          "name": "abbreviation",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo_url": {
+          "name": "logo_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "is_pro": {
+          "name": "is_pro",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

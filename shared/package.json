@@ -8,10 +8,14 @@
     ".": "./index.ts",
     "./*": "./*.ts"
   },
+  "scripts": {
+    "test": "vitest"
+  },
   "dependencies": {
     "zod": "^3.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.6.0"
+    "typescript": "^5.6.0",
+    "vitest": "^2.0.0"
   }
 }

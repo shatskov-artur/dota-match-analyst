@@ -1,0 +1,54 @@
+# Local-only infrastructure for the v2.0 tournament archive.
+#
+# Postgres is the archive (per-minute snapshots, series, bracket, analysis).
+# Redis replaces Upstash so the whole stack runs without a cloud account —
+# cache.ts picks REDIS_URL over the UPSTASH_* pair when it is set.
+#
+#   docker compose -f docker-compose.local.yml up -d
+#   docker compose -f docker-compose.local.yml down        # keeps the volumes
+#   docker compose -f docker-compose.local.yml down -v     # wipes the archive
+#
+# Deliberately NOT named docker-compose.yml: this file is never part of a
+# deploy. Railway/Vercel config in railway.json / vercel.json stays untouched.
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: dota-stats-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dota
+      POSTGRES_PASSWORD: dota
+      POSTGRES_DB: dota_stats
+      # Local-only credentials. Nothing here is a secret; the cloud path uses
+      # DATABASE_URL from the provider dashboard instead (see DEPLOY.md).
+    ports:
+      - '5432:5432'
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U dota -d dota_stats']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: dota-stats-redis
+    restart: unless-stopped
+    # appendonly so the Roshan state / timeseries survive a container restart
+    # mid-tournament. The archive itself lives in Postgres, so this is a nicety.
+    command: ['redis-server', '--appendonly', 'yes']
+    ports:
+      - '6379:6379'
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+volumes:
+  pgdata:
+  redisdata:

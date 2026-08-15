@@ -8,19 +8,29 @@
     "build": "tsc",
     "start": "node dist/server/src/index.js",
     "start:local": "node --env-file=.env dist/server/src/index.js",
-    "test": "vitest"
+    "pg:start": "tsx --env-file=.env scripts/local-postgres.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx --env-file=.env src/db/migrate.ts",
+    "test": "vitest",
+    "db:peek": "tsx --env-file=.env scripts/peek.ts",
+    "db:prune": "tsx --env-file=.env scripts/prune-untracked.ts",
+    "db:studio": "node --env-file=.env node_modules/drizzle-kit/bin.cjs studio"
   },
   "dependencies": {
     "@hono/node-server": "^1.0.0",
+    "drizzle-orm": "^0.45.2",
     "hono": "^4.0.0",
     "ioredis": "^5.0.0",
     "p-queue": "^9.3.1",
     "p-retry": "^8.0.0",
     "pino": "^9.0.0",
+    "postgres": "^3.4.9",
     "zod": "^3.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
+    "drizzle-kit": "^0.31.10",
+    "embedded-postgres": "^18.4.0-beta.17",
     "tsx": "^4.0.0",
     "typescript": "^5.6.0",
     "vitest": "^2.0.0"
