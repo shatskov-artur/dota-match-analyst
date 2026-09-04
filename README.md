@@ -113,8 +113,16 @@ subdirectory with no rewrite rules. Note that it must be **served over HTTP** �
 ```bash
 cp .env.example server/.env   # then fill in the values
 npm install
+npm run hooks:install         # once per clone — see below
 npm run dev                   # BFF on :3001, client on :5173
 ```
+
+**`npm run hooks:install`** points git at `.githooks/`, whose `pre-commit` refuses to commit
+a real env file or anything matching a credential — including the literal values sitting in
+your own `.env`, compared the same way `capture-snapshot.ts` scans before writing
+`demo-data/`. `.gitignore` already keeps secrets out of git and an audit of every commit
+found none; this is the second lock, because a leaked Valve or Stratz key cannot be
+unpublished. Bypass with `git commit --no-verify` when you are certain.
 
 Required in `server/.env`:
 
@@ -254,7 +262,7 @@ run's targets ended between selection and the first slice.
   existed.
 - **Secrets are scanned for before every write**, against the literal values in `server/.env`
   plus generic key/token/URL patterns. A hit aborts the run, since `demo-data/` is committed.
-  The current snapshot: 546 files, 15.2 MB, zero hits.
+  The current snapshot: 596 files, 16.5 MB, zero hits.
 
 ---
 
@@ -274,9 +282,12 @@ scripts/         capture-snapshot, verify-demo, fetch-fonts, seed helpers
 ## Tests
 
 ```bash
-npm test --prefix server    # 131 tests
-npm test --prefix client    # 136 tests
-npm test --prefix shared    # 22 tests
+npm test --prefix server    # 425 tests
+npm test --prefix client    # 345 tests
+npm test --prefix shared    #  22 tests
+
+npm run lint                # eslint over client, server, shared and scripts
+npm run typecheck:scripts   # scripts/ is in no app tsconfig; this is its typecheck
 ```
 
 All three run on every push and pull request (`.github/workflows/ci.yml`). The shared suite had

@@ -1,15 +1,16 @@
 ---
 gsd_state_version: 1.0
 milestone: v1.0
-milestone_name: milestone
 status: shipped
-last_updated: "2026-08-11T00:00:00.000Z"
+stopped_at: Phase 10.5 UI-SPEC approved
+last_updated: "2026-08-23T13:15:47.019Z"
+state_head: b187ecf63e1ea7036c02c2db14baf2402842d75a
 progress:
   total_phases: 18
-  completed_phases: 18
-  total_plans: 68
-  completed_plans: 68
-  percent: 100
+  completed_phases: 2
+  total_plans: 70
+  completed_plans: 70
+milestone_name: milestone
 ---
 
 # Project State
@@ -68,6 +69,7 @@ demo verifier reports 0 external API requests and 0 console errors.
 - Phases complete: 18/18
 - Requirements delivered: 32/32 mapped (HOME, MATCH, DRAFT, PLAYER, ITEM, CD, MAP, ROSH, GRAPH,
   UI, DEMO, TEAM)
+
 - Requirement coverage in roadmap: 32/32 (100%)
 
 ## Accumulated Context
@@ -107,6 +109,7 @@ demo verifier reports 0 external API requests and 0 console errors.
 - Snapshot in demo-data/ predates team avatars, so the published demo shows monograms only.
   Re-capturing (`npm run capture:snapshot`) is the fix — it rewrites 546 committed files, so it is
   a deliberate call, not a chore.
+
 - No CI runs the test suites; the only workflow builds and publishes the demo.
 - BFF has no per-IP rate limit or auth — irrelevant while the service is off, decisive if it returns.
 
@@ -125,10 +128,16 @@ demo verifier reports 0 external API requests and 0 console errors.
 
 ## Session Continuity
 
+**Last session:** 2026-08-23T13:15:36.467Z
+**Stopped at:** Phase 10.5 UI-SPEC approved
+**Resume file:** D:/MateProjects/projects/dota/dota_stats/.planning/phases/10.5-neon-bento-redesign/10.5-UI-SPEC.md
+
 - Last session: 2026-08-11 — Phase 13 (team avatars) shipped; planning docs reconciled against the
   codebase after an audit found statuses, requirement ids, the theme name and the stack description
   all diverged from what is built.
+
 - Next action: decide the v1.1 question in PROJECT.md (restart the live service vs. stay a portfolio
   artifact), then add a CI workflow that runs both test suites.
+
 - Roadmap file: `.planning/ROADMAP.md`
 - Requirements file: `.planning/REQUIREMENTS.md`
