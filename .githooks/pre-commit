@@ -1,0 +1,103 @@
+#!/bin/sh
+#
+# Blocks a credential from ever entering a commit.
+#
+# The repository already keeps real values out of git by .gitignore alone, and an audit of
+# all 366 commits found none. But .gitignore is one `git add -f`, one edited ignore rule or
+# one renamed file away from being bypassed, and a leaked Valve or Stratz key cannot be
+# unpublished — rewriting history does not un-copy what someone already cloned. This is the
+# second lock.
+#
+# Three checks, cheapest first:
+#   1. filename   — a real .env file must never be staged
+#   2. literal    — the exact values sitting in the local .env files must not appear in the diff
+#   3. pattern    — anything shaped like a live credential, for values this machine never held
+#
+# Install (once per clone):  npm run hooks:install
+# Bypass, only when you are certain:  git commit --no-verify
+
+set -e
+
+fail() {
+  printf '\n\033[31mpre-commit blocked: %s\033[0m\n' "$1" >&2
+  printf 'If this is genuinely safe, re-run with --no-verify.\n\n' >&2
+  exit 1
+}
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "$staged" ] && exit 0
+
+# ── 1. filename ─────────────────────────────────────────────────────────────
+# Templates and the demo build config are tracked on purpose; everything else is not.
+for f in $staged; do
+  case "$f" in
+    *.example|client/.env.demo) continue ;;
+    .env|.env.*|*/.env|*/.env.*)
+      fail "$f is a real env file. Only *.example templates and client/.env.demo belong in git."
+      ;;
+  esac
+done
+
+# ── 2. literal values from this machine's env files ─────────────────────────
+# The same approach scripts/capture-snapshot.ts uses before writing demo-data: compare
+# against what is actually in .env rather than guessing at a shape.
+diff_file=$(mktemp)
+trap 'rm -f "$diff_file"' EXIT
+git diff --cached -- $staged > "$diff_file"
+
+# Values that are public by definition. A deployed frontend origin and the BFF's own URL
+# are printed in DEPLOY.md on purpose, so matching them would block every doc edit.
+is_public_key() {
+  case "$1" in
+    NODE_ENV|PORT|PG_PORT|BFF_BASE|CORS_ORIGIN|VITE_API_URL|VITE_DEMO_MODE) return 0 ;;
+    TRACKED_LEAGUE_IDS|ARCHIVE_LEAGUE_TIERS|INGEST_DISABLED|HISTORY_SAMPLER_DISABLED) return 0 ;;
+  esac
+  return 1
+}
+
+for envfile in .env server/.env .env.production client/.env; do
+  [ -f "$envfile" ] || continue
+  # Strip comments and inline trailing comments, keep values of 16+ chars.
+  grep -E '^[[:space:]]*[A-Z0-9_]+[[:space:]]*=' "$envfile" 2>/dev/null | while IFS= read -r line; do
+    key=$(printf '%s' "$line" | sed -E 's/^[[:space:]]*([A-Z0-9_]+).*/\1/')
+    val=$(printf '%s' "$line" | sed -E 's/^[[:space:]]*[A-Z0-9_]+[[:space:]]*=[[:space:]]*//; s/[[:space:]]+#.*$//; s/^"//; s/"$//; s/^'"'"'//; s/'"'"'$//; s/\r$//')
+    [ ${#val} -lt 16 ] && continue
+    is_public_key "$key" && continue
+    # Placeholder text can appear anywhere in the value, not just at the start —
+    # "https://your-app.vercel.app" is a template, and matching it blocked the templates.
+    case "$val" in
+      *your-*|*example*|*localhost*|*127.0.0.1*|*dota:dota@*|*generate-a-*|*the-same-value*) continue ;;
+    esac
+    if grep -qF -- "$val" "$diff_file"; then
+      # The key name is safe to print; the value is not.
+      fail "the value of $key (from $envfile) appears in the staged diff."
+    fi
+  done
+done
+
+# ── 3. shapes, for credentials this machine never held ──────────────────────
+# Deliberately narrow: each pattern is anchored to an assignment or a URL parameter, so a
+# random 32-char hash or a base64 blob in demo-data does not trip it.
+patterns='
+(VALVE_API_KEY|STRATZ_TOKEN|UPSTASH_REDIS_TOKEN|API_TOKEN|DATABASE_URL)[[:space:]]*[:=][[:space:]]*["'"'"']?[A-Za-z0-9_./+-]{20,}
+[?&]key=[0-9A-Fa-f]{32}
+eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}
+rediss?://[^:@/]*:[^@/]+@
+'
+
+# Lines that name a credential without containing one: reading it from the environment,
+# declaring it in a schema, or documenting it. `const API_TOKEN = import.meta.env.VITE_API_TOKEN`
+# is the shape that made the first version of this hook block its own commit.
+code_reference='import\.meta\.env|process\.env|env\.[A-Z_]+|z\.string\(|readonly |\$\{|##'
+placeholder='your-|example|<value>|\$\{\{|localhost|dota:dota@|generate-a-|the-same-value|test-|placeholder|xxx|YOUR_'
+
+printf '%s\n' "$patterns" | while IFS= read -r pat; do
+  [ -z "$pat" ] && continue
+  hit=$(grep -nE -- "$pat" "$diff_file" 2>/dev/null | grep -vE "$placeholder" | grep -vE "$code_reference" | head -n 1 || true)
+  if [ -n "$hit" ]; then
+    line=$(printf '%s' "$hit" | cut -d: -f1)
+    fail "a value shaped like a live credential is staged (diff line $line, pattern: $pat)"
+  fi
+done
+
+exit 0

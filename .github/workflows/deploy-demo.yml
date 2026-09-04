@@ -6,15 +6,16 @@ name: Deploy demo to GitHub Pages
 # repository, and the demo makes no match-data API calls. So this workflow never touches a
 # Valve, OpenDota, Stratz or Redis credential — that is the whole point of the snapshot.
 
+# Gated on CI rather than triggered by the push directly. The two used to start in
+# parallel on the same event, so a broken client was published to Pages and merely got a
+# red cross beside it — the failure was made visible but not prevented, which was the
+# stated goal. workflow_run fires only after CI finishes, and the guard below refuses to
+# publish anything but a successful run.
 on:
-  push:
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
     branches: [master]
-    # Only rebuild when something that affects the demo actually changes.
-    paths:
-      - 'client/**'
-      - 'shared/**'
-      - 'demo-data/**'
-      - '.github/workflows/deploy-demo.yml'
   workflow_dispatch:
 
 permissions:
@@ -30,19 +31,32 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # A manual dispatch has no triggering run to inspect; a workflow_run must have passed.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
     steps:
+      # workflow_run checks out the default branch by default, not the commit that was
+      # tested. Pin it to the exact SHA CI ran against, or the artifact can be built from
+      # different code than the one that passed.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.ref }}
 
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: |
+            shared/package-lock.json
+            client/package-lock.json
 
       # shared/ is imported by the client through the @shared alias and declares its own
       # dependencies, so it has to be installed as well as client/.
       - name: Install dependencies
         run: |
-          npm install --include=dev --prefix shared
-          npm install --include=dev --prefix client
+          npm ci --prefix shared
+          npm ci --prefix client
 
       - name: Build demo
         run: npm run build:demo --prefix client

@@ -1,13 +1,21 @@
 node_modules/
 dist/
 dist-demo/
-.env
+# Every .env variant, then the two templates back. Listing `.env` and `.env.production`
+# by name meant a future `.env.staging` — or `.env.local.bak` — would have been committed.
+.env*
+!.env.example
+!.env.production.example
+# Tracked on purpose (see the note below); `.env*` would otherwise swallow it.
+!client/.env.demo
 *.local
 .claude
-.env.production
 
 # v2.0 archive: the embedded Postgres cluster (npm run pg:start) lives here.
 server/.pgdata/
+# Ad-hoc upstream dumps written while debugging a payload. They are raw API responses,
+# which is exactly the kind of file `git add -A` should never pick up.
+server/.tmp/
 # Dev-run logs and ad-hoc screenshots
 *.log
 docs/shots/

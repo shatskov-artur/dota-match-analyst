@@ -1,0 +1,17 @@
+{
+  "//": "scripts/ was covered by no tsconfig — client's includes only src, server's only src and shared. So capture-snapshot.ts, find-league.ts and the seed helpers were never typechecked; they failed at run time or not at all. This config exists to give them one, and to give eslint's projectService a project to attach them to. module/moduleResolution describe tsx, which loads these as ESM: NodeNext would infer CommonJS from the root package.json and reject the import.meta every one of them uses.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": false,
+    "types": ["node"]
+  },
+  "include": ["scripts/**/*.ts", "scripts/**/*.mjs"]
+}

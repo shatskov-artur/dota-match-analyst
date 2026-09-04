@@ -71,7 +71,8 @@ ws.addEventListener('message', (ev) => {
   if (m.id && pending.has(m.id)) {
     const p = pending.get(m.id)
     pending.delete(m.id)
-    m.error ? p.reject(new Error(JSON.stringify(m.error))) : p.resolve(m.result)
+    if (m.error) p.reject(new Error(JSON.stringify(m.error)))
+    else p.resolve(m.result)
   }
 })
 await new Promise((r) => ws.addEventListener('open', r, { once: true }))

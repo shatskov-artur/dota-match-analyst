@@ -1,13 +1,19 @@
 name: CI
 
-# Runs both test suites plus a typecheck on every push and pull request.
+# Runs all three test suites plus a typecheck and a lint on every push and pull request.
 #
-# Why this exists: deploy-demo.yml publishes to Pages on any push to master that touches
-# client/, shared/ or demo-data/. Without this workflow a broken suite reaches the published
-# demo unnoticed, because the suites only ever ran on a developer machine, by hand.
+# Why this exists: deploy-demo.yml publishes to Pages. Without this workflow a broken suite
+# reaches the published demo unnoticed, because the suites only ever ran on a developer
+# machine, by hand. deploy-demo now WAITS for this workflow and refuses to publish unless it
+# passed — previously the two started in parallel, so a broken build was published and merely
+# got a red cross next to it.
 #
 # No secrets: the server suite mocks ioredis and env, so nothing here needs a Valve, OpenDota,
 # Stratz or Redis credential. Anything that does need one does not belong in CI.
+#
+# npm ci, never npm install: install is free to resolve a version the lockfile does not name,
+# which is how a suite passes in CI against different code than a developer tested. ci fails
+# instead when package.json and the lockfile disagree.
 
 on:
   push:
@@ -21,6 +27,38 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    name: Lint — eslint + scripts typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: |
+            package-lock.json
+            shared/package-lock.json
+            server/package-lock.json
+            client/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm ci --prefix shared
+          npm ci --prefix server
+          npm ci --prefix client
+
+      - name: Lint
+        run: npm run lint
+
+      # scripts/ is covered by no tsconfig in client/ or server/, so nothing ever
+      # typechecked capture-snapshot.ts, find-league.ts or the seed helpers — they only
+      # failed when someone ran them.
+      - name: Typecheck scripts
+        run: npm run typecheck:scripts
+
   server:
     name: Server — tests + tsc
     runs-on: ubuntu-latest
@@ -30,12 +68,16 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: |
+            shared/package-lock.json
+            server/package-lock.json
 
       # shared/ is imported through the @shared alias and declares its own dependencies.
       - name: Install dependencies
         run: |
-          npm install --include=dev --prefix shared
-          npm install --include=dev --prefix server
+          npm ci --prefix shared
+          npm ci --prefix server
 
       - name: Test
         run: npm test --prefix server -- --run
@@ -53,11 +95,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: |
+            shared/package-lock.json
+            client/package-lock.json
 
       - name: Install dependencies
         run: |
-          npm install --include=dev --prefix shared
-          npm install --include=dev --prefix client
+          npm ci --prefix shared
+          npm ci --prefix client
 
       - name: Test
         run: npm test --prefix client -- --run
@@ -75,9 +121,46 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: shared/package-lock.json
 
       - name: Install dependencies
-        run: npm install --include=dev --prefix shared
+        run: npm ci --prefix shared
 
       - name: Test
         run: npm test --prefix shared -- --run
+
+  demo:
+    name: Demo — build + no-network verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: |
+            shared/package-lock.json
+            client/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          npm ci --prefix shared
+          npm ci --prefix client
+
+      - name: Build demo
+        run: npm run build:demo --prefix client
+
+      # The claim the README makes about the published demo — zero match-data API calls,
+      # zero console errors — asserted rather than eyeballed. The script drives headless
+      # Chrome over CDP; ubuntu-latest ships one at /usr/bin/google-chrome.
+      - name: Verify demo makes no API calls
+        run: |
+          npm run preview:demo --prefix client &
+          for i in $(seq 1 30); do
+            curl -sf http://localhost:4173/ >/dev/null && break
+            sleep 1
+          done
+          curl -sf http://localhost:4173/ >/dev/null || { echo "preview server never came up"; exit 1; }
+          node scripts/verify-demo.mjs --url=http://localhost:4173/ --matchId=8932722908

@@ -5,12 +5,17 @@
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
     "dev:all": "concurrently -n pg,bff,web -c magenta,cyan,green \"npm run pg:start --prefix server\" \"npm run dev --prefix server\" \"npm run dev --prefix client\"",
+    "hooks:install": "git config core.hooksPath .githooks",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck:scripts": "tsc --noEmit -p tsconfig.scripts.json",
     "seed": "tsx scripts/seed-heroes.ts",
     "build:ults": "tsx scripts/build-hero-ultimates.ts",
     "db:up": "docker compose -f docker-compose.local.yml up -d",
     "db:down": "docker compose -f docker-compose.local.yml down",
     "db:generate": "npm run db:generate --prefix server",
     "db:migrate": "npm run db:migrate --prefix server",
+    "migrate:deploy": "npm run db:migrate:deploy --prefix server",
     "db:peek": "npm run db:peek --prefix server --",
     "db:studio": "npm run db:studio --prefix server",
     "find:league": "tsx scripts/find-league.ts",
@@ -22,8 +27,14 @@
     "preview:demo": "npm run preview:demo --prefix client"
   },
   "devDependencies": {
-    "concurrently": "^9.0.0",
+    "@types/node": "^22.20.1",
+    "concurrently": "^10.0.5",
     "dotaconstants": "^10.8.0",
-    "tsx": "^4.0.0"
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^15.15.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.67.0"
   }
 }

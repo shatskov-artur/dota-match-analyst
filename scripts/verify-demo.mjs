@@ -31,13 +31,26 @@ const SHOT_DIR = join(REPO_ROOT, 'docs', 'screenshots')
 
 if (!URL_UNDER_TEST) throw new Error('--url is required')
 
+// CHROME_PATH first (the convention puppeteer and every CI image use), then the usual
+// install locations. Linux and macOS entries exist so this can run in CI — the script was
+// Windows-only, which is why the one automated check of the published demo never ran there.
 const CHROME_CANDIDATES = [
+  process.env.CHROME_PATH,
   'C:/Program Files/Google/Chrome/Application/chrome.exe',
   'C:/Program Files (x86)/Google/Chrome/Application/chrome.exe',
   'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
-]
+  '/usr/bin/google-chrome',
+  '/usr/bin/google-chrome-stable',
+  '/usr/bin/chromium-browser',
+  '/usr/bin/chromium',
+  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+].filter(Boolean)
 const CHROME = CHROME_CANDIDATES.find((p) => existsSync(p))
-if (!CHROME) throw new Error('No Chrome/Edge binary found')
+if (!CHROME) {
+  throw new Error(
+    `No Chrome/Edge binary found. Set CHROME_PATH, or install Chrome. Looked in:\n${CHROME_CANDIDATES.map((p) => `  ${p}`).join('\n')}`,
+  )
+}
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms))
 
@@ -54,7 +67,8 @@ function connect(wsUrl) {
     if (msg.id && pending.has(msg.id)) {
       const { resolve, reject } = pending.get(msg.id)
       pending.delete(msg.id)
-      msg.error ? reject(new Error(JSON.stringify(msg.error))) : resolve(msg.result)
+      if (msg.error) reject(new Error(JSON.stringify(msg.error)))
+      else resolve(msg.result)
     } else if (msg.method) {
       for (const l of listeners) l(msg)
     }
