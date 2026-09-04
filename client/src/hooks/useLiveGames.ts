@@ -68,6 +68,12 @@ export interface EnrichedGame {
 
 export interface LiveGamesResponse {
   games: EnrichedGame[]
+  /**
+   * Ladder games the BFF withheld because neither side has a team name — they would all
+   * render as "TBD vs TBD". Counted rather than dropped silently, so a short list can say
+   * why it is short instead of looking like a quiet evening.
+   */
+  hidden?: number
 }
 
 /** Exported so callers can share the ['live-games'] cache entry with their own useQuery. */

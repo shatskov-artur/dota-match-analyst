@@ -8,6 +8,8 @@ import { hiddenProfile } from '../../../shared/hiddenProfile.js'
 import { cached, TTL } from '../cache.js'
 import { extractScoreboardInputs, computeGoldWinProb, computeEstWinProb } from '../services/winProbHeuristic.js'
 import { enrichLiveGames } from '../services/liveAggregator.js'
+import { selectVisibleGames } from '../services/liveVisibility.js'
+import { isTrackedLeague } from '../env.js'
 import { logger, briefError } from '../logger.js'
 
 const liveRoutes = new Hono()
@@ -33,7 +35,10 @@ liveRoutes.get('/games', async (c) => {
   // v2.0: enrichment moved to services/liveAggregator.ts so the archive ingest can
   // persist byte-identical payloads. Behaviour here is unchanged.
   const enriched = await enrichLiveGames(games)
-  return c.json({ games: enriched })
+  // Ladder traffic with no team name on either side is filtered out here and NOT upstream:
+  // the ingest job consumes enrichLiveGames directly, so every match is still archived.
+  const { games: visible, hidden } = selectVisibleGames(enriched, isTrackedLeague)
+  return c.json({ games: visible, hidden })
 })
 
 

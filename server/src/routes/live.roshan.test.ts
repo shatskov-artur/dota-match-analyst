@@ -77,6 +77,16 @@ vi.mock('../services/archive/roshanHistory.js', () => ({
   recoverRoshanState: vi.fn(async () => null),
 }))
 
+// /games filters ladder traffic out of the response and asks env which leagues are tracked,
+// so env is now a direct dependency of the route rather than something the mocks below could
+// keep out by proxy. Stubbed rather than satisfied with real variables: this suite is about
+// Roshan state, and no test here turns on which leagues an operator happens to record.
+vi.mock('../env.js', () => ({
+  env: { PORT: '3001', VALVE_API_KEY: 'k', STRATZ_TOKEN: 't' },
+  trackedLeagueIds: new Set<number>(),
+  isTrackedLeague: () => false,
+}))
+
 // Team-logo enrichment is orthogonal to Roshan state; mocked so this suite does not pull in
 // env.js (which validates VALVE_API_KEY at import time) through the real teamLogo service.
 vi.mock('../services/teamLogo.js', () => ({

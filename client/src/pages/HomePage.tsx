@@ -38,7 +38,10 @@ const TIER_VALUES: TierFilter[] = ['all', 'tier1', 'tier23', 'other']
  * announced.
  */
 export default function HomePage() {
-  const { isLoading, isError, grouped, lastUpdatedLabel } = useLiveGames()
+  const { isLoading, isError, grouped, lastUpdatedLabel, data } = useLiveGames()
+  // Ladder games the BFF withheld — see LiveGamesResponse.hidden. Shown as a quiet line so a
+  // short list reads as deliberate rather than as a quiet evening.
+  const hiddenCount = data?.hidden ?? 0
   const [params, setParams] = useSearchParams()
 
   /**
@@ -242,12 +245,24 @@ export default function HomePage() {
               <p className="mt-2 text-text-muted text-body-lg">
                 Pro tournament games appear here as they go live. This page refreshes every 30 seconds.
               </p>
+              {hiddenCount > 0 && (
+                <p className="mt-2 text-text-dim text-body">
+                  {hiddenCount} ladder {hiddenCount === 1 ? "game is" : "games are"} live but not shown — neither side has a team name.
+                </p>
+              )}
             </div>
           )}
 
           {showGrid && !isLoading && hasData && (
             visible.length > 0 ? (
-              <MatchBentoGrid matches={visible} trackedLeagueIds={trackedLeagueIds} />
+              <>
+                <MatchBentoGrid matches={visible} trackedLeagueIds={trackedLeagueIds} />
+                {hiddenCount > 0 && (
+                  <p className="mt-4 text-center text-text-dim text-body">
+                    {hiddenCount} more ladder {hiddenCount === 1 ? "game" : "games"} hidden — neither side has a team name.
+                  </p>
+                )}
+              </>
             ) : (
               <div className="py-16 text-center">
                 <h2 className="text-text text-heading font-bold">No matches match your filters</h2>
