@@ -8,6 +8,22 @@ import type { HeroStatsMap } from '../schemas/openDota.js'
 const OPENDOTA_BASE = 'https://api.opendota.com/api'
 
 /**
+ * Every OpenDota call goes through here, and the only reason this function exists is the
+ * timeout.
+ *
+ * Node's fetch does not bound how long a response body may take, so a connection that
+ * stalls rather than fails never settles. Each of these runs inside openDotaQueue, whose
+ * concurrency is 2 — so two stalled requests hold both slots forever and every later call
+ * queues behind them. That is not a slow page: enrichLiveGames stops returning, and with
+ * it /api/live/games. Valve's client has had a timeout since Phase 4; OpenDota's had none.
+ */
+const UPSTREAM_TIMEOUT_MS = 10_000
+
+function odFetch(path: string): Promise<Response> {
+  return fetch(`${OPENDOTA_BASE}${path}`, { signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS) })
+}
+
+/**
  * Throws a retryable rate-limit error on 429 so cached()'s pRetry backs off.
  * Call this in the `!res.ok` branch BEFORE anything else.
  */
@@ -58,7 +74,7 @@ export interface LeagueInfo {
 }
 
 async function fetchLeagueInfo(leagueId: number): Promise<LeagueInfo | null> {
-  const res = await fetch(`${OPENDOTA_BASE}/leagues/${leagueId}`)
+  const res = await odFetch(`/leagues/${leagueId}`)
   if (res.status === 404) return null // OpenDota does not carry this league — a real, cacheable miss
   if (!res.ok) {
     throwIfRateLimited(res, `league ${leagueId}`)
@@ -106,7 +122,7 @@ export async function getLeagueName(leagueId: number): Promise<string | null> {
  * Cached 6h: the catalogue changes when a new tournament is registered, which is not often.
  */
 async function fetchAllLeagues(): Promise<Array<{ leagueid: number; name: string | null; tier: string | null }> | null> {
-  const res = await fetch(`${OPENDOTA_BASE}/leagues`)
+  const res = await odFetch('/leagues')
   if (!res.ok) {
     throwIfRateLimited(res, 'leagues catalogue')
     throw upstreamFailure('leagues catalogue', res)
@@ -153,7 +169,7 @@ export function buildHeroStatsMap(raw: z.infer<typeof HeroStatsSchema>[]): HeroS
 }
 
 async function fetchHeroStats(): Promise<HeroStatsMap | null> {
-  const res = await fetch(`${OPENDOTA_BASE}/heroStats`)
+  const res = await odFetch('/heroStats')
   if (!res.ok) {
     throwIfRateLimited(res, 'heroStats')
     // Never a "miss": this endpoint always has data, so a bad status is always the
@@ -181,7 +197,7 @@ export function getHeroStats(): Promise<HeroStatsMap | null> {
 // ─── Player Heroes ───────────────────────────────────────────────────────────
 
 async function fetchPlayerHeroes(accountId: number): Promise<z.infer<typeof PlayerHeroSchema>[] | null> {
-  const res = await fetch(`${OPENDOTA_BASE}/players/${accountId}/heroes`)
+  const res = await odFetch(`/players/${accountId}/heroes`)
   if (res.status === 404) return null // unknown account — a real, cacheable miss
   if (!res.ok) {
     throwIfRateLimited(res, `player ${accountId}`)
@@ -216,7 +232,7 @@ export function getPlayerHeroes(accountId: number): Promise<z.infer<typeof Playe
 export type OpenDotaMatch = Record<string, unknown>
 
 async function fetchMatchDetail(matchId: number): Promise<OpenDotaMatch | null> {
-  const res = await fetch(`${OPENDOTA_BASE}/matches/${matchId}`)
+  const res = await odFetch(`/matches/${matchId}`)
   if (res.status === 404) return null // unknown match — a real, cacheable miss
   if (!res.ok) {
     throwIfRateLimited(res, `match ${matchId}`)
@@ -274,7 +290,7 @@ export type TeamMatch = z.infer<typeof TeamMatchSchema>
 const TEAM_MATCH_WINDOW = 80
 
 async function fetchTeamMatches(teamId: number): Promise<TeamMatch[] | null> {
-  const res = await fetch(`${OPENDOTA_BASE}/teams/${teamId}/matches`)
+  const res = await odFetch(`/teams/${teamId}/matches`)
   if (res.status === 404) return null // unknown team — a real, cacheable miss
   if (!res.ok) {
     throwIfRateLimited(res, `team ${teamId}`)
@@ -334,7 +350,7 @@ export type TeamHero = z.infer<typeof TeamHeroSchema>
 
 /** Generic keyless OpenDota array fetch with the empty-body guard. */
 async function fetchTeamList<T>(teamId: number, path: string, schema: z.ZodType<T>, label: string): Promise<T[] | null> {
-  const res = await fetch(`${OPENDOTA_BASE}/teams/${teamId}/${path}`)
+  const res = await odFetch(`/teams/${teamId}/${path}`)
   if (res.status === 404) return null // unknown team — a real, cacheable miss
   if (!res.ok) {
     throwIfRateLimited(res, `${label} ${teamId}`)
@@ -399,7 +415,7 @@ const LeagueMatchSchema = z
 export type LeagueMatch = z.infer<typeof LeagueMatchSchema>
 
 async function fetchLeagueMatches(leagueId: number): Promise<LeagueMatch[] | null> {
-  const res = await fetch(`${OPENDOTA_BASE}/leagues/${leagueId}/matches`)
+  const res = await odFetch(`/leagues/${leagueId}/matches`)
   if (res.status === 404) return null // unknown league — a real, cacheable miss
   if (!res.ok) {
     throwIfRateLimited(res, `league ${leagueId} matches`)

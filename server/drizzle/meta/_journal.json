@@ -15,6 +15,13 @@
       "when": 1786817552945,
       "tag": "0001_windy_yellow_claw",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786999059959,
+      "tag": "0002_lying_thunderbolts",
+      "breakpoints": true
     }
   ]
 }

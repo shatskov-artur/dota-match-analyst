@@ -87,9 +87,14 @@ export function isLeagueCurrent(
  */
 async function purgeLeague(leagueId: number): Promise<void> {
   if (!db) return
-  await db.delete(bracketNodes).where(eq(bracketNodes.leagueId, leagueId))
-  await db.delete(leagueStandings).where(eq(leagueStandings.leagueId, leagueId))
-  await db.delete(leagues).where(eq(leagues.leagueId, leagueId))
+  // One transaction: three separate deletes could stop halfway and leave a league row with
+  // no bracket and no standings — which reads as "a tournament with an empty schedule"
+  // rather than as a half-finished cleanup, and nothing would ever retry it.
+  await db.transaction(async (tx) => {
+    await tx.delete(bracketNodes).where(eq(bracketNodes.leagueId, leagueId))
+    await tx.delete(leagueStandings).where(eq(leagueStandings.leagueId, leagueId))
+    await tx.delete(leagues).where(eq(leagues.leagueId, leagueId))
+  })
 }
 
 /**
@@ -143,8 +148,6 @@ export async function syncLeague(leagueId: number): Promise<SyncResult | null> {
   }
   const result: SyncResult = { leagueId, nodes: 0, seriesRows: 0, matchStubs: 0, teams: 0, standings: 0 }
 
-  // ─── League ────────────────────────────────────────────────────────────────
-  //
   // OpenDota's tier name, alongside Valve's numeric one. Free: getLeagueInfo is the same
   // 6h-cached call the archive policy already made to decide whether to record this league,
   // so this is a cache read, not a second request. Never let a transient failure reach the
@@ -153,331 +156,352 @@ export async function syncLeague(leagueId: number): Promise<SyncResult | null> {
     .then((i) => i?.tier ?? null)
     .catch(() => null)
 
-  await db
-    .insert(leagues)
-    .values({
-      leagueId,
-      name: info.name ?? null,
-      tier: info.tier ?? null,
-      odTier,
-      region: info.region ?? null,
-      startTimestamp: info.start_timestamp ?? null,
-      endTimestamp: info.end_timestamp ?? null,
-      totalPrizePool: data.prize_pool?.total_prize_pool ?? null,
-      description: info.description ?? null,
-      streams: data.streams ?? null,
-      raw: info,
-      lastSyncedAt: new Date(),
-    })
-    .onConflictDoUpdate({
-      target: leagues.leagueId,
-      set: {
-        name: sql`excluded.name`,
-        tier: sql`excluded.tier`,
-        // coalesce, unlike its neighbours: OpenDota being unreachable for one tick must not
-        // erase a tier the app already knew, or the home-page filter would drop the
-        // tournament into "Other" until the next successful lookup.
-        odTier: sql`coalesce(excluded.od_tier, ${leagues.odTier})`,
-        region: sql`excluded.region`,
-        startTimestamp: sql`excluded.start_timestamp`,
-        endTimestamp: sql`excluded.end_timestamp`,
-        totalPrizePool: sql`excluded.total_prize_pool`,
-        description: sql`excluded.description`,
-        streams: sql`excluded.streams`,
-        raw: sql`excluded.raw`,
-        lastSyncedAt: sql`excluded.last_synced_at`,
-      },
-    })
+  // Asked here rather than beside the match-stub insert it governs, for the same reason:
+  // it can reach OpenDota, and nothing inside the transaction may wait on a network call.
+  const archiveThisLeague = await shouldArchiveLeague(leagueId)
 
-  // ─── Teams + standings ─────────────────────────────────────────────────────
-  const teamMap = collectTeams(data)
-  if (teamMap.size > 0) {
-    await db
-      .insert(teams)
-      .values(
-        [...teamMap.entries()].map(([teamId, s]) => ({
-          teamId,
-          name: s.team_name ?? null,
-          tag: s.team_tag ?? null,
-          abbreviation: s.team_abbreviation ?? null,
-          // team_logo_url is already a CDN URL. The sibling `team_logo` ugcid is
-          // deliberately dropped — it exceeds MAX_SAFE_INTEGER and JSON.parse has
-          // already corrupted it by the time we see it (CLAUDE.md pitfall).
-          logoUrl: s.team_logo_url ?? null,
-          isPro: s.is_pro ?? null,
-          updatedAt: new Date(),
-        })),
-      )
+  /*
+   * ONE transaction for the whole league.
+   *
+   * These six upserts describe a single moment of one tournament, and they were six
+   * separate statements. A failure on the fourth left the league with fresh standings
+   * beside a stale bracket, and nothing to indicate the two disagreed — the schedule
+   * simply showed a tournament that had half moved on. snapshotWriter has done exactly
+   * this since Phase A and explains why; this path never caught up.
+   *
+   * Every network call is hoisted above it on purpose: an open transaction holds one of
+   * ten pool connections, and an OpenDota round trip inside it would hold that connection
+   * for the length of an HTTP request.
+   */
+  await db.transaction(async (tx) => {
+    // ─── League ────────────────────────────────────────────────────────────────
+    await tx
+      .insert(leagues)
+      .values({
+        leagueId,
+        name: info.name ?? null,
+        tier: info.tier ?? null,
+        odTier,
+        region: info.region ?? null,
+        startTimestamp: info.start_timestamp ?? null,
+        endTimestamp: info.end_timestamp ?? null,
+        totalPrizePool: data.prize_pool?.total_prize_pool ?? null,
+        description: info.description ?? null,
+        streams: data.streams ?? null,
+        raw: info,
+        lastSyncedAt: new Date(),
+      })
       .onConflictDoUpdate({
-        target: teams.teamId,
+        target: leagues.leagueId,
         set: {
-          name: sql`coalesce(excluded.name, ${teams.name})`,
-          tag: sql`coalesce(excluded.tag, ${teams.tag})`,
-          abbreviation: sql`coalesce(excluded.abbreviation, ${teams.abbreviation})`,
-          logoUrl: sql`coalesce(excluded.logo_url, ${teams.logoUrl})`,
-          isPro: sql`excluded.is_pro`,
-          updatedAt: sql`excluded.updated_at`,
+          name: sql`excluded.name`,
+          tier: sql`excluded.tier`,
+          // coalesce, unlike its neighbours: OpenDota being unreachable for one tick must not
+          // erase a tier the app already knew, or the home-page filter would drop the
+          // tournament into "Other" until the next successful lookup.
+          odTier: sql`coalesce(excluded.od_tier, ${leagues.odTier})`,
+          region: sql`excluded.region`,
+          startTimestamp: sql`excluded.start_timestamp`,
+          endTimestamp: sql`excluded.end_timestamp`,
+          totalPrizePool: sql`excluded.total_prize_pool`,
+          description: sql`excluded.description`,
+          streams: sql`excluded.streams`,
+          raw: sql`excluded.raw`,
+          lastSyncedAt: sql`excluded.last_synced_at`,
         },
       })
-    result.teams = teamMap.size
-  }
 
-  // De-duplicated by the composite key. Valve pads a group's standings with empty
-  // slots (team_id 0) for seats not yet decided — the Elimination Round carries six of
-  // them — and Postgres rejects an INSERT whose ON CONFLICT target repeats within one
-  // statement ("cannot affect row a second time"). Drop the placeholders, keep the last
-  // occurrence of any genuine repeat.
-  const standingByKey = new Map<string, typeof leagueStandings.$inferInsert>()
-  for (const g of flattenNodeGroups(data.node_groups)) {
-    if (typeof g.node_group_id !== 'number') continue
-    for (const s of g.team_standings ?? []) {
-      if (typeof s.team_id !== 'number' || s.team_id <= 0) continue
-      standingByKey.set(`${g.node_group_id}:${s.team_id}`, {
+    // ─── Teams + standings ─────────────────────────────────────────────────────
+    const teamMap = collectTeams(data)
+    if (teamMap.size > 0) {
+      await tx
+        .insert(teams)
+        .values(
+          [...teamMap.entries()].map(([teamId, s]) => ({
+            teamId,
+            name: s.team_name ?? null,
+            tag: s.team_tag ?? null,
+            abbreviation: s.team_abbreviation ?? null,
+            // team_logo_url is already a CDN URL. The sibling `team_logo` ugcid is
+            // deliberately dropped — it exceeds MAX_SAFE_INTEGER and JSON.parse has
+            // already corrupted it by the time we see it (CLAUDE.md pitfall).
+            logoUrl: s.team_logo_url ?? null,
+            isPro: s.is_pro ?? null,
+            updatedAt: new Date(),
+          })),
+        )
+        .onConflictDoUpdate({
+          target: teams.teamId,
+          set: {
+            name: sql`coalesce(excluded.name, ${teams.name})`,
+            tag: sql`coalesce(excluded.tag, ${teams.tag})`,
+            abbreviation: sql`coalesce(excluded.abbreviation, ${teams.abbreviation})`,
+            logoUrl: sql`coalesce(excluded.logo_url, ${teams.logoUrl})`,
+            isPro: sql`excluded.is_pro`,
+            updatedAt: sql`excluded.updated_at`,
+          },
+        })
+      result.teams = teamMap.size
+    }
+
+    // De-duplicated by the composite key. Valve pads a group's standings with empty
+    // slots (team_id 0) for seats not yet decided — the Elimination Round carries six of
+    // them — and Postgres rejects an INSERT whose ON CONFLICT target repeats within one
+    // statement ("cannot affect row a second time"). Drop the placeholders, keep the last
+    // occurrence of any genuine repeat.
+    const standingByKey = new Map<string, typeof leagueStandings.$inferInsert>()
+    for (const g of flattenNodeGroups(data.node_groups)) {
+      if (typeof g.node_group_id !== 'number') continue
+      for (const s of g.team_standings ?? []) {
+        if (typeof s.team_id !== 'number' || s.team_id <= 0) continue
+        standingByKey.set(`${g.node_group_id}:${s.team_id}`, {
+          leagueId,
+          nodeGroupId: g.node_group_id,
+          teamId: s.team_id,
+          standing: s.standing ?? null,
+          wins: s.wins ?? null,
+          losses: s.losses ?? null,
+          score: s.score === undefined ? null : String(s.score),
+          updatedAt: new Date(),
+        })
+      }
+    }
+    const standingRows = [...standingByKey.values()]
+    if (standingRows.length > 0) {
+      await tx
+        .insert(leagueStandings)
+        .values(standingRows)
+        .onConflictDoUpdate({
+          target: [leagueStandings.leagueId, leagueStandings.nodeGroupId, leagueStandings.teamId],
+          set: {
+            standing: sql`excluded.standing`,
+            wins: sql`excluded.wins`,
+            losses: sql`excluded.losses`,
+            score: sql`excluded.score`,
+            updatedAt: sql`excluded.updated_at`,
+          },
+        })
+      result.standings = standingRows.length
+    }
+
+    // ─── Bracket nodes ─────────────────────────────────────────────────────────
+    // node_id is league-local and must be unique, but de-duplicate anyway: the same
+    // guard as standings, since a repeat inside one statement is a hard Postgres error.
+    const nodeById = new Map<number, ReturnType<typeof flattenNodes>[number]>()
+    for (const n of flattenNodes(data.node_groups)) {
+      if (typeof n.node_id === 'number') nodeById.set(n.node_id, n)
+    }
+    const nodes = [...nodeById.values()]
+    if (nodes.length > 0) {
+      await tx
+        .insert(bracketNodes)
+        .values(
+          nodes.map((n) => ({
+            leagueId,
+            nodeId: n.node_id as number,
+            nodeGroupId: n.nodeGroupId ?? null,
+            nodeGroupName: n.nodeGroupName ?? null,
+            parentNodeGroupId: n.parentNodeGroupId ?? null,
+            phase: n.phase ?? null,
+            name: n.name ?? null,
+            team1Id: n.team_id_1 || null,
+            team2Id: n.team_id_2 || null,
+            seriesId: n.series_id || null,
+            nodeType: n.node_type ?? null,
+            scheduledTime: n.scheduled_time || null,
+            actualTime: n.actual_time || null,
+            team1Wins: n.team_1_wins ?? null,
+            team2Wins: n.team_2_wins ?? null,
+            hasStarted: n.has_started ?? null,
+            isCompleted: n.is_completed ?? null,
+            winningNodeId: n.winning_node_id ?? null,
+            losingNodeId: n.losing_node_id ?? null,
+            incomingNodeId1: n.incoming_node_id_1 ?? null,
+            incomingNodeId2: n.incoming_node_id_2 ?? null,
+            streamIds: n.stream_ids ?? null,
+            updatedAt: new Date(),
+          })),
+        )
+        .onConflictDoUpdate({
+          target: [bracketNodes.leagueId, bracketNodes.nodeId],
+          set: {
+            nodeGroupId: sql`excluded.node_group_id`,
+            nodeGroupName: sql`excluded.node_group_name`,
+            parentNodeGroupId: sql`excluded.parent_node_group_id`,
+            phase: sql`excluded.phase`,
+            name: sql`excluded.name`,
+            team1Id: sql`excluded.team_1_id`,
+            team2Id: sql`excluded.team_2_id`,
+            seriesId: sql`excluded.series_id`,
+            nodeType: sql`excluded.node_type`,
+            scheduledTime: sql`excluded.scheduled_time`,
+            actualTime: sql`excluded.actual_time`,
+            team1Wins: sql`excluded.team_1_wins`,
+            team2Wins: sql`excluded.team_2_wins`,
+            hasStarted: sql`excluded.has_started`,
+            isCompleted: sql`excluded.is_completed`,
+            winningNodeId: sql`excluded.winning_node_id`,
+            losingNodeId: sql`excluded.losing_node_id`,
+            incomingNodeId1: sql`excluded.incoming_node_id_1`,
+            incomingNodeId2: sql`excluded.incoming_node_id_2`,
+            streamIds: sql`excluded.stream_ids`,
+            updatedAt: sql`excluded.updated_at`,
+          },
+        })
+      result.nodes = nodes.length
+    }
+
+    // ─── Series ────────────────────────────────────────────────────────────────
+    // Two independent sources, merged by series_id. series_infos is authoritative for
+    // match order when present; on TI it is empty, so the node's own matches[] carries it.
+    type SeriesRow = typeof seriesTable.$inferInsert
+    const bySeries = new Map<number, SeriesRow>()
+
+    for (const s of data.series_infos ?? []) {
+      if (typeof s.series_id !== 'number' || s.series_id <= 0) continue
+      bySeries.set(s.series_id, {
+        seriesId: s.series_id,
         leagueId,
-        nodeGroupId: g.node_group_id,
-        teamId: s.team_id,
-        standing: s.standing ?? null,
-        wins: s.wins ?? null,
-        losses: s.losses ?? null,
-        score: s.score === undefined ? null : String(s.score),
+        seriesType: s.series_type ?? null,
+        team1Id: s.team_id_1 || null,
+        team2Id: s.team_id_2 || null,
+        startTime: s.start_time || null,
+        matchIds: s.match_ids ?? [],
         updatedAt: new Date(),
       })
     }
-  }
-  const standingRows = [...standingByKey.values()]
-  if (standingRows.length > 0) {
-    await db
-      .insert(leagueStandings)
-      .values(standingRows)
-      .onConflictDoUpdate({
-        target: [leagueStandings.leagueId, leagueStandings.nodeGroupId, leagueStandings.teamId],
-        set: {
-          standing: sql`excluded.standing`,
-          wins: sql`excluded.wins`,
-          losses: sql`excluded.losses`,
-          score: sql`excluded.score`,
-          updatedAt: sql`excluded.updated_at`,
-        },
-      })
-    result.standings = standingRows.length
-  }
 
-  // ─── Bracket nodes ─────────────────────────────────────────────────────────
-  // node_id is league-local and must be unique, but de-duplicate anyway: the same
-  // guard as standings, since a repeat inside one statement is a hard Postgres error.
-  const nodeById = new Map<number, ReturnType<typeof flattenNodes>[number]>()
-  for (const n of flattenNodes(data.node_groups)) {
-    if (typeof n.node_id === 'number') nodeById.set(n.node_id, n)
-  }
-  const nodes = [...nodeById.values()]
-  if (nodes.length > 0) {
-    await db
-      .insert(bracketNodes)
-      .values(
-        nodes.map((n) => ({
-          leagueId,
-          nodeId: n.node_id as number,
-          nodeGroupId: n.nodeGroupId ?? null,
-          nodeGroupName: n.nodeGroupName ?? null,
-          parentNodeGroupId: n.parentNodeGroupId ?? null,
-          phase: n.phase ?? null,
-          name: n.name ?? null,
-          team1Id: n.team_id_1 || null,
-          team2Id: n.team_id_2 || null,
-          seriesId: n.series_id || null,
-          nodeType: n.node_type ?? null,
-          scheduledTime: n.scheduled_time || null,
-          actualTime: n.actual_time || null,
-          team1Wins: n.team_1_wins ?? null,
-          team2Wins: n.team_2_wins ?? null,
-          hasStarted: n.has_started ?? null,
-          isCompleted: n.is_completed ?? null,
-          winningNodeId: n.winning_node_id ?? null,
-          losingNodeId: n.losing_node_id ?? null,
-          incomingNodeId1: n.incoming_node_id_1 ?? null,
-          incomingNodeId2: n.incoming_node_id_2 ?? null,
-          streamIds: n.stream_ids ?? null,
-          updatedAt: new Date(),
-        })),
-      )
-      .onConflictDoUpdate({
-        target: [bracketNodes.leagueId, bracketNodes.nodeId],
-        set: {
-          nodeGroupId: sql`excluded.node_group_id`,
-          nodeGroupName: sql`excluded.node_group_name`,
-          parentNodeGroupId: sql`excluded.parent_node_group_id`,
-          phase: sql`excluded.phase`,
-          name: sql`excluded.name`,
-          team1Id: sql`excluded.team_1_id`,
-          team2Id: sql`excluded.team_2_id`,
-          seriesId: sql`excluded.series_id`,
-          nodeType: sql`excluded.node_type`,
-          scheduledTime: sql`excluded.scheduled_time`,
-          actualTime: sql`excluded.actual_time`,
-          team1Wins: sql`excluded.team_1_wins`,
-          team2Wins: sql`excluded.team_2_wins`,
-          hasStarted: sql`excluded.has_started`,
-          isCompleted: sql`excluded.is_completed`,
-          winningNodeId: sql`excluded.winning_node_id`,
-          losingNodeId: sql`excluded.losing_node_id`,
-          incomingNodeId1: sql`excluded.incoming_node_id_1`,
-          incomingNodeId2: sql`excluded.incoming_node_id_2`,
-          streamIds: sql`excluded.stream_ids`,
-          updatedAt: sql`excluded.updated_at`,
-        },
-      })
-    result.nodes = nodes.length
-  }
+    for (const n of nodes) {
+      const seriesId = n.series_id
+      if (typeof seriesId !== 'number' || seriesId <= 0) continue
+      const nodeMatchIds = extractNodeMatchIds(n.matches)
+      const prev = bySeries.get(seriesId)
 
-  // ─── Series ────────────────────────────────────────────────────────────────
-  // Two independent sources, merged by series_id. series_infos is authoritative for
-  // match order when present; on TI it is empty, so the node's own matches[] carries it.
-  type SeriesRow = typeof seriesTable.$inferInsert
-  const bySeries = new Map<number, SeriesRow>()
+      /**
+       * One team order for the whole row: the node's.
+       *
+       * The id used to come from series_infos while the name was always looked up from the
+       * NODE's id, and the two sources do not agree on which team is "1". For Liquid vs Iron
+       * Wing that stored team_1_id = Liquid (2163) beside team_1_name = "Iron Wing".
+       *
+       * The names were the visible half, but the wins were the dangerous half: team_1_wins
+       * comes from the node too, so a row whose ids were flipped relative to the node
+       * credited the score to the opposing team. Anything reading the series by id — the
+       * match header's series score does exactly that — would have shown it backwards as
+       * soon as the series stopped being level.
+       *
+       * So the node decides the pair, and series_infos fills in only what the node lacks.
+       * ids, names and wins then all describe the same two teams in the same order.
+       */
+      const team1Id = n.team_id_1 ?? prev?.team1Id ?? null
+      const team2Id = n.team_id_2 ?? prev?.team2Id ?? null
 
-  for (const s of data.series_infos ?? []) {
-    if (typeof s.series_id !== 'number' || s.series_id <= 0) continue
-    bySeries.set(s.series_id, {
-      seriesId: s.series_id,
-      leagueId,
-      seriesType: s.series_type ?? null,
-      team1Id: s.team_id_1 || null,
-      team2Id: s.team_id_2 || null,
-      startTime: s.start_time || null,
-      matchIds: s.match_ids ?? [],
-      updatedAt: new Date(),
-    })
-  }
-
-  for (const n of nodes) {
-    const seriesId = n.series_id
-    if (typeof seriesId !== 'number' || seriesId <= 0) continue
-    const nodeMatchIds = extractNodeMatchIds(n.matches)
-    const prev = bySeries.get(seriesId)
-
-    /**
-     * One team order for the whole row: the node's.
-     *
-     * The id used to come from series_infos while the name was always looked up from the
-     * NODE's id, and the two sources do not agree on which team is "1". For Liquid vs Iron
-     * Wing that stored team_1_id = Liquid (2163) beside team_1_name = "Iron Wing".
-     *
-     * The names were the visible half, but the wins were the dangerous half: team_1_wins
-     * comes from the node too, so a row whose ids were flipped relative to the node
-     * credited the score to the opposing team. Anything reading the series by id — the
-     * match header's series score does exactly that — would have shown it backwards as
-     * soon as the series stopped being level.
-     *
-     * So the node decides the pair, and series_infos fills in only what the node lacks.
-     * ids, names and wins then all describe the same two teams in the same order.
-     */
-    const team1Id = n.team_id_1 ?? prev?.team1Id ?? null
-    const team2Id = n.team_id_2 ?? prev?.team2Id ?? null
-
-    bySeries.set(seriesId, {
-      seriesId,
-      leagueId,
-      nodeId: n.node_id ?? null,
-      // node_type and series_type use different encodings; keep series_type when
-      // series_infos supplied one and leave it null otherwise rather than mixing them.
-      seriesType: prev?.seriesType ?? null,
-      team1Id,
-      team2Id,
-      team1Name: teamMap.get(team1Id ?? -1)?.team_name ?? null,
-      team2Name: teamMap.get(team2Id ?? -1)?.team_name ?? null,
-      startTime: prev?.startTime ?? n.actual_time ?? null,
-      scheduledTime: n.scheduled_time || null,
-      team1Wins: n.team_1_wins ?? null,
-      team2Wins: n.team_2_wins ?? null,
-      // Prefer whichever source knows about more games.
-      matchIds:
-        (prev?.matchIds?.length ?? 0) >= nodeMatchIds.length ? prev?.matchIds ?? [] : nodeMatchIds,
-      updatedAt: new Date(),
-    })
-  }
-
-  if (bySeries.size > 0) {
-    await db
-      .insert(seriesTable)
-      .values([...bySeries.values()])
-      .onConflictDoUpdate({
-        target: seriesTable.seriesId,
-        set: {
-          leagueId: sql`excluded.league_id`,
-          nodeId: sql`coalesce(excluded.node_id, ${seriesTable.nodeId})`,
-          seriesType: sql`coalesce(excluded.series_type, ${seriesTable.seriesType})`,
-          team1Id: sql`coalesce(excluded.team_1_id, ${seriesTable.team1Id})`,
-          team2Id: sql`coalesce(excluded.team_2_id, ${seriesTable.team2Id})`,
-          team1Name: sql`coalesce(excluded.team_1_name, ${seriesTable.team1Name})`,
-          team2Name: sql`coalesce(excluded.team_2_name, ${seriesTable.team2Name})`,
-          startTime: sql`coalesce(excluded.start_time, ${seriesTable.startTime})`,
-          scheduledTime: sql`coalesce(excluded.scheduled_time, ${seriesTable.scheduledTime})`,
-          team1Wins: sql`excluded.team_1_wins`,
-          team2Wins: sql`excluded.team_2_wins`,
-          // Whichever source knows about more maps wins — the same guard discoverLeagueMatches
-          // uses on the very same column. Without it this path could SHRINK the list: Valve
-          // publishes match ids late, so a bracket sync running while it still shows two maps
-          // overwrote the three OpenDota had already found. It usually self-healed on the next
-          // discovery pass in the same tick, but not while OpenDota was unreachable — and a
-          // shrunken match_ids feeds `played` in the schedule's status logic.
-          matchIds: sql`case
-            when jsonb_array_length(excluded.match_ids)
-               >= jsonb_array_length(coalesce(${seriesTable.matchIds}, '[]'::jsonb))
-            then excluded.match_ids else ${seriesTable.matchIds} end`,
-          updatedAt: sql`excluded.updated_at`,
-        },
-      })
-    result.seriesRows = bySeries.size
-  }
-
-  // ─── Match stubs ───────────────────────────────────────────────────────────
-  // Rows for games Valve knows about but our sampler may never have seen (e.g. the
-  // machine was off). postMatchBackfill picks these up and fills them from OpenDota.
-  type MatchRow = typeof matches.$inferInsert
-  // Keyed by match_id: the same id must not appear twice in one statement even if two
-  // series somehow claim it.
-  const stubById = new Map<number, MatchRow>()
-  for (const s of bySeries.values()) {
-    const ids = s.matchIds ?? []
-    ids.forEach((matchId, idx) => {
-      if (!Number.isFinite(matchId) || matchId <= 0) return
-      stubById.set(matchId, {
-        matchId,
-        seriesId: s.seriesId,
+      bySeries.set(seriesId, {
+        seriesId,
         leagueId,
-        leagueName: info.name ?? null,
-        gameInSeries: idx + 1,
-        ingestStatus: 'awaiting_parse',
+        nodeId: n.node_id ?? null,
+        // node_type and series_type use different encodings; keep series_type when
+        // series_infos supplied one and leave it null otherwise rather than mixing them.
+        seriesType: prev?.seriesType ?? null,
+        team1Id,
+        team2Id,
+        team1Name: teamMap.get(team1Id ?? -1)?.team_name ?? null,
+        team2Name: teamMap.get(team2Id ?? -1)?.team_name ?? null,
+        startTime: prev?.startTime ?? n.actual_time ?? null,
+        scheduledTime: n.scheduled_time || null,
+        team1Wins: n.team_1_wins ?? null,
+        team2Wins: n.team_2_wins ?? null,
+        // Prefer whichever source knows about more games.
+        matchIds:
+          (prev?.matchIds?.length ?? 0) >= nodeMatchIds.length ? prev?.matchIds ?? [] : nodeMatchIds,
+        updatedAt: new Date(),
       })
-    })
-  }
-  // ARCHIVED LEAGUES ONLY. Schedules are synced for every live league so "what's on this
-  // week" covers the scene, but a match row is a unit of WORK: it goes straight into the
-  // backfill queue and costs an OpenDota fetch. Community leagues run continuously and
-  // publish their whole history here — 江雪杯 alone carries 4,786 matches — so stubbing
-  // everything queued 21,000 fetches and buried The International behind them.
-  //
-  // Now asks the archive policy rather than the id list directly: with tier-based recording
-  // the list is empty by default, and reading it literally would have stopped creating match
-  // rows for the very tournaments being recorded.
-  const stubs = (await shouldArchiveLeague(leagueId)) ? [...stubById.values()] : []
-  if (stubs.length > 0) {
-    await db
-      .insert(matches)
-      .values(stubs)
-      .onConflictDoUpdate({
-        target: matches.matchId,
-        set: {
-          // Only the series wiring. Never touch ingestStatus/duration/score here —
-          // a live match is mid-flight and the sampler owns those columns.
-          seriesId: sql`coalesce(excluded.series_id, ${matches.seriesId})`,
-          leagueId: sql`coalesce(excluded.league_id, ${matches.leagueId})`,
-          leagueName: sql`coalesce(excluded.league_name, ${matches.leagueName})`,
-          gameInSeries: sql`coalesce(excluded.game_in_series, ${matches.gameInSeries})`,
-        },
+    }
+
+    if (bySeries.size > 0) {
+      await tx
+        .insert(seriesTable)
+        .values([...bySeries.values()])
+        .onConflictDoUpdate({
+          target: seriesTable.seriesId,
+          set: {
+            leagueId: sql`excluded.league_id`,
+            nodeId: sql`coalesce(excluded.node_id, ${seriesTable.nodeId})`,
+            seriesType: sql`coalesce(excluded.series_type, ${seriesTable.seriesType})`,
+            team1Id: sql`coalesce(excluded.team_1_id, ${seriesTable.team1Id})`,
+            team2Id: sql`coalesce(excluded.team_2_id, ${seriesTable.team2Id})`,
+            team1Name: sql`coalesce(excluded.team_1_name, ${seriesTable.team1Name})`,
+            team2Name: sql`coalesce(excluded.team_2_name, ${seriesTable.team2Name})`,
+            startTime: sql`coalesce(excluded.start_time, ${seriesTable.startTime})`,
+            scheduledTime: sql`coalesce(excluded.scheduled_time, ${seriesTable.scheduledTime})`,
+            team1Wins: sql`excluded.team_1_wins`,
+            team2Wins: sql`excluded.team_2_wins`,
+            // Whichever source knows about more maps wins — the same guard discoverLeagueMatches
+            // uses on the very same column. Without it this path could SHRINK the list: Valve
+            // publishes match ids late, so a bracket sync running while it still shows two maps
+            // overwrote the three OpenDota had already found. It usually self-healed on the next
+            // discovery pass in the same tick, but not while OpenDota was unreachable — and a
+            // shrunken match_ids feeds `played` in the schedule's status logic.
+            matchIds: sql`case
+              when jsonb_array_length(excluded.match_ids)
+                 >= jsonb_array_length(coalesce(${seriesTable.matchIds}, '[]'::jsonb))
+              then excluded.match_ids else ${seriesTable.matchIds} end`,
+            updatedAt: sql`excluded.updated_at`,
+          },
+        })
+      result.seriesRows = bySeries.size
+    }
+
+    // ─── Match stubs ───────────────────────────────────────────────────────────
+    // Rows for games Valve knows about but our sampler may never have seen (e.g. the
+    // machine was off). postMatchBackfill picks these up and fills them from OpenDota.
+    type MatchRow = typeof matches.$inferInsert
+    // Keyed by match_id: the same id must not appear twice in one statement even if two
+    // series somehow claim it.
+    const stubById = new Map<number, MatchRow>()
+    for (const s of bySeries.values()) {
+      const ids = s.matchIds ?? []
+      ids.forEach((matchId, idx) => {
+        if (!Number.isFinite(matchId) || matchId <= 0) return
+        stubById.set(matchId, {
+          matchId,
+          seriesId: s.seriesId,
+          leagueId,
+          leagueName: info.name ?? null,
+          gameInSeries: idx + 1,
+          ingestStatus: 'awaiting_parse',
+        })
       })
-    result.matchStubs = stubs.length
-  }
+    }
+    // ARCHIVED LEAGUES ONLY. Schedules are synced for every live league so "what's on this
+    // week" covers the scene, but a match row is a unit of WORK: it goes straight into the
+    // backfill queue and costs an OpenDota fetch. Community leagues run continuously and
+    // publish their whole history here — 江雪杯 alone carries 4,786 matches — so stubbing
+    // everything queued 21,000 fetches and buried The International behind them.
+    //
+    // Now asks the archive policy rather than the id list directly: with tier-based recording
+    // the list is empty by default, and reading it literally would have stopped creating match
+    // rows for the very tournaments being recorded.
+    const stubs = archiveThisLeague ? [...stubById.values()] : []
+    if (stubs.length > 0) {
+      await tx
+        .insert(matches)
+        .values(stubs)
+        .onConflictDoUpdate({
+          target: matches.matchId,
+          set: {
+            // Only the series wiring. Never touch ingestStatus/duration/score here —
+            // a live match is mid-flight and the sampler owns those columns.
+            seriesId: sql`coalesce(excluded.series_id, ${matches.seriesId})`,
+            leagueId: sql`coalesce(excluded.league_id, ${matches.leagueId})`,
+            leagueName: sql`coalesce(excluded.league_name, ${matches.leagueName})`,
+            gameInSeries: sql`coalesce(excluded.game_in_series, ${matches.gameInSeries})`,
+          },
+        })
+      result.matchStubs = stubs.length
+    }
+  })
+
 
   return result
 }

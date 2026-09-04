@@ -430,124 +430,142 @@ export async function backfillMatch(matchId: number): Promise<BackfillOutcome> {
 
   if (!full) return 'unparsed'
 
-  await db
-    .insert(postMatchRaw)
-    .values({ matchId, opendota: detail, fetchedAt: new Date() })
-    .onConflictDoUpdate({
-      target: postMatchRaw.matchId,
-      set: { opendota: sql`excluded.opendota`, fetchedAt: sql`excluded.fetched_at` },
-    })
-
-  // ─── match summary ─────────────────────────────────────────────────────────
-  // Rewritten in full here — the early result write above covers only what a scoreboard
-  // needs, this adds the league, series and team names that come with a parsed payload.
-  await db
-    .update(matches)
-    .set({
-      leagueId: num(detail.leagueid) ?? undefined,
-      seriesId: num(detail.series_id) || undefined,
-      startTime: num(detail.start_time) ?? undefined,
-      duration: num(detail.duration) ?? undefined,
-      radiantWin,
-      radiantScore: num(detail.radiant_score) ?? undefined,
-      direScore: num(detail.dire_score) ?? undefined,
-      radiantTeamName:
-        typeof (detail.radiant_team as Rec | undefined)?.name === 'string'
-          ? ((detail.radiant_team as Rec).name as string)
-          : undefined,
-      direTeamName:
-        typeof (detail.dire_team as Rec | undefined)?.name === 'string'
-          ? ((detail.dire_team as Rec).name as string)
-          : undefined,
-      ingestStatus: 'complete',
-      gameState: 6,
-    })
-    .where(eq(matches.matchId, matchId))
-
-  // ─── per-minute ────────────────────────────────────────────────────────────
-  if (minutes.length > 0) {
-    await db
-      .insert(matchTimeline)
-      .values(
-        minutes.map((r) => ({
-          matchId,
-          minute: r.minute,
-          radiantGoldAdv: r.radiantGoldAdv,
-          radiantXpAdv: r.radiantXpAdv,
-          radiantScore: r.radiantScore,
-          direScore: r.direScore,
-          source: 'opendota' as const,
-        })),
-      )
-      .onConflictDoUpdate({
-        target: [matchTimeline.matchId, matchTimeline.minute],
-        set: {
-          radiantGoldAdv: sql`excluded.radiant_gold_adv`,
-          radiantXpAdv: sql`excluded.radiant_xp_adv`,
-          // Keep the sampled score when OpenDota could not reconstruct one.
-          radiantScore: sql`coalesce(excluded.radiant_score, ${matchTimeline.radiantScore})`,
-          direScore: sql`coalesce(excluded.dire_score, ${matchTimeline.direScore})`,
-          source: sql`excluded.source`,
-        },
-      })
-  }
-
+  // Pure expansion, deliberately done before the transaction opens — there is no reason to
+  // hold a connection while parsing a payload.
   const playerRows = expandPlayerMinutes(detail)
-  if (playerRows.length > 0) {
-    // Chunked: a 60-minute game is 600 rows, and postgres-js builds one statement per call.
-    for (let i = 0; i < playerRows.length; i += 500) {
-      await db
-        .insert(playerTimeline)
+  const events = expandEvents(detail)
+
+  /*
+   * ONE transaction, and the order of statements inside it is the point.
+   *
+   * `ingestStatus: 'complete'` used to be written BEFORE the timeline, the player minutes
+   * and the event log. Anything that failed after that update — a dropped connection, a
+   * constraint, a restart — left the match marked fully backfilled with nothing behind it.
+   * The queue only ever picks rows in 'awaiting_parse' (see claimBatch), so such a match
+   * was never looked at again: no timeline, no events, and no way back. For a tournament
+   * game nobody recorded live, that is the data gone for good.
+   *
+   * The status is now the last statement, and a rollback leaves the row in
+   * 'awaiting_parse' so the next tick simply retries.
+   */
+  await db.transaction(async (tx) => {
+    await tx
+      .insert(postMatchRaw)
+      .values({ matchId, opendota: detail, fetchedAt: new Date() })
+      .onConflictDoUpdate({
+        target: postMatchRaw.matchId,
+        set: { opendota: sql`excluded.opendota`, fetchedAt: sql`excluded.fetched_at` },
+      })
+
+    // ─── per-minute ────────────────────────────────────────────────────────────
+    if (minutes.length > 0) {
+      await tx
+        .insert(matchTimeline)
         .values(
-          playerRows.slice(i, i + 500).map((r) => ({
+          minutes.map((r) => ({
             matchId,
             minute: r.minute,
-            playerSlot: r.playerSlot,
-            accountId: r.accountId,
-            heroId: r.heroId,
-            team: r.team,
-            playerName: r.playerName,
-            netWorth: r.netWorth,
-            xp: r.xp,
-            lastHits: r.lastHits,
-            denies: r.denies,
+            radiantGoldAdv: r.radiantGoldAdv,
+            radiantXpAdv: r.radiantXpAdv,
+            radiantScore: r.radiantScore,
+            direScore: r.direScore,
             source: 'opendota' as const,
           })),
         )
         .onConflictDoUpdate({
-          target: [playerTimeline.matchId, playerTimeline.minute, playerTimeline.playerSlot],
+          target: [matchTimeline.matchId, matchTimeline.minute],
           set: {
-            accountId: sql`coalesce(excluded.account_id, ${playerTimeline.accountId})`,
-            heroId: sql`coalesce(excluded.hero_id, ${playerTimeline.heroId})`,
-            team: sql`excluded.team`,
-            playerName: sql`coalesce(excluded.player_name, ${playerTimeline.playerName})`,
-            netWorth: sql`coalesce(excluded.net_worth, ${playerTimeline.netWorth})`,
-            xp: sql`coalesce(excluded.xp, ${playerTimeline.xp})`,
-            lastHits: sql`coalesce(excluded.last_hits, ${playerTimeline.lastHits})`,
-            denies: sql`coalesce(excluded.denies, ${playerTimeline.denies})`,
+            radiantGoldAdv: sql`excluded.radiant_gold_adv`,
+            radiantXpAdv: sql`excluded.radiant_xp_adv`,
+            // Keep the sampled score when OpenDota could not reconstruct one.
+            radiantScore: sql`coalesce(excluded.radiant_score, ${matchTimeline.radiantScore})`,
+            direScore: sql`coalesce(excluded.dire_score, ${matchTimeline.direScore})`,
             source: sql`excluded.source`,
           },
         })
     }
-  }
 
-  const events = expandEvents(detail)
-  if (events.length > 0) {
-    await db
-      .insert(matchEvents)
-      .values(
-        events.map((e) => ({
-          matchId,
-          t: e.t,
-          type: e.type,
-          team: e.team,
-          payload: e.payload,
-          dedupeKey: e.dedupeKey,
-          source: 'opendota' as const,
-        })),
-      )
-      .onConflictDoNothing({ target: [matchEvents.matchId, matchEvents.dedupeKey] })
-  }
+    if (playerRows.length > 0) {
+      // Chunked: a 60-minute game is 600 rows, and postgres-js builds one statement per call.
+      for (let i = 0; i < playerRows.length; i += 500) {
+        await tx
+          .insert(playerTimeline)
+          .values(
+            playerRows.slice(i, i + 500).map((r) => ({
+              matchId,
+              minute: r.minute,
+              playerSlot: r.playerSlot,
+              accountId: r.accountId,
+              heroId: r.heroId,
+              team: r.team,
+              playerName: r.playerName,
+              netWorth: r.netWorth,
+              xp: r.xp,
+              lastHits: r.lastHits,
+              denies: r.denies,
+              source: 'opendota' as const,
+            })),
+          )
+          .onConflictDoUpdate({
+            target: [playerTimeline.matchId, playerTimeline.minute, playerTimeline.playerSlot],
+            set: {
+              accountId: sql`coalesce(excluded.account_id, ${playerTimeline.accountId})`,
+              heroId: sql`coalesce(excluded.hero_id, ${playerTimeline.heroId})`,
+              team: sql`excluded.team`,
+              playerName: sql`coalesce(excluded.player_name, ${playerTimeline.playerName})`,
+              netWorth: sql`coalesce(excluded.net_worth, ${playerTimeline.netWorth})`,
+              xp: sql`coalesce(excluded.xp, ${playerTimeline.xp})`,
+              lastHits: sql`coalesce(excluded.last_hits, ${playerTimeline.lastHits})`,
+              denies: sql`coalesce(excluded.denies, ${playerTimeline.denies})`,
+              source: sql`excluded.source`,
+            },
+          })
+      }
+    }
+
+    if (events.length > 0) {
+      await tx
+        .insert(matchEvents)
+        .values(
+          events.map((e) => ({
+            matchId,
+            t: e.t,
+            type: e.type,
+            team: e.team,
+            payload: e.payload,
+            dedupeKey: e.dedupeKey,
+            source: 'opendota' as const,
+          })),
+        )
+        .onConflictDoNothing({ target: [matchEvents.matchId, matchEvents.dedupeKey] })
+    }
+
+    // ─── match summary — LAST, because it carries ingestStatus ─────────────────
+    // Rewritten in full here — the early result write above covers only what a scoreboard
+    // needs, this adds the league, series and team names that come with a parsed payload.
+    await tx
+      .update(matches)
+      .set({
+        leagueId: num(detail.leagueid) ?? undefined,
+        seriesId: num(detail.series_id) || undefined,
+        startTime: num(detail.start_time) ?? undefined,
+        duration: num(detail.duration) ?? undefined,
+        radiantWin,
+        radiantScore: num(detail.radiant_score) ?? undefined,
+        direScore: num(detail.dire_score) ?? undefined,
+        radiantTeamName:
+          typeof (detail.radiant_team as Rec | undefined)?.name === 'string'
+            ? ((detail.radiant_team as Rec).name as string)
+            : undefined,
+        direTeamName:
+          typeof (detail.dire_team as Rec | undefined)?.name === 'string'
+            ? ((detail.dire_team as Rec).name as string)
+            : undefined,
+        ingestStatus: 'complete',
+        gameState: 6,
+      })
+      .where(eq(matches.matchId, matchId))
+  })
 
   logger.info(
     { matchId, minutes: minutes.length, playerRows: playerRows.length, events: events.length },

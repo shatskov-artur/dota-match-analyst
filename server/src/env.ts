@@ -2,6 +2,7 @@ import { z } from 'zod'
 
 const EnvSchema = z.object({
   PORT: z.string().default('3001'),
+  NODE_ENV: z.string().optional(),
   // Upstash pair is only required when REDIS_URL is absent — see the superRefine below.
   // A local `docker compose -f docker-compose.local.yml up` sets REDIS_URL instead.
   UPSTASH_REDIS_URL: z.string().min(1).optional(),
@@ -16,6 +17,21 @@ const EnvSchema = z.object({
   // configured origin verbatim — so a dashboard value like "https://app.vercel.app/"
   // silently blocks every request. Strip it here rather than rely on the operator.
   CORS_ORIGIN: z.string().trim().transform((s) => s.replace(/\/+$/, '')).optional(),
+
+  // Shared secret guarding /api/* (everything except /api/health).
+  //
+  // Unset means "no check", which is what keeps `npm run dev` and the local-only v2.0
+  // archive working exactly as before — but it is REQUIRED once NODE_ENV=production,
+  // see the superRefine below. The reason is that this BFF spends someone's Valve and
+  // Stratz quota on every request: /api/live/intel/:id costs up to ten OpenDota calls
+  // and ten Stratz calls, against a Stratz budget of 500 an hour. Anonymous and public
+  // means one crawler drains the day's quota and the app goes blind for everybody.
+  //
+  // Be honest about what this is: a browser SPA has to carry the token in its bundle,
+  // so it is not a secret against someone reading the network tab. It stops crawlers,
+  // scanners and accidental discovery, and combined with the rate limiter it bounds
+  // what any single client can spend. Real per-user auth is a different project.
+  API_TOKEN: z.string().min(16, 'API_TOKEN must be at least 16 characters').optional(),
 
   // ─── v2.0 tournament archive ──────────────────────────────────────────────
   // Postgres connection string. Optional on purpose: the BFF must still boot and
@@ -39,6 +55,10 @@ const EnvSchema = z.object({
   ARCHIVE_LEAGUE_TIERS: z.string().trim().optional(),
   // Opt-out switch mirroring the existing HISTORY_SAMPLER_DISABLED.
   INGEST_DISABLED: z.string().optional(),
+  // The pre-v2.0 name for the same kill switch. It used to be read straight off
+  // process.env in ingestJob.ts, which meant a typo in it silently did nothing —
+  // a kill switch that may not fire is worse than none.
+  HISTORY_SAMPLER_DISABLED: z.string().optional(),
 })
 
 const parsed = EnvSchema.superRefine((v, ctx) => {
@@ -59,6 +79,33 @@ const parsed = EnvSchema.superRefine((v, ctx) => {
         path: ['UPSTASH_REDIS_TOKEN'],
         message:
           'UPSTASH_REDIS_TOKEN is required. Get it from https://console.upstash.com — or set REDIS_URL to a local Redis (docker-compose.local.yml).',
+      })
+    }
+  }
+
+  // Production has two extra requirements, both of which were previously "fail open".
+  //
+  // CORS_ORIGIN: index.ts falls back to http://localhost:5173 when it is unset. That is
+  // the right default for a dev machine and the wrong one for a deployed service, where
+  // it means a page served from localhost:5173 on the visitor's own machine can read the
+  // API. Failing the boot is better than a config gap nobody notices.
+  //
+  // API_TOKEN: see the field comment. Deployed and anonymous is the open-proxy shape.
+  if (v.NODE_ENV === 'production') {
+    if (!v.CORS_ORIGIN) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['CORS_ORIGIN'],
+        message:
+          'CORS_ORIGIN is required when NODE_ENV=production — set it to the exact frontend origin (no trailing slash). Without it the dev fallback would allow http://localhost:5173.',
+      })
+    }
+    if (!v.API_TOKEN) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ['API_TOKEN'],
+        message:
+          'API_TOKEN is required when NODE_ENV=production — /api/* would otherwise be anonymous, and every request spends Valve/Stratz quota. Generate one with `node -e "console.log(require(\'crypto\').randomBytes(24).toString(\'hex\'))"` and set the same value as VITE_API_TOKEN for the frontend build.',
       })
     }
   }

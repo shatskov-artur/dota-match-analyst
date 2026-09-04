@@ -38,6 +38,23 @@ try {
 }
 
 /**
+ * Closes the Redis connection on shutdown.
+ *
+ * ioredis keeps a socket and a reconnect timer alive, so without this the process only
+ * exited because the hard-timeout fallback fired — which looks identical to a hung
+ * shutdown in the platform's logs. `quit()` drains in-flight commands; `disconnect()` is
+ * the fallback for a connection that is already unhealthy and would never answer QUIT.
+ */
+export async function closeRedis(): Promise<void> {
+  if (!redis) return
+  try {
+    await redis.quit()
+  } catch {
+    redis.disconnect()
+  }
+}
+
+/**
  * TTL constants per data type (in seconds).
  * Per D-08: 30s live match data, 6h hero stats, 15min player stats.
  */

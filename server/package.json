@@ -11,6 +11,7 @@
     "pg:start": "tsx --env-file=.env scripts/local-postgres.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx --env-file=.env src/db/migrate.ts",
+    "db:migrate:deploy": "node dist/server/src/db/migrate.js --if-configured",
     "test": "vitest",
     "db:peek": "tsx --env-file=.env scripts/peek.ts",
     "db:prune": "tsx --env-file=.env scripts/prune-untracked.ts",
@@ -33,6 +34,6 @@
     "embedded-postgres": "^18.4.0-beta.17",
     "tsx": "^4.0.0",
     "typescript": "^5.6.0",
-    "vitest": "^2.0.0"
+    "vitest": "^4.1.10"
   }
 }

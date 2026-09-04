@@ -96,6 +96,9 @@ describe('hidden-profile skip (PLAYER-02 — account_id = 4294967295 returns nul
     const mockFetch = vi.fn().mockResolvedValue([{ hero_id: 1, games: 20, win: 12 }])
     const result = await buildPlayerIntelEntry(12345, 1, [], mockFetch)
     expect(mockFetch).toHaveBeenCalledWith(12345)
+    // The name of this test — it only ever checked that the fetch happened, so the one
+    // thing it claims to prove was never asserted.
+    expect(result).not.toBeNull()
   })
 })
 

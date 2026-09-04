@@ -1,11 +1,14 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { logThrottle } from './logger.js'
 
-// Shared mock Redis instance — created once, referenced by both the factory and tests
+// Shared mock Redis instance — created once, referenced by both the factory and tests.
+// Signatures spelled out rather than left as bare vi.fn(): an untyped mock is inferred as
+// void-returning, so handing it the async implementation these tests need reads as a
+// promise dropped on the floor.
 const mockRedisInstance = {
-  get: vi.fn(),
-  set: vi.fn(),
-  on: vi.fn(),
+  get: vi.fn<(key: string) => Promise<string | null>>(),
+  set: vi.fn<(...args: unknown[]) => Promise<unknown>>(),
+  on: vi.fn<(...args: unknown[]) => unknown>(),
 }
 
 // Mock ioredis before importing cache.
@@ -50,7 +53,7 @@ describe('TTL constants', () => {
 })
 
 describe('cached()', () => {
-  let mockRedis: { get: ReturnType<typeof vi.fn>; set: ReturnType<typeof vi.fn>; on: ReturnType<typeof vi.fn> }
+  let mockRedis: typeof mockRedisInstance
   let cachedFn: typeof import('./cache.js')['cached']
 
   beforeEach(async () => {
@@ -135,7 +138,7 @@ describe('cached()', () => {
 
 // ─── Backoff / throttle / stale behavior (2b/2c/2d) ─────────────────────────────
 describe('cached() rate-limit backoff, throttle logging, and stale fallback', () => {
-  let mockRedis: { get: ReturnType<typeof vi.fn>; set: ReturnType<typeof vi.fn>; on: ReturnType<typeof vi.fn> }
+  let mockRedis: typeof mockRedisInstance
   let cachedFn: typeof import('./cache.js')['cached']
 
   const rateLimit = (retryAfterMs?: number) =>

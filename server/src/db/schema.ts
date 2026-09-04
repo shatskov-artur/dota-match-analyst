@@ -13,6 +13,7 @@ import {
   uniqueIndex,
   primaryKey,
 } from 'drizzle-orm/pg-core'
+import { sql } from 'drizzle-orm'
 
 // v2.0 tournament archive.
 //
@@ -132,6 +133,19 @@ export const bracketNodes = pgTable(
     primaryKey({ columns: [t.leagueId, t.nodeId] }),
     index('bracket_nodes_league_time_idx').on(t.leagueId, t.scheduledTime),
     index('bracket_nodes_series_idx').on(t.seriesId),
+    /**
+     * The home page's calendar window, and the one index it actually needs.
+     *
+     * /api/schedule/range filters on `coalesce(nullif(actual_time,0), nullif(scheduled_time,0))`
+     * across ALL leagues — a series belongs to the day it was played, and Valve never revises
+     * scheduled_time. The composite above cannot serve that: it leads with league_id, which
+     * the predicate does not mention, and it indexes a bare column rather than the expression.
+     * So the route the front page polls every two minutes was a sequential scan over every
+     * bracket node of every league ever synced.
+     */
+    index('bracket_nodes_effective_time_idx').on(
+      sql`(coalesce(nullif(${t.actualTime}, 0), nullif(${t.scheduledTime}, 0)))`,
+    ),
   ],
 )
 
@@ -159,7 +173,13 @@ export const series = pgTable(
     matchIds: jsonb('match_ids').$type<number[]>(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow(),
   },
-  (t) => [index('series_league_idx').on(t.leagueId)],
+  (t) => [
+    index('series_league_idx').on(t.leagueId),
+    // Same calendar window as bracket_nodes, same reason — /api/schedule/range reads both.
+    index('series_effective_time_idx').on(
+      sql`(coalesce(nullif(${t.startTime}, 0), nullif(${t.scheduledTime}, 0)))`,
+    ),
+  ],
 )
 
 // ─── Matches ─────────────────────────────────────────────────────────────────
@@ -208,6 +228,18 @@ export const matches = pgTable(
     index('matches_series_idx').on(t.seriesId),
     index('matches_status_idx').on(t.ingestStatus),
     index('matches_start_idx').on(t.startTime),
+    /**
+     * The backfill queue's own claim query, which runs every tick:
+     *   where ingest_status='awaiting_parse' and backfill_attempts < 12
+     *     and (backfill_next_at is null or backfill_next_at <= now)
+     * Partial, because 'awaiting_parse' is a transient state — a finished tournament leaves
+     * thousands of 'complete' rows behind and none of them belong in this index.
+     */
+    index('matches_backfill_idx')
+      .on(t.backfillNextAt)
+      .where(sql`${t.ingestStatus} = 'awaiting_parse'`),
+    /** /api/matches: filter by status, newest first. matches_status_idx cannot order. */
+    index('matches_status_start_idx').on(t.ingestStatus, t.startTime.desc()),
   ],
 )
 
@@ -294,8 +326,11 @@ export const playerTimeline = pgTable(
   },
   (t) => [
     primaryKey({ columns: [t.matchId, t.minute, t.playerSlot] }),
-    index('player_timeline_account_idx').on(t.accountId),
-    index('player_timeline_hero_idx').on(t.heroId),
+    // No index on account_id or hero_id. Two used to sit here, and nothing queried either:
+    // every read of this table is by match_id and minute (reconstruct.ts, analysis/index.ts).
+    // This is the largest table in the archive — ~600 rows per match, inserted in batches of
+    // 500 during every backfill — so each unused index was pure write cost. Add one back the
+    // day a "matches this player appeared in" query exists, not before.
   ],
 )
 

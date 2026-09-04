@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { and, asc, desc, eq, gte, inArray, isNotNull, isNull, lte, or, sql } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, lte, sql } from 'drizzle-orm'
 import { alias } from 'drizzle-orm/pg-core'
 import { db } from '../db/index.js'
 import {
@@ -51,9 +51,42 @@ const archiveRoutes = new Hono()
  * Hono wraps each of this sub-app's handlers with this handler when the app is mounted
  * with `app.route()`, so it covers every route here without touching them individually.
  */
+
+/** SQLSTATE classes that mean "the database did not answer", not "the query was wrong". */
+const CONNECTION_SQLSTATES = new Set([
+  '08000', '08001', '08003', '08004', '08006', '08007', '08P01', // connection exception
+  '57P01', '57P02', '57P03', // admin shutdown, crash shutdown, cannot connect now
+  '53300', // too many connections
+])
+
+/** Socket-level failures, which postgres-js surfaces with these codes instead of a SQLSTATE. */
+const CONNECTION_ERROR_CODES = new Set([
+  'ECONNREFUSED', 'ECONNRESET', 'ETIMEDOUT', 'EPIPE', 'ENOTFOUND',
+  'CONNECTION_ENDED', 'CONNECTION_DESTROYED', 'CONNECTION_CLOSED', 'CONNECT_TIMEOUT',
+])
+
+function isArchiveUnreachable(err: unknown): boolean {
+  const e = err as { code?: unknown; message?: unknown } | null | undefined
+  const code = typeof e?.code === 'string' ? e.code : undefined
+  if (code && (CONNECTION_SQLSTATES.has(code) || CONNECTION_ERROR_CODES.has(code))) return true
+  // A pool that dies mid-query reports exactly this, with no code attached.
+  return typeof e?.message === 'string' && e.message.includes('Connection terminated')
+}
+
 archiveRoutes.onError((err, c) => {
-  logger.error({ path: c.req.path, err: briefError(err) }, 'archive: request failed')
-  return c.json({ error: 'archive_unreachable' }, 503)
+  // Before this split, EVERY throw became "archive_unreachable". A TypeError, a malformed
+  // query the driver rejected, a serialisation failure — all of them told the operator the
+  // database was down and told monitoring nothing at all, because a 503 during an outage is
+  // exactly what you expect to see. Real faults hid inside the expected noise.
+  if (isArchiveUnreachable(err)) {
+    logger.error({ path: c.req.path, err: briefError(err) }, 'archive: database unreachable')
+    return c.json({ error: 'archive_unreachable' }, 503)
+  }
+  logger.error(
+    { path: c.req.path, err: briefError(err), stack: err instanceof Error ? err.stack : undefined },
+    'archive: request failed',
+  )
+  return c.json({ error: 'internal_error' }, 500)
 })
 
 /** 503 rather than 500: the archive being off is a configuration state, not a crash. */
@@ -61,9 +94,45 @@ function requireDb(): NonNullable<typeof db> | null {
   return db ?? null
 }
 
+/**
+ * Every id in this schema — league, match, series, node — is a positive integer.
+ *
+ * The check was `Number.isFinite(n) && n > 0`, which accepts 1.5 and 1e30. Both then
+ * reached a bigint or integer column and were rejected by the driver, so a malformed URL
+ * was reported to the user as an archive outage.
+ */
 const parseId = (raw: string | undefined): number | null => {
   const n = Number(raw)
-  return Number.isFinite(n) && n > 0 ? n : null
+  return Number.isSafeInteger(n) && n > 0 ? n : null
+}
+
+/**
+ * A row limit the database will accept.
+ *
+ * `Math.min(Number(q) || fallback, max)` looked equivalent and was not: it only defends
+ * against NaN and zero, so `?limit=-5` sailed through as -5 and reached Postgres as
+ * `LIMIT -4`, which is a syntax error. The route then answered 503 "the archive is
+ * unreachable" about a database that was perfectly healthy and had simply been handed
+ * nonsense. Bad input is a 400, and it is decided here rather than by the driver.
+ */
+function parseLimit(raw: string | undefined, fallback: number, max: number): number | null {
+  if (raw === undefined) return fallback
+  const n = Number(raw)
+  if (!Number.isInteger(n) || n < 1) return null
+  return Math.min(n, max)
+}
+
+/**
+ * A non-negative integer bounded by `max`.
+ *
+ * The upper bound is not decoration: minute and t land in int4 columns, so a value past
+ * 2^31 made Postgres raise an overflow — again reported to the user as "the archive is
+ * unreachable".
+ */
+function parseBounded(raw: string | undefined, max: number): number | null {
+  const n = Number(raw)
+  if (!Number.isInteger(n) || n < 0 || n > max) return null
+  return n
 }
 
 // ─── Tournaments ─────────────────────────────────────────────────────────────
@@ -241,7 +310,8 @@ archiveRoutes.get('/schedule/range', async (c) => {
   if (!Number.isFinite(from) || !Number.isFinite(to) || to <= from) {
     return c.json({ error: 'Invalid range: from and to are unix seconds, to > from' }, 400)
   }
-  const limit = Math.min(Number(c.req.query('limit') ?? 500) || 500, 800)
+  const limit = parseLimit(c.req.query('limit'), 500, 800)
+  if (limit === null) return c.json({ error: 'Invalid limit: expected a positive integer' }, 400)
   const now = Math.floor(Date.now() / 1000)
 
   const t1 = alias(teams, 't1')
@@ -454,8 +524,10 @@ archiveRoutes.get('/tournaments/:leagueId/nodes/:nodeId', async (c) => {
   const d = requireDb()
   if (!d) return c.json({ error: 'archive_unavailable' }, 503)
   const leagueId = parseId(c.req.param('leagueId'))
-  const nodeId = Number(c.req.param('nodeId'))
-  if (leagueId === null || !Number.isFinite(nodeId)) return c.json({ error: 'Invalid node' }, 400)
+  // parseId, not Number.isFinite: a node id is a positive integer, and the looser check
+  // let negatives through to the query.
+  const nodeId = parseId(c.req.param('nodeId'))
+  if (leagueId === null || nodeId === null) return c.json({ error: 'Invalid node' }, 400)
 
   const t1 = alias(teams, 't1')
   const t2 = alias(teams, 't2')
@@ -626,8 +698,15 @@ archiveRoutes.get('/matches', async (c) => {
   const d = requireDb()
   if (!d) return c.json({ error: 'archive_unavailable' }, 503)
   const leagueId = c.req.query('leagueId') ? parseId(c.req.query('leagueId')) : null
-  const limit = Math.min(Number(c.req.query('limit') ?? 50) || 50, 200)
+  const limit = parseLimit(c.req.query('limit'), 50, 200)
+  if (limit === null) return c.json({ error: 'Invalid limit: expected a positive integer' }, 400)
+
+  // An unrecognised status used to fall through to the 'finished' branch, so ?status=lve
+  // silently answered a different question than the one asked.
   const status = c.req.query('status') ?? 'finished'
+  if (!['live', 'finished', 'all'].includes(status)) {
+    return c.json({ error: "Invalid status: expected 'live', 'finished' or 'all'" }, 400)
+  }
 
   const statusFilter =
     status === 'live'
@@ -731,17 +810,26 @@ archiveRoutes.get('/matches/:matchId/at', async (c) => {
   const matchId = parseId(c.req.param('matchId'))
   if (matchId === null) return c.json({ error: 'Invalid matchId' }, 400)
 
-  const rawMinute = c.req.query('minute')
+  /*
+   * Both bounds are real limits, not padding. `t` is seconds into a game and lands in an
+   * int4 column, so anything past 2^31 made Postgres raise an overflow that the error
+   * boundary then reported as "the archive is unreachable" — a healthy database blamed for
+   * a bad query string. MAX_T is a fortnight, which no Dota match will ever approach, and
+   * MAX_MINUTE is the same ceiling expressed in minutes.
+   */
+  const MAX_T = 1_209_600
+  const MAX_MINUTE = Math.floor(MAX_T / 60)
+
   const rawT = c.req.query('t')
   let upper: number
   if (rawT !== undefined) {
-    const t = Number(rawT)
-    if (!Number.isFinite(t) || t < 0) return c.json({ error: 'Invalid t' }, 400)
-    upper = Math.floor(t)
+    const t = parseBounded(rawT, MAX_T)
+    if (t === null) return c.json({ error: `Invalid t: expected 0..${MAX_T}` }, 400)
+    upper = t
   } else {
-    const minute = Number(rawMinute)
-    if (!Number.isFinite(minute) || minute < 0) return c.json({ error: 'Invalid minute' }, 400)
-    upper = Math.floor(minute) * 60 + 59
+    const minute = parseBounded(c.req.query('minute'), MAX_MINUTE)
+    if (minute === null) return c.json({ error: `Invalid minute: expected 0..${MAX_MINUTE}` }, 400)
+    upper = minute * 60 + 59
   }
 
   const [hit] = await d

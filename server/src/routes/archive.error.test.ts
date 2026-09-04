@@ -88,3 +88,69 @@ describe('archive routes — error boundary (B-2)', () => {
     expect(body.error).toBe('Invalid matchId')
   })
 })
+
+// Bad input used to be indistinguishable from an outage.
+//
+// `Math.min(Number(q) || 500, 800)` defends against NaN and zero and nothing else, so a
+// negative limit reached Postgres as `LIMIT -4` and a huge `t` overflowed an int4 column.
+// Both threw, both hit the boundary above, and both told the user the archive was down
+// while the database was healthy and had simply been handed nonsense.
+//
+// These run against the FAILING db mock on purpose: if validation ever stops happening
+// first, the request reaches the mock, throws, and the assertion sees 503 instead of 400.
+describe('archive routes — input validation precedes the database', () => {
+  beforeEach(() => {
+    dbMock = failingDb
+  })
+
+  it('rejects a negative limit with 400, not a 503 about the archive', async () => {
+    const { status } = await call('/api/schedule/range?from=1000&to=2000&limit=-5')
+    expect(status).toBe(400)
+  })
+
+  it('rejects a non-integer limit', async () => {
+    const { status } = await call('/api/matches?limit=2.5')
+    expect(status).toBe(400)
+  })
+
+  it('rejects an unknown status instead of silently answering a different question', async () => {
+    const { status } = await call('/api/matches?status=lve')
+    expect(status).toBe(400)
+  })
+
+  it('rejects a t beyond what an int4 column can hold', async () => {
+    const { status } = await call('/api/matches/8942152024/at?t=99999999999')
+    expect(status).toBe(400)
+  })
+
+  it('rejects a negative minute', async () => {
+    const { status } = await call('/api/matches/8942152024/at?minute=-1')
+    expect(status).toBe(400)
+  })
+
+  it('rejects a fractional node id', async () => {
+    const { status } = await call('/api/tournaments/19719/nodes/1.5')
+    expect(status).toBe(400)
+  })
+
+  it('still accepts a limit within range', async () => {
+    // Reaches the (failing) database, proving the guard did not simply reject everything.
+    const { status } = await call('/api/matches?limit=10')
+    expect(status).toBe(503)
+  })
+})
+
+describe('archive routes — a real fault is not disguised as an outage', () => {
+  it('answers 500 when the failure is not a connection problem', async () => {
+    // A bug in a handler, or a query the driver rejects, used to be reported as
+    // "archive_unreachable" — the one status an operator ignores during an outage.
+    dbMock = {
+      select: () => {
+        throw new TypeError('cannot read properties of undefined')
+      },
+    }
+    const { status, body } = await call('/api/tournaments')
+    expect(status).toBe(500)
+    expect(body.error).toBe('internal_error')
+  })
+})

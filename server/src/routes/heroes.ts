@@ -1,5 +1,6 @@
 import { Hono } from 'hono'
 import { getHeroStats } from '../services/openDotaApi.js'
+import { logger, briefError } from '../logger.js'
 
 const heroRoutes = new Hono()
 
@@ -20,7 +21,9 @@ heroRoutes.get('/heroes/stats', async (c) => {
     const stats = await getHeroStats()
     if (!stats) return c.json({ error: 'Upstream error' }, 502)
     return c.json(stats)
-  } catch {
+  } catch (err) {
+    // The 502 body stays opaque (T-5-02); the reason goes to the log, where it is needed.
+    logger.error({ err: briefError(err) }, 'heroes: getHeroStats failed')
     return c.json({ error: 'Upstream error' }, 502)
   }
 })

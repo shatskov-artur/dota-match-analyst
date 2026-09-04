@@ -11,6 +11,15 @@ const STRATZ_HEADERS = {
   'User-Agent': 'STRATZ_API',
 }
 
+/**
+ * Bounds how long a stalled Stratz connection can hold its queue slot.
+ *
+ * stratzQueue has a concurrency of 1, so without this a single request that connects and
+ * then never answers blocks every later Stratz call for the lifetime of the process —
+ * win probability and counterpick intel both go quiet with no error anywhere to explain it.
+ */
+const STRATZ_TIMEOUT_MS = 10_000
+
 // ─── Win Probability ──────────────────────────────────────────────────────────
 
 /**
@@ -38,6 +47,7 @@ async function fetchWinProbability(matchId: number): Promise<number | null> {
         }`,
         variables: { id: matchId },
       }),
+      signal: AbortSignal.timeout(STRATZ_TIMEOUT_MS),
     })
   } catch (err) {
     console.error('[stratzApi] Network error fetching winprob:', (err as Error).message)
@@ -110,6 +120,7 @@ async function fetchHeroMatchupsStratz(heroId: number): Promise<StratzHeroDryadE
         }`,
         variables: { heroId },
       }),
+      signal: AbortSignal.timeout(STRATZ_TIMEOUT_MS),
     })
   } catch (err) {
     // Rethrown, not swallowed: a network blip is not "this hero has no counters".

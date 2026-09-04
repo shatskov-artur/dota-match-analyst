@@ -8,6 +8,7 @@ import { hiddenProfile } from '../../../shared/hiddenProfile.js'
 import { cached, TTL } from '../cache.js'
 import { extractScoreboardInputs, computeGoldWinProb, computeEstWinProb } from '../services/winProbHeuristic.js'
 import { enrichLiveGames } from '../services/liveAggregator.js'
+import { logger, briefError } from '../logger.js'
 
 const liveRoutes = new Hono()
 
@@ -25,7 +26,7 @@ liveRoutes.get('/games', async (c) => {
   try {
     data = await getLiveLeagueGames()
   } catch (err) {
-    console.error('[live] getLiveLeagueGames failed:', (err as Error).message)
+    logger.error({ err: briefError(err) }, 'live: getLiveLeagueGames failed')
     return c.json({ error: 'upstream_unavailable' }, 503)
   }
   const games = data.result.games ?? []
@@ -105,7 +106,11 @@ liveRoutes.get('/draft/:matchId', async (c) => {
       game_state: game.game_state,
       scoreboard,
     })
-  } catch {
+  } catch (err) {
+    // Never silent: these four handlers answered 502 with nothing written anywhere, so
+    // `why is intel sometimes 502` had no answer at all. Status and path only — briefError
+    // keeps the first line, which cannot carry a url or a key.
+    logger.error({ path: c.req.path, err: briefError(err) }, 'live: upstream failed')
     return c.json({ error: 'Upstream error' }, 502)
   }
 })
@@ -316,7 +321,11 @@ liveRoutes.get('/intel/:matchId', async (c) => {
     // `complete` is a caching decision, not part of the client contract.
     const { complete: _complete, ...body } = payload
     return c.json({ ...body, game_state: derivedGameState })
-  } catch {
+  } catch (err) {
+    // Never silent: these four handlers answered 502 with nothing written anywhere, so
+    // `why is intel sometimes 502` had no answer at all. Status and path only — briefError
+    // keeps the first line, which cannot carry a url or a key.
+    logger.error({ path: c.req.path, err: briefError(err) }, 'live: upstream failed')
     return c.json({ error: 'Upstream error' }, 502)
   }
 })
@@ -362,7 +371,11 @@ liveRoutes.get('/winprob/:matchId', async (c) => {
       gameState: game?.game_state ?? (hasPlayers ? 5 : null),
       duration: game?.duration ?? sbDuration,
     })
-  } catch {
+  } catch (err) {
+    // Never silent: these four handlers answered 502 with nothing written anywhere, so
+    // `why is intel sometimes 502` had no answer at all. Status and path only — briefError
+    // keeps the first line, which cannot carry a url or a key.
+    logger.error({ path: c.req.path, err: briefError(err) }, 'live: upstream failed')
     return c.json({ error: 'Upstream error' }, 502)
   }
 })
