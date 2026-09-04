@@ -46,6 +46,17 @@ export interface MatchView {
   /** The minute actually rendered, which is not always the one requested. */
   shownMinute: number | null
   /**
+   * Whether this match can be put on screen minute by minute at all.
+   *
+   * /api/matches/:id/at answers for anything the archive holds — from a live recording, or
+   * rebuilt from the parsed replay — so this is normally true. It goes false when that
+   * endpoint has actually answered that it holds nothing, which is the state the demo
+   * build's export produces for the matches it captured a timeline but no per-minute state
+   * for. Without it the scrubber renders over a match it cannot move, which reads as a
+   * broken control rather than as an absent recording.
+   */
+  timeTravel: boolean
+  /**
    * The minute on screen was rebuilt from per-minute rows rather than replayed from a
    * live snapshot, so the item, cooldown and map panels have nothing to draw.
    */
@@ -149,9 +160,9 @@ export function useMatchState(matchId: string | undefined): MatchView {
   /**
    * Nothing to draw — and which kind of nothing, because the two have different remedies.
    *
-   * Every source has to have settled first. The archive queries are DISABLED in the demo
-   * build, and a disabled TanStack query is pending-but-not-fetching, so `isLoading` is
-   * false for them there — which is exactly right: in a demo there is no archive to wait on.
+   * Every source has to have settled first, the archive included: the demo build answers
+   * the archive endpoints from its own export, so unlike before it is a source that can
+   * still be loading here rather than one that is switched off.
    */
   const hasArchiveRows = (timeline?.timeline.length ?? 0) > 0 || (timeline?.events.length ?? 0) > 0
   const nothingToShow =
@@ -179,6 +190,10 @@ export function useMatchState(matchId: string | undefined): MatchView {
     inexact:
       scrubbing && snapshot.data !== undefined ? snapshot.data.minute !== cursorMinute : false,
     shownMinute: snapshot.data?.minute ?? null,
+    // Only a failed answer counts. A query still in flight, or disabled because the live
+    // view needs no minute, must not read as "this match cannot be scrubbed" — that would
+    // hide the control on every match for the first moment of every visit.
+    timeTravel: !snapshot.isError,
     reconstructed: match !== undefined && snapshot.data?.reconstructed === true,
     itemsAreFinal: match !== undefined && snapshot.data?.itemsAreFinal === true,
     assistsKnown: match !== undefined && snapshot.data?.assistsKnown === true,

@@ -1,11 +1,8 @@
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
-import { apiFetch, IS_DEMO } from '../lib/apiFetch'
+import { apiFetch } from '../lib/apiFetch'
 import type { EnrichedGame } from './useLiveGames'
 
 // Read hooks for the v2.0 archive (/api/tournaments, /api/series, /api/matches/*).
-//
-// Every one of these is disabled in the demo build: the static snapshot contains only
-// the live endpoints, and firing archive requests there would 404 on every poll.
 
 async function getJson<T>(path: string): Promise<T> {
   const r = await apiFetch(path)
@@ -13,8 +10,12 @@ async function getJson<T>(path: string): Promise<T> {
   return r.json() as Promise<T>
 }
 
-/** Archive endpoints do not exist in the offline demo build. */
-const archiveEnabled = !IS_DEMO
+// These queries used to carry an `archiveEnabled` gate that was false under
+// VITE_DEMO_MODE, because the offline snapshot held only the live endpoints. It now also
+// carries a full tournament export (demo/archiveSnapshot.ts), so apiFetch answers these
+// paths in the demo build too and the gate is gone: the archive is available in every
+// build. Endpoints the export does not cover 404 exactly as they do against a live BFF
+// that has nothing, which each query below already handles.
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -174,7 +175,6 @@ export function useTournaments() {
     queryFn: () => getJson<{ tournaments: Tournament[] }>('/api/tournaments'),
     // The league row only moves when tournamentSync runs (every 5 min).
     staleTime: 5 * 60_000,
-    enabled: archiveEnabled,
   })
 }
 
@@ -196,7 +196,7 @@ export function useSchedule(leagueId: number | string | undefined) {
     // Matches start and finish during a tournament day — keep this fresher than the league row.
     staleTime: 30_000,
     refetchInterval: 60_000,
-    enabled: archiveEnabled && leagueId !== undefined,
+    enabled: leagueId !== undefined,
   })
 }
 
@@ -213,7 +213,7 @@ export function useBracket(leagueId: number | string | undefined) {
       }>(`/api/tournaments/${leagueId}/bracket`),
     staleTime: 60_000,
     refetchInterval: 120_000,
-    enabled: archiveEnabled && leagueId !== undefined,
+    enabled: leagueId !== undefined,
   })
 }
 
@@ -257,7 +257,7 @@ export function useMatchSeries(matchId: string | undefined) {
       }>(`/api/matches/${matchId}/series`),
     staleTime: 30_000,
     refetchInterval: 60_000,
-    enabled: archiveEnabled && !!matchId,
+    enabled: !!matchId,
   })
 }
 
@@ -272,7 +272,7 @@ export function useMatchTimeline(matchId: string | undefined, isLiveMatch = fals
     queryFn: () => getJson<TimelineResponse>(`/api/matches/${matchId}/timeline`),
     staleTime: isLiveMatch ? 15_000 : Infinity,
     refetchInterval: isLiveMatch ? 30_000 : false,
-    enabled: archiveEnabled && !!matchId,
+    enabled: !!matchId,
     // A match with no archive rows yet is an expected state, not an error worth retrying hard.
     retry: 1,
   })
@@ -298,7 +298,7 @@ export function useSnapshotAt(matchId: string | undefined, minute: number | null
     queryFn: () => getJson<SnapshotAtResponse>(`/api/matches/${matchId}/at?minute=${minute}`),
     staleTime: (query) => (query.state.data?.minute === minute ? Infinity : 30_000),
     gcTime: 10 * 60_000,
-    enabled: archiveEnabled && !!matchId && minute !== null,
+    enabled: !!matchId && minute !== null,
     retry: 1,
   })
 }
@@ -313,7 +313,6 @@ export function useArchivedMatches(params: { leagueId?: number | string; status?
     queryKey: ['archived-matches', suffix],
     queryFn: () => getJson<{ matches: ArchivedMatch[] }>(`/api/matches${suffix}`),
     staleTime: 30_000,
-    enabled: archiveEnabled,
   })
 }
 
@@ -356,7 +355,7 @@ export function useH2H(matchId: string | undefined) {
     queryFn: () => getJson<H2HResponse>(`/api/matches/${matchId}/h2h`),
     staleTime: 20 * 60_000,
     gcTime: 60 * 60_000,
-    enabled: archiveEnabled && !!matchId,
+    enabled: !!matchId,
     retry: 1,
   })
 }
@@ -394,7 +393,7 @@ export function useMatchAnalysis(matchId: string | undefined) {
     placeholderData: keepPreviousData,
     queryFn: () => getJson<AnalysisResponse>(`/api/matches/${matchId}/analysis`),
     staleTime: 5 * 60_000,
-    enabled: archiveEnabled && !!matchId,
+    enabled: !!matchId,
     // 404 until the match finishes and the backfill runs — an expected state.
     retry: false,
   })
@@ -456,7 +455,6 @@ export function useScheduleRange(from: number, to: number) {
     placeholderData: keepPreviousData,
     staleTime: 60_000,
     refetchInterval: 120_000,
-    enabled: archiveEnabled,
   })
 }
 
@@ -496,7 +494,7 @@ export function usePrematch(leagueId: string | undefined, nodeId: string | undef
     queryFn: () => getJson<PrematchResponse>(`/api/tournaments/${leagueId}/nodes/${nodeId}`),
     staleTime: 60_000,
     refetchInterval: 120_000,
-    enabled: archiveEnabled && !!leagueId && !!nodeId,
+    enabled: !!leagueId && !!nodeId,
     retry: 1,
   })
 }
@@ -506,7 +504,6 @@ export function useArchiveStatus() {
     queryKey: ['archive-status'],
     queryFn: () => getJson<ArchiveStatus>('/api/archive/status'),
     staleTime: 60_000,
-    enabled: archiveEnabled,
     retry: false,
   })
 }

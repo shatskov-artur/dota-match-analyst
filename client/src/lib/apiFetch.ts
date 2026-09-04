@@ -19,13 +19,19 @@ import { API_BASE } from './apiBase'
 export const IS_DEMO = import.meta.env.VITE_DEMO_MODE === '1'
 
 /**
- * The snapshot is pulled in through a dynamic import so it forms its own chunk and is
- * unreachable — hence removed — when IS_DEMO is false. Cached after first use.
+ * Both demo indexes are pulled in through dynamic imports so each forms its own chunk and
+ * is unreachable — hence removed — when IS_DEMO is false. Cached after first use.
  */
 let snapshotModule: Promise<typeof import('../demo/snapshot')> | null = null
 function loadSnapshot(): Promise<typeof import('../demo/snapshot')> {
   snapshotModule ??= import('../demo/snapshot')
   return snapshotModule
+}
+
+let archiveModule: Promise<typeof import('../demo/archiveSnapshot')> | null = null
+function loadArchive(): Promise<typeof import('../demo/archiveSnapshot')> {
+  archiveModule ??= import('../demo/archiveSnapshot')
+  return archiveModule
 }
 
 function jsonResponse(body: unknown, status: number): Response {
@@ -59,13 +65,28 @@ export async function apiFetch(path: string): Promise<Response> {
   if (IS_DEMO) {
     const { resolveDemoResponse } = await loadSnapshot()
     const { currentSlice } = await import('../demo/cursor')
-    const payload = resolveDemoResponse(path, currentSlice())
-    // Nothing captured for this path at this point in the replay. 404 mirrors what the live
-    // BFF answered for a match that was not in the live list at that moment — the hooks
-    // already handle it (MatchPage says the match is not in the recording here, the rest
-    // degrade quietly).
-    if (payload === null) return jsonResponse({ error: 'Not in demo snapshot' }, 404)
-    return jsonResponse(payload, 200)
+    /*
+     * The live recording answers first, then the tournament archive.
+     *
+     * The two indexes cover disjoint endpoints — /api/live/* against /api/tournaments,
+     * /api/matches/* and /api/series/* — so the order is not a tie-break between two
+     * answers for the same path. It matters because the live recording is what the replay
+     * cursor moves through: it is time-dependent, small, and already in memory, while an
+     * archive lookup costs a chunk fetch. Asking the cheap, cursor-aware index first keeps
+     * the replay's own endpoints off the archive's code path entirely.
+     */
+    const live = resolveDemoResponse(path, currentSlice())
+    if (live !== null) return jsonResponse(live, 200)
+
+    const { resolveArchiveResponse } = await loadArchive()
+    const archived = await resolveArchiveResponse(path)
+    // Nothing recorded for this path — in the replay at this point, and not in the archive
+    // either. 404 mirrors what the live BFF answered at capture time: a match that was not
+    // in the live list at that moment, or an endpoint that genuinely had nothing (analysis
+    // before a replay is parsed, h2h for a team with no history). The hooks already handle
+    // it — MatchPage says the match is not in the recording here, the rest degrade quietly.
+    if (archived === null) return jsonResponse({ error: 'Not in demo snapshot' }, 404)
+    return jsonResponse(archived, 200)
   }
   return fetch(`${API_BASE}${path}`, authHeaders ? { headers: authHeaders } : undefined)
 }

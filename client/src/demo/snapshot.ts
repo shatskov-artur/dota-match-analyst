@@ -5,11 +5,18 @@
  * capture slice, so apiFetch can answer BFF requests without any network access.
  *
  * WHY import.meta.glob WITH eager: true
- * The JSON is inlined into the bundle rather than served from public/ and fetched at runtime.
- * Chrome blocks fetch() against file:// URLs, so a public/ + fetch approach would make the
- * built page fail when opened straight off disk. Inlining keeps the build genuinely
- * self-contained. It also means glob does the module resolution, so importing JSON needs no
+ * The recording is small and every part of it is needed as soon as the replay starts, so
+ * inlining it costs one chunk and removes all the machinery an async index would need:
+ * resolveDemoResponse stays synchronous, and the driver can read sliceCount at import time.
+ * It also means glob does the module resolution, so importing JSON needs no
  * `resolveJsonModule` in tsconfig.
+ *
+ * It is NOT eager to survive being opened over file://. A demo build has to be served over
+ * HTTP either way — Chrome refuses to load ES modules from file:// for any Vite build
+ * (README, "Building the demo") — so that was never a property this bought.
+ *
+ * The tournament archive beside this (archiveSnapshot.ts) is 47 MB and makes the opposite
+ * call for the opposite reason: it is glob'd lazily, one chunk per file.
  *
  * This module is only ever reached through a dynamic import inside the demo branch of
  * apiFetch, so a production (non-demo) build tree-shakes it — and the whole snapshot — away.

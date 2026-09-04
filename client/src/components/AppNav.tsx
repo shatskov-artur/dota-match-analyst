@@ -132,27 +132,32 @@ export default function AppNav() {
       <Link to="/" className={pill(pathname === '/')}>
         Matches
       </Link>
-      {!IS_DEMO && (
-        <>
-          {primary.map((t) => (
-            <Link
-              key={t.leagueId}
-              to={`/tournament/${t.leagueId}`}
-              className={pill(pathname.startsWith(`/tournament/${t.leagueId}`))}
-            >
-              {t.name ?? `League #${t.leagueId}`}
-            </Link>
-          ))}
-          {/*
-           * Not on the match list, where the same fifty names are already in the rail
-           * beside the calendar — with counts, and filtering in place rather than
-           * navigating away. Two controls over one noun, six centimetres apart, doing
-           * different things is the collision this nav was cleaned up for once already.
-           * Everywhere else it is still the only way to reach another tournament.
-           */}
-          {pathname !== '/' && <OtherTournaments leagues={rest} />}
-        </>
-      )}
+      {/*
+       * Shown in the demo build too. It used to be hidden there because the offline
+       * snapshot held no archive at all; it now carries one tournament's full export, and
+       * this pill is the only way to reach it.
+       */}
+      {primary.map((t) => (
+        <Link
+          key={t.leagueId}
+          to={`/tournament/${t.leagueId}`}
+          className={pill(pathname.startsWith(`/tournament/${t.leagueId}`))}
+        >
+          {t.name ?? `League #${t.leagueId}`}
+        </Link>
+      ))}
+      {/*
+       * Not on the match list, where the same fifty names are already in the rail
+       * beside the calendar — with counts, and filtering in place rather than
+       * navigating away. Two controls over one noun, six centimetres apart, doing
+       * different things is the collision this nav was cleaned up for once already.
+       * Everywhere else it is still the only way to reach another tournament.
+       *
+       * And never in the demo: /api/tournaments answers there from the recorded league
+       * list, so the menu would offer fifty tournaments the export holds no bracket,
+       * schedule or match for. The one that was exported is already a pill above.
+       */}
+      {pathname !== '/' && !IS_DEMO && <OtherTournaments leagues={rest} />}
     </nav>
   )
 }

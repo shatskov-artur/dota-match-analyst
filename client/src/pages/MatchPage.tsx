@@ -11,7 +11,6 @@ import MatchEventFeed from '../components/MatchEventFeed'
 import H2HPanel from '../components/H2HPanel'
 import NotRecordedNotice from '../components/NotRecordedNotice'
 import { useTimelineCursor } from '../store/timelineCursor'
-import { IS_DEMO } from '../lib/apiFetch'
 import SeriesTabs from '../components/SeriesTabs'
 import TimelineScrubber from '../components/TimelineScrubber'
 import ScoreHeader from '../components/ScoreHeader'
@@ -51,6 +50,7 @@ export default function MatchPage() {
     assistsKnown,
     inexact,
     shownMinute,
+    timeTravel,
     notFound,
     notInRecording,
   } = useMatchState(matchId)
@@ -89,6 +89,19 @@ export default function MatchPage() {
   )
 
   /**
+   * This match's own row in the series payload the page already loads.
+   *
+   * It is the only description of the match that does not come from a live payload or a
+   * reconstructed minute, so it is what names the teams and the league when neither of
+   * those exists — a match the archive holds a timeline for but no per-minute state.
+   * Without it such a page is headed "TBD vs TBD" over a full event log.
+   */
+  const archivedSelf = useMemo(
+    () => series.data?.games?.find((g) => String(g.matchId) === matchId) ?? null,
+    [series.data, matchId],
+  )
+
+  /**
    * The parsed final result, taken from the series payload this page already loads rather
    * than a request of its own. Only offered on the live view of a finished match — while
    * scrubbing, the minute on screen is supposed to show its own score — and only once the
@@ -96,11 +109,11 @@ export default function MatchPage() {
    */
   const finalResult = useMemo(() => {
     if (scrubbing) return null
-    const own = series.data?.games?.find((g) => String(g.matchId) === matchId)
+    const own = archivedSelf
     if (!own || own.radiantScore === null || own.direScore === null) return null
     if (own.ingestStatus !== 'complete') return null
     return { radiantScore: own.radiantScore, direScore: own.direScore, duration: own.duration }
-  }, [scrubbing, series.data, matchId])
+  }, [scrubbing, archivedSelf])
 
   // Build playerIntelMap: heroId → PlayerIntel for quick lookup by portrait slots (DraftPortrait looks up by heroId)
   // IMPORTANT: indexed by heroId (not accountId) — DraftPortrait receives heroId from the slot
@@ -114,6 +127,19 @@ export default function MatchPage() {
    * countdown over a hero who is not coming back.
    */
   const matchOver = isArchivedOnly || match?.game_state === 6
+
+  /** The archive has something to say about this match beyond the live feed. */
+  const hasArchiveRows =
+    (timeline?.timeline.length ?? 0) > 0 || (timeline?.events.length ?? 0) > 0
+
+  /**
+   * The archive holds this match's story but nothing to draw a board from — no snapshot to
+   * replay and no live payload either, so there is no scoreboard, no roster, no map and no
+   * items, and none of the panels that draw them have anything to render but their own
+   * empty state. They stand down; the gold and XP curves, which come from the per-minute
+   * rows rather than from a board, move out of the in-game layout and stand on their own.
+   */
+  const boardless = match === undefined && !timeTravel
 
   /**
    * Follow the series into its next map.
@@ -325,12 +351,12 @@ export default function MatchPage() {
     <PageShell
       glow
       backTo={{ to: '/', label: 'Matches' }}
-      eyebrow={match?.league_name}
+      eyebrow={match?.league_name ?? archivedSelf?.leagueName ?? undefined}
       title={
         <>
-          {match?.radiant_team?.team_name ?? 'TBD'}
+          {match?.radiant_team?.team_name ?? archivedSelf?.radiantTeamName ?? 'TBD'}
           <span className="text-text-dim"> vs </span>
-          {match?.dire_team?.team_name ?? 'TBD'}
+          {match?.dire_team?.team_name ?? archivedSelf?.direTeamName ?? 'TBD'}
         </>
       }
     >
@@ -363,10 +389,11 @@ export default function MatchPage() {
         )}
       </div>
 
-      {/* Minute scrubber over the archived timeline (v2.0). The demo build has no archive
-          behind it — it carries its own replay control in DemoBanner — so it is left out
-          there rather than rendering a permanently empty control. */}
-      {!IS_DEMO && (
+      {/* Minute scrubber over the archived timeline (v2.0). It hides itself when there is no
+          range to drag across; the case it cannot see is an archive that holds this match's
+          timeline but no state to rebuild a minute from, which is why that is said here
+          instead of leaving a control that moves and changes nothing. */}
+      {timeTravel ? (
         <TimelineScrubber
           lastMinute={lastMinute}
           currentMinute={currentMinute}
@@ -374,6 +401,13 @@ export default function MatchPage() {
           isLiveMatch={!isArchivedOnly && match?.game_state !== 6}
           snapshotRange={timeline?.snapshots}
         />
+      ) : (
+        hasArchiveRows && (
+          <p className="text-label text-text-dim">
+            No minute-by-minute state was recorded for this match, so it cannot be replayed. The
+            timeline and event log below are everything the archive holds for it.
+          </p>
+        )
       )}
 
       {scrubbing && (
@@ -401,7 +435,10 @@ export default function MatchPage() {
         </p>
       )}
 
-      {/* Score block — featured Neon Bento card with violet glow (D-01 section order step 2) */}
+      {/* Score block — featured Neon Bento card with violet glow (D-01 section order step 2).
+          Nothing inside it can draw without a board, and an empty glowing card reads as a
+          panel that failed rather than as one with nothing to say. */}
+      {!boardless && (
       <div className="bento-card mt-2 bg-[radial-gradient(ellipse_at_center,var(--color-primary-soft),transparent_70%)]">
         <BentoErrorBoundary resetKeys={[matchId]}>
           {match && (
@@ -430,18 +467,17 @@ export default function MatchPage() {
           />}
         </BentoErrorBoundary>
       </div>
+      )}
 
       {/* Say why the timeline, event log and analysis are absent rather than silently
           omitting three panels — an unrecorded league looks identical to a bug otherwise. */}
-      {!IS_DEMO && (
-        <div className="mt-6">
-          <NotRecordedNotice
-            leagueId={match?.league_id}
-            leagueName={match?.league_name}
-            hasArchive={(timeline?.timeline.length ?? 0) > 0 || (timeline?.events.length ?? 0) > 0}
-          />
-        </div>
-      )}
+      <div className="mt-6">
+        <NotRecordedNotice
+          leagueId={match?.league_id}
+          leagueName={match?.league_name}
+          hasArchive={hasArchiveRows}
+        />
+      </div>
 
       {/* Draft before the event log: the picks and bans happen before minute zero, and
           reading the log means already knowing what each side drafted. It also puts the
@@ -463,23 +499,35 @@ export default function MatchPage() {
 
       {/* One stream: the log, the teamfights that group it, and the post-match read
           folded in where each part belongs in time (v2.0). */}
-      {!IS_DEMO && (
-        <div className="mt-6">
-          <MatchEventFeed
-            events={timeline?.events ?? []}
-            timeline={timeline?.timeline ?? []}
-            analysis={analysis.data}
-            radiantName={match?.radiant_team?.team_name}
-            direName={match?.dire_team?.team_name}
-            radiantLogo={match?.team_logos?.radiant}
-            direLogo={match?.team_logos?.dire}
-            heroOwners={heroOwners}
+      {/* Gold and XP over the match, drawn from the archive's per-minute rows. In the normal
+          in-game layout below this panel sits in row 2 beside the map; with no board there is
+          no row 2, and these curves are the whole of what the archive can still show. */}
+      {boardless && history.length > 0 && (
+        <div className="mt-8">
+          <HistoryGraphs
+            history={history}
+            gameDuration={archivedSelf?.duration ?? undefined}
+            gameState={undefined}
+            /* No onScrub: there is no minute to jump to. */
           />
         </div>
       )}
 
+      <div className="mt-6">
+        <MatchEventFeed
+          events={timeline?.events ?? []}
+          timeline={timeline?.timeline ?? []}
+          analysis={analysis.data}
+          radiantName={match?.radiant_team?.team_name ?? archivedSelf?.radiantTeamName}
+          direName={match?.dire_team?.team_name ?? archivedSelf?.direTeamName}
+          radiantLogo={match?.team_logos?.radiant}
+          direLogo={match?.team_logos?.dire}
+          heroOwners={heroOwners}
+        />
+      </div>
+
       {/* Pre-game / loading skeleton — show HeroPlayerGrid alone when in-game gate is closed */}
-      {!(match?.game_state === 5 && radiantPlayers.length > 0) && (
+      {!boardless && !(match?.game_state === 5 && radiantPlayers.length > 0) && (
         <div className="bento-card mt-12">
           <BentoErrorBoundary resetKeys={[matchId]}>
             <HeroPlayerGrid
