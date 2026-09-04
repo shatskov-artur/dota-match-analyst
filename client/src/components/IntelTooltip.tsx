@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from 'react'
+import { useLayoutEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { heroMapper } from '../utils/heroMapper'
 // CRITICAL: import from '../utils/heroMapper' — NOT '@shared/heroMapper' (Vite bundler compat)
@@ -7,8 +7,11 @@ import type { PlayerIntel } from '../hooks/useMatchIntel'
 interface IntelTooltipProps {
   playerIntel: PlayerIntel
   heroName: string        // localized hero name (from heroMapper on the played hero)
-  anchorRef: React.RefObject<HTMLDivElement | null>
+  // HTMLElement, not HTMLDivElement: the triggers are buttons since D-2 made them focusable.
+  anchorRef: React.RefObject<HTMLElement | null>
   isLoading?: boolean     // true while useMatchIntel data is in flight
+  /** Target of the trigger's aria-describedby, so the card is announced with it. */
+  id?: string
 }
 
 /**
@@ -35,6 +38,7 @@ export default function IntelTooltip({
   heroName,
   anchorRef,
   isLoading = false,
+  id,
 }: IntelTooltipProps) {
   // Viewport coordinates, because the card is portalled out to document.body.
   const [place, setPlace] = useState<{ left: number; top: number; above: boolean } | null>(null)
@@ -87,6 +91,8 @@ export default function IntelTooltip({
 
   return createPortal(
     <div
+      id={id}
+      role="tooltip"
       style={{
         zIndex: 50,
         minWidth: 160,

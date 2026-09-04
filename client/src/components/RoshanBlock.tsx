@@ -103,12 +103,12 @@ export default function RoshanBlock({ roshan, matchOver = false }: RoshanBlockPr
         {/* A finished match has no next Roshan and nothing left to respawn. What stays is
             what actually happened: how many were killed and what dropped. */}
         {matchOver ? (
-          <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-3 text-center" style={{ color: 'var(--color-text-dim)' }}>
+          <p className="text-label uppercase tracking-micro font-bold mb-3 text-center" style={{ color: 'var(--color-text-dim)' }}>
             {roshan.killCount === 0 ? 'Roshan untouched' : `Roshan ×${roshan.killCount}`}
           </p>
         ) : roshan.alive ? (
           <>
-            <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-3" style={{ color: 'var(--color-text-dim)' }}>
+            <p className="text-label uppercase tracking-micro font-bold mb-3" style={{ color: 'var(--color-text-dim)' }}>
               Roshan #{nextKillNumber}
             </p>
             <div className="flex items-center gap-2 mb-4">
@@ -117,11 +117,11 @@ export default function RoshanBlock({ roshan, matchOver = false }: RoshanBlockPr
           </>
         ) : (
           <>
-            <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-2 text-center" style={{ color: 'var(--color-text-dim)' }}>
+            <p className="text-label uppercase tracking-micro font-bold mb-2 text-center" style={{ color: 'var(--color-text-dim)' }}>
               Respawn
             </p>
             <div
-              className="text-center mb-3 font-mono"
+              className="text-center mb-3 font-mono tabular-nums"
               style={{
                 fontSize: 28,
                 fontWeight: 700,
@@ -148,16 +148,16 @@ export default function RoshanBlock({ roshan, matchOver = false }: RoshanBlockPr
             the drop table changes with the number, so the two belong on the same line. */}
         {roshan.kills && roshan.kills.length > 0 ? (
           <div className="flex flex-col gap-2 mt-2 pt-3 border-t" style={{ borderColor: 'var(--color-border)' }}>
-            <p className="text-[9px] uppercase tracking-[0.25em]" style={{ color: 'var(--color-text-dim)' }}>
+            <p className="text-label uppercase tracking-label" style={{ color: 'var(--color-text-dim)' }}>
               Kills this match
             </p>
             <ul className="flex flex-col gap-1.5">
               {roshan.kills.map((k) => (
                 <li key={k.n} className="flex items-center gap-2">
-                  <span className="text-[10px] tabular-nums shrink-0" style={{ color: 'var(--color-text-dim)', minWidth: 16 }}>
+                  <span className="text-label tabular-nums shrink-0" style={{ color: 'var(--color-text-dim)', minWidth: 16 }}>
                     #{k.n}
                   </span>
-                  <span className="font-mono text-[11px] tabular-nums shrink-0" style={{ color: 'var(--color-text)', minWidth: 42 }}>
+                  <span className="font-mono text-label tabular-nums shrink-0" style={{ color: 'var(--color-text)', minWidth: 42 }}>
                     {formatMmSs(k.gameTime)}
                   </span>
                   <span className="flex items-center gap-1 min-w-0">
@@ -170,7 +170,7 @@ export default function RoshanBlock({ roshan, matchOver = false }: RoshanBlockPr
         ) : (
           roshan.killCount >= 1 && roshan.lastKillLoot && (
             <div className="flex flex-col gap-1 mt-2 pt-3 border-t" style={{ borderColor: 'var(--color-border)' }}>
-              <p className="text-[9px] uppercase tracking-[0.25em]" style={{ color: 'var(--color-text-dim)' }}>
+              <p className="text-label uppercase tracking-label" style={{ color: 'var(--color-text-dim)' }}>
                 Last Drop
               </p>
               <div className="flex items-center gap-1">

@@ -38,10 +38,27 @@
   --color-dire: #F87171;
   --color-gold: #FBBF24;
   --color-danger: #EF4444;
+  /* UI-SPEC 10.5 D-3. --color-danger on --color-dire-soft over --color-bg measures 4.38:1 —
+     below the 4.5:1 AA needs for small text, and error copy is the one thing that must never
+     be the hardest text to read. #FCA5A5 measures 8.68:1 there. --color-danger keeps its job
+     on borders and markers, where the 3:1 non-text rule applies. */
+  --color-danger-text: #FCA5A5;
+  /* UI-SPEC 10.5 D-6. White on --color-primary is 4.23:1 at 14px — a filled violet button
+     fails AA on its own label. #6D28D9 puts white at 7.10:1. --color-primary stays the accent
+     for borders, rings and focus outlines, which are non-text. */
+  --color-primary-strong: #6D28D9;
+  /* UI-SPEC 10.5 D-4. The shipped palette had no sixth distinguishable hue, so --color-danger
+     was standing in for "barracks" — a data category wearing the error color. Orange reads as
+     an escalation of tower gold and is distinct from both reds at the 3px tick the scrubber
+     draws. Measured 9.02:1 on --color-surface. */
+  --color-barracks: #FB923C;
 
   --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 
+  /* UI-SPEC 10.5 D-12. Eight arbitrary rounded-[Npx] values shipped alongside the four tokens;
+     everything from 2px to 6px collapses here, so the small-radius role has one owner. */
+  --radius-xs: 4px;
   --radius-sm: 7px;
   --radius-md: 12px;
   --radius-lg: 18px;
@@ -49,9 +66,22 @@
 
   --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.45);
   --tracking-label: 0.12em;
+  /* UI-SPEC 10.5 D-8, owner decision. Tracking collapses to --tracking-label everywhere EXCEPT
+     11px uppercase labels inside the dense Match-page panels, where the wider spacing is doing
+     legibility work at that size rather than decoration. Split by size, so it stays checkable. */
+  --tracking-micro: 0.3em;
+  /* UI-SPEC 10.5 §2.5. The page-title tracking was the one declared value still living as a
+     literal in two components. Titles are the only place negative tracking is permitted. */
+  --tracking-title: -0.02em;
 
+  /* UI-SPEC 10.5 D-7 (§4.1). These three tokens shipped but were used by ZERO components —
+     every component hand-wrote text-[Npx], which is how the scale reached 12 sizes. The
+     contract scale is 11/13/14/20, so --text-body moves 14px → 13px (the dense workhorse:
+     player names, event rows, table cells) and 14px gets its own rung for running prose,
+     button labels and inputs. Safe to change in place precisely because nothing consumed it. */
   --text-label: 11px;
-  --text-body: 14px;
+  --text-body: 13px;
+  --text-body-lg: 14px;
   --text-heading: 20px;
 
   --breakpoint-stack: 1180px;
@@ -63,6 +93,12 @@
   --color-accent-soft: rgba(251, 191, 36, 0.16);
   --color-radiant-soft: rgba(74, 222, 128, 0.16);
   --color-dire-soft: rgba(248, 113, 113, 0.16);
+  /* UI-SPEC 10.5 D-5. Five hand-picked black opacities (0.55–0.8) were spelling one concept
+     across eight files, so "darken behind this" drifted every time someone reached for it.
+     Two rungs cover both jobs: soft for depth (panel and popover shadows, the ban-X glyph
+     shadow), heavy where the scrim has to carry text on top of a hero portrait. */
+  --scrim-soft: rgba(0, 0, 0, 0.6);
+  --scrim-heavy: rgba(0, 0, 0, 0.8);
   --card-bg-grad: linear-gradient(180deg, #1A1932 0%, #131228 100%);
   --glow-primary: 0 0 0 1px rgba(139, 92, 246, 0.45);
   --glow-accent: 0 0 0 1px rgba(251, 191, 36, 0.40);
@@ -116,5 +152,53 @@
   }
   .scroll-slim::-webkit-scrollbar-corner {
     background: transparent;
+  }
+}
+
+/* UI-SPEC 10.5 §6.1 (D-1) — keyboard focus, the headline accessibility gap.
+   The app shipped with ZERO :focus-visible rules: every match card, nav pill, calendar day,
+   filter chip and scrubber handle was invisible to a keyboard user, and MatchRail actively
+   removed the browser default with focus:outline-none.
+   :where() keeps specificity at 0 so any component can still override deliberately.
+   Measured against the 3:1 non-text UI threshold: violet ring on --color-bg 4.72:1,
+   on --color-surface 4.22:1, on --color-surface-2 4.02:1. */
+/* UI-SPEC 10.5 D-7 (§4.1) — prose carries exactly two weights, 500 and 700. Removing the
+   font-normal / font-medium / font-semibold classes only got half the way there: everything
+   without a weight class still fell back to the browser's 400, which is the weight the contract
+   retires ("400 goes muddy on #08080F"). Declaring 500 as the base makes the absence of a class
+   mean the Body weight rather than a fifth, unowned one; font-bold remains the only opt-out. */
+@layer base {
+  body {
+    font-weight: 500;
+  }
+}
+
+@layer base {
+  :where(a, button, input, select, textarea, summary, [tabindex]:not([tabindex='-1'])):focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+  /* On a violet-filled surface the violet ring disappears into its own background, so the
+     ring switches to text color there. --color-text on a violet fill measures 3.83:1. */
+  .is-primary-filled:focus-visible,
+  [aria-pressed='true']:focus-visible,
+  [aria-current='page']:focus-visible {
+    outline-color: var(--color-text);
+  }
+}
+
+/* UI-SPEC 10.5 §6.5 (D-10) — 21 animate-pulse call sites shipped with no reduced-motion guard;
+   only WinProbBar checked. Skeletons pulse, live dots pulse, the active draft slot pulses —
+   on a page that already refreshes every 30 seconds. Honour the OS preference globally rather
+   than asking each component to remember. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

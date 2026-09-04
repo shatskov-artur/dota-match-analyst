@@ -14,13 +14,13 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
     alias: {
-      '@shared': path.resolve(__dirname, '../shared'),
+      '@shared': path.resolve(import.meta.dirname,'../shared'),
     },
   },
   server: {
     // demo-data/ and shared/ live above the client root; allow the dev server to read them.
     fs: {
-      allow: [path.resolve(__dirname, '..')],
+      allow: [path.resolve(import.meta.dirname,'..')],
     },
     proxy: {
       '/api': {

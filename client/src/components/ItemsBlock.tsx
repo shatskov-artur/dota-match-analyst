@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import { heroMapper } from '../utils/heroMapper'
 import { itemMapper } from '../utils/itemMapper'
 import { formatNW } from '../utils/formatNW'
@@ -63,14 +63,14 @@ function ItemSlot({ itemId, variant = 'main' }: { itemId?: number; variant?: 'ma
   )
 }
 
-export default function ItemsBlock({ players }: ItemsBlockProps) {
+function ItemsBlock({ players }: ItemsBlockProps) {
   if (players.length === 0) return null
 
   // `@container`: the optional neutral/backpack slots gate on this card's width, not the window's.
   return (
     <div className="@container flex flex-col flex-1">
       {/* Section header — matches HeroPlayerGrid label style */}
-      <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-4 text-text-dim">
+      <p className="text-label uppercase tracking-micro font-bold mb-4 text-text-dim">
         Items
       </p>
 
@@ -130,7 +130,7 @@ export default function ItemsBlock({ players }: ItemsBlockProps) {
 
             {/* Net worth value — 56px, gold mono per UI-SPEC */}
             <div
-              className="font-mono"
+              className="font-mono tabular-nums"
               style={{
                 width: 56,
                 flexShrink: 0,
@@ -174,3 +174,6 @@ export default function ItemsBlock({ players }: ItemsBlockProps) {
     </div>
   )
 }
+
+// Ninety item slots, each resolving an icon URL. Only the match payload can change them.
+export default memo(ItemsBlock)

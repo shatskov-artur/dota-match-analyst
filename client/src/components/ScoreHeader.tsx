@@ -122,16 +122,16 @@ export default function ScoreHeader({
               size={40}
             />
             <span
-              className="text-xs font-bold uppercase tracking-[0.16em] truncate"
+              className="text-label font-bold uppercase tracking-label truncate"
               style={{ color: 'var(--color-radiant)' }}
             >
               {match.radiant_team?.team_name ?? 'TBD'}
             </span>
           </span>
-          <span className="text-[40px] md:text-[44px] lg:text-[56px] font-mono font-extrabold tabular-nums leading-none text-text">
+          <span className="text-[40px] md:text-[44px] lg:text-[56px] font-mono font-bold tabular-nums leading-none text-text">
             {radiantScore}
           </span>
-          <span className="text-[11px] tabular-nums tracking-[0.08em] text-text-dim">
+          <span className="text-label tabular-nums text-text-dim">
             {seriesScore}
           </span>
         </div>
@@ -140,26 +140,26 @@ export default function ScoreHeader({
         <div className="flex flex-col items-center gap-3">
           <StatusTag status={status} />
           {gameTime && (
-            <span className="text-sm tabular-nums font-mono text-text-muted">
+            <span className="text-body-lg tabular-nums font-mono text-text-muted">
               {gameTime}
             </span>
           )}
           {roshanTimer && (
             <span
-              className="text-xs tabular-nums font-mono px-2 py-0.5 rounded border"
+              className="text-body tabular-nums font-mono px-2 py-0.5 rounded border"
               style={{ color: 'var(--color-accent)', background: 'var(--color-accent-soft)', borderColor: 'var(--color-accent)' }}
             >
               Roshan {roshanTimer}
             </span>
           )}
           <span
-            className="text-base tabular-nums font-mono font-bold"
+            className="text-body-lg tabular-nums font-mono font-bold"
             style={{ color: 'var(--color-gold)' }}
           >
             {goldDiff.text}
           </span>
           {delayLabel && (
-            <span className="text-[11px] uppercase tracking-label text-text-dim">
+            <span className="text-label uppercase tracking-label text-text-dim">
               {delayLabel}
             </span>
           )}
@@ -176,16 +176,16 @@ export default function ScoreHeader({
               size={40}
             />
             <span
-              className="text-xs font-bold uppercase tracking-[0.16em] truncate"
+              className="text-label font-bold uppercase tracking-label truncate"
               style={{ color: 'var(--color-dire)' }}
             >
               {match.dire_team?.team_name ?? 'TBD'}
             </span>
           </span>
-          <span className="text-[40px] md:text-[44px] lg:text-[56px] font-mono font-extrabold tabular-nums leading-none text-text">
+          <span className="text-[40px] md:text-[44px] lg:text-[56px] font-mono font-bold tabular-nums leading-none text-text">
             {direScore}
           </span>
-          <span className="text-[11px] tabular-nums tracking-[0.08em] text-text-dim">
+          <span className="text-label tabular-nums text-text-dim">
             {seriesScore}
           </span>
         </div>

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { bucketByDay, dayBounds, dayKey, dayMode, monthBounds, monthGrid } from './day'
+import { bucketByDay, dayBounds, dayKey, dayMode, isValidDayParam, monthBounds, monthGrid } from './day'
 
 /** Local unix seconds for a local wall-clock moment — the only timezone this app counts in. */
 const at = (y: number, m: number, d: number, h = 12, min = 0) =>
@@ -61,6 +61,35 @@ describe('monthGrid / monthBounds', () => {
     // first day of the NEXT month's grid is not double-counted.
     expect(to - from).toBe(42 * 86_400 - 1)
     expect(dayKey(to)).toBe(dayKey(grid[41]))
+  })
+})
+
+describe('isValidDayParam', () => {
+  it('accepts a day key this app could have written', () => {
+    expect(isValidDayParam('2026-08-15')).toBe(true)
+    expect(isValidDayParam('2024-02-29')).toBe(true) // leap day
+  })
+
+  it('rejects junk rather than letting it reach date-fns', () => {
+    // The whole point: date-fns v4 THROWS a RangeError on an Invalid Date, so `?day=abc`
+    // used to take the entire page down instead of being ignored like any other bad param.
+    for (const bad of ['abc', '', '15-08-2026', '2026-8-15', '2026-08-15T12:00', 'NaN']) {
+      expect(isValidDayParam(bad)).toBe(false)
+    }
+  })
+
+  it('rejects a well-shaped day that does not exist', () => {
+    expect(isValidDayParam('2026-02-31')).toBe(false)
+    expect(isValidDayParam('2026-13-01')).toBe(false)
+    expect(isValidDayParam('2025-02-29')).toBe(false)
+  })
+
+  it('treats a missing param as invalid, not as today', () => {
+    expect(isValidDayParam(null)).toBe(false)
+  })
+
+  it('accepts exactly what dayKey produces', () => {
+    expect(isValidDayParam(dayKey(new Date(2026, 7, 15)))).toBe(true)
   })
 })
 

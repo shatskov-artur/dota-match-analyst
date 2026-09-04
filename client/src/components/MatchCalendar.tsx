@@ -76,20 +76,29 @@ export default function MatchCalendar({
 
   return (
     <div className="bento-card flex flex-col gap-3 w-full !p-4">
+      {/*
+       * UI-SPEC 10.5 D-9 (§6.3): 44×44 minimum hit area below `sm`. The arrows keep their
+       * 24px bordered box — a month pager that grows to a 44px chrome block on phone reads
+       * as the loudest thing on the card — so the extra 20px is a transparent ::before
+       * expander instead. It reaches into the card's own padding and the (inert) month
+       * label, never into another control.
+       */}
       <div className="flex items-center justify-between">
         <button
           type="button"
           onClick={() => page(-1)}
-          className="w-6 h-6 grid place-items-center rounded-[6px] border border-border text-text-muted transition-colors hover:border-primary hover:text-text"
+          className="relative w-6 h-6 grid place-items-center rounded-xs border border-border text-text-muted transition-colors hover:border-primary hover:text-text
+                     max-sm:before:absolute max-sm:before:-inset-2.5 max-sm:before:content-['']"
           aria-label="Previous month"
         >
           ‹
         </button>
-        <span className="text-[11px] uppercase tracking-[0.16em] text-text">{format(month, 'LLLL yyyy')}</span>
+        <span className="text-label uppercase tracking-label text-text">{format(month, 'LLLL yyyy')}</span>
         <button
           type="button"
           onClick={() => page(1)}
-          className="w-6 h-6 grid place-items-center rounded-[6px] border border-border text-text-muted transition-colors hover:border-primary hover:text-text"
+          className="relative w-6 h-6 grid place-items-center rounded-xs border border-border text-text-muted transition-colors hover:border-primary hover:text-text
+                     max-sm:before:absolute max-sm:before:-inset-2.5 max-sm:before:content-['']"
           aria-label="Next month"
         >
           ›
@@ -98,7 +107,7 @@ export default function MatchCalendar({
 
       <div className="grid grid-cols-7 gap-1">
         {WEEKDAYS.map((w) => (
-          <span key={w} className="text-[9px] uppercase tracking-[0.08em] text-text-dim text-center pb-0.5">
+          <span key={w} className="text-label uppercase tracking-label text-text-dim text-center pb-0.5">
             {w}
           </span>
         ))}
@@ -144,7 +153,14 @@ export default function MatchCalendar({
               onClick={() => onSelect(isSelected ? null : key)}
               title={label}
               className={
-                'relative aspect-square rounded-[6px] border font-mono text-[11px] tabular-nums transition-colors ' +
+                /*
+                 * UI-SPEC 10.5 D-9 (§6.3). A 7-column month grid inside the rail card is
+                 * ~41px per cell at 375px. The expander claims exactly the 4px grid gap
+                 * (2px from each side), so adjacent days touch but never overlap — no
+                 * invisible zone can steal a tap from the day beside it.
+                 */
+                "relative aspect-square rounded-xs border font-mono text-label tabular-nums transition-colors " +
+                "max-sm:before:absolute max-sm:before:-inset-0.5 max-sm:before:content-[''] " +
                 (inMonth ? '' : 'opacity-40 ') +
                 (playable ? 'cursor-pointer ' : 'cursor-default ') +
                 tone
@@ -167,7 +183,8 @@ export default function MatchCalendar({
         type="button"
         onClick={() => onSelect(null)}
         className={
-          'rounded-[8px] border px-2 py-1.5 text-[11px] uppercase tracking-[0.12em] transition-colors cursor-pointer ' +
+          // D-9: full-width already, so only the height was short of the 44px floor.
+          'rounded-sm border px-2 py-1.5 text-label uppercase tracking-label transition-colors cursor-pointer max-sm:min-h-11 ' +
           (selected === null
             ? 'border-primary bg-[var(--color-primary-soft)] text-text'
             : 'border-border text-text-muted hover:border-primary hover:text-text')

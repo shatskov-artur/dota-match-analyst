@@ -34,7 +34,7 @@ export default function StatusTag({ status }: StatusTagProps) {
           boxShadow: s.glow ?? 'none',
         }}
       />
-      <span className="text-[10px] uppercase tracking-[0.18em] font-medium">
+      <span className="text-label uppercase tracking-label font-bold">
         {status}
       </span>
     </span>

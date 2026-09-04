@@ -72,7 +72,10 @@ export default function PageShell({
           {backTo && (
             <Link
               to={backTo.to}
-              className="text-[11px] uppercase tracking-[0.12em] text-text-dim transition-colors hover:text-primary shrink-0"
+              /* D-9 (§6.3): a bare 11px link is ~62×13. The chrome row already carries
+                 44px nav pills on phone, so the taller box costs no extra height. */
+              className="text-label uppercase tracking-label text-text-dim transition-colors hover:text-primary shrink-0
+                         max-sm:inline-flex max-sm:items-center max-sm:min-h-11"
             >
               ← {backTo.label}
             </Link>
@@ -80,7 +83,9 @@ export default function PageShell({
           {!backTo && (
             <Link
               to="/"
-              className="text-[12px] font-bold uppercase tracking-[0.16em] text-text-muted transition-colors hover:text-text shrink-0"
+              /* D-9, same row and same reasoning as the back link above. */
+              className="text-body font-bold uppercase tracking-label text-text-muted transition-colors hover:text-text shrink-0
+                         max-sm:inline-flex max-sm:items-center max-sm:min-h-11"
             >
               Dota&nbsp;2 Match Analyst
             </Link>
@@ -91,12 +96,12 @@ export default function PageShell({
 
         <header className="pt-5 pb-6 border-t border-border">
           {eyebrow && (
-            <div className="mb-2 text-[11px] uppercase tracking-[0.12em] text-text-dim">{eyebrow}</div>
+            <div className="mb-2 text-label uppercase tracking-label text-text-dim">{eyebrow}</div>
           )}
           <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2">
             {/* One title scale for the whole app; clamp keeps it off a phone's knees. */}
             <h1
-              className="font-bold leading-none tracking-[-0.02em] text-text min-w-0"
+              className="font-bold leading-none tracking-title text-text min-w-0"
               style={{ fontSize: 'clamp(1.5rem, 3vw, 2.125rem)' }}
             >
               {title}
@@ -106,7 +111,7 @@ export default function PageShell({
           {toolbar && <div className="mt-5">{toolbar}</div>}
         </header>
 
-        <main className="py-7">{children}</main>
+        <main className="py-6">{children}</main>
       </div>
     </div>
   )
@@ -119,8 +124,8 @@ export default function PageShell({
 export function SectionTitle({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
   return (
     <div className="flex items-baseline gap-3 mb-3">
-      <h2 className="text-[11px] uppercase tracking-[0.12em] text-text-dim">{children}</h2>
-      {aside && <div className="ml-auto text-[11px] text-text-dim">{aside}</div>}
+      <h2 className="text-label uppercase tracking-label text-text-dim">{children}</h2>
+      {aside && <div className="ml-auto text-label text-text-dim">{aside}</div>}
     </div>
   )
 }
@@ -129,7 +134,7 @@ export function SectionTitle({ children, aside }: { children: ReactNode; aside?:
 export function LiveCount({ count }: { count: number }) {
   if (count <= 0) return null
   return (
-    <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.12em] text-text-muted">
+    <span className="inline-flex items-center gap-1.5 text-label uppercase tracking-label text-text-muted">
       <span className="w-[5px] h-[5px] rounded-full bg-dire animate-pulse" />
       {count} live
     </span>

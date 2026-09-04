@@ -1,4 +1,4 @@
-import { addDays, format, startOfMonth, startOfWeek } from 'date-fns'
+import { addDays, format, isValid, startOfMonth, startOfWeek } from 'date-fns'
 
 /**
  * Days, as this app counts them.
@@ -19,6 +19,28 @@ export interface CalendarDay {
 
 export const dayKey = (d: Date | number): string =>
   format(typeof d === 'number' ? new Date(d * 1000) : d, 'yyyy-MM-dd')
+
+/** The only shape a day key ever has. Anything else did not come from this app. */
+const DAY_KEY_PATTERN = /^\d{4}-\d{2}-\d{2}$/
+
+/**
+ * Whether a `?day=` value is a day at all.
+ *
+ * A URL parameter is whatever a visitor typed, and date-fns v4 answers an Invalid Date by
+ * THROWING a RangeError rather than returning a placeholder string — so `?day=abc` reached
+ * `format()` and took the whole page down with it.
+ *
+ * The instant checked is the same one every caller builds (`T12:00:00`, safely inside the
+ * local day), so a value this accepts is one they can all use. The round trip through
+ * `dayKey` is what rejects a well-shaped day that does not exist: V8 does not reject
+ * `2026-02-31T12:00:00`, it silently rolls it forward to 3 March, and a day filter quietly
+ * showing a different day than the URL names is worse than one that refuses.
+ */
+export function isValidDayParam(value: string | null): value is string {
+  if (value === null || !DAY_KEY_PATTERN.test(value)) return false
+  const parsed = new Date(`${value}T12:00:00`)
+  return isValid(parsed) && dayKey(parsed) === value
+}
 
 /**
  * Midnight-to-midnight of a local day, as unix seconds — the window the API takes.

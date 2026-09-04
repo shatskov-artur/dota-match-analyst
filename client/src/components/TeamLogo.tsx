@@ -81,12 +81,12 @@ export default function TeamLogo({ src, name, side = 'neutral', size = 24 }: Tea
           loading="lazy"
           decoding="async"
           onError={() => setFailed(true)}
-          className="w-full h-full object-contain p-[2px]"
+          className="w-full h-full object-contain p-0.5"
         />
       ) : (
         <span
           data-testid="team-monogram"
-          className="font-bold leading-none tracking-tight"
+          className="font-bold leading-none"
           style={{ color: monogramColor, fontSize: Math.round(size * 0.4) }}
         >
           {initials}

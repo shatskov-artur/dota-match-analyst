@@ -24,14 +24,14 @@ function SingleBar({ label, radiantProb, prefersReducedMotion }: SingleBarProps)
     <div className="flex items-center gap-3 mb-3">
       {/* Source label */}
       <span
-        className="text-[10px] font-bold uppercase tracking-[0.12em] shrink-0 text-text-muted"
+        className="text-label font-bold uppercase tracking-label shrink-0 text-text-muted"
         style={{ minWidth: 36, textAlign: 'right' }}
       >
         {label}
       </span>
       {/* Left: Radiant percentage */}
       <span
-        className="text-xs font-bold tabular-nums shrink-0 font-mono"
+        className="text-body font-bold tabular-nums shrink-0 font-mono"
         style={{ color: 'var(--color-radiant)', minWidth: 32, textAlign: 'right' }}
       >
         {radiantPct}%
@@ -54,7 +54,7 @@ function SingleBar({ label, radiantProb, prefersReducedMotion }: SingleBarProps)
       />
       {/* Right: Dire percentage */}
       <span
-        className="text-xs font-bold tabular-nums shrink-0 font-mono"
+        className="text-body font-bold tabular-nums shrink-0 font-mono"
         style={{ color: 'var(--color-dire)', minWidth: 32, textAlign: 'left' }}
       >
         {direPct}%

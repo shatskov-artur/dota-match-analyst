@@ -23,6 +23,15 @@ export const STEP_MS = 4000
  *
  * Renders nothing.
  */
+
+/**
+ * The endpoints the recording actually re-serves per slice — see resolveDemoResponse.
+ *
+ * Named rather than invalidating everything: a bare invalidateQueries() also dropped
+ * ['hero-stats'], which is one bundled payload with no slice dimension at all, so every
+ * four seconds the demo threw away a cache entry that could never have changed.
+ */
+const SLICE_KEYS = [['live-games'], ['draft'], ['win-prob'], ['match-intel']] as const
 export default function DemoDriver() {
   const queryClient = useQueryClient()
   const playing = useDemoCursor((s) => s.playing)
@@ -38,7 +47,8 @@ export default function DemoDriver() {
       const { slice } = useDemoCursor.getState()
       // Loop back to the start so the page keeps showing motion for as long as it is open.
       useDemoCursor.setState({ slice: (slice + 1) % sliceCount })
-      void queryClient.invalidateQueries()
+      // Prefix keys, so ['draft', matchId] and friends are matched for every open match.
+      for (const queryKey of SLICE_KEYS) void queryClient.invalidateQueries({ queryKey })
     }, STEP_MS)
     return () => clearInterval(id)
   }, [playing, queryClient])

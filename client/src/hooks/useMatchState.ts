@@ -54,6 +54,17 @@ export interface MatchView {
   itemsAreFinal: boolean
   /** Assists are filled — only true at a reconstructed match's final minute. */
   assistsKnown: boolean
+  /**
+   * Every source has answered and none of them has this match: not the live feed, not the
+   * archive. A permanent state — the id is wrong, or the game was never recorded.
+   */
+  notFound: boolean
+  /**
+   * Demo build only, and the opposite of permanent: the replay cursor is standing at a
+   * point in the recording where this match had not started (or had already been dropped
+   * from the capture). Moving the scrubber forward brings it back.
+   */
+  notInRecording: boolean
 }
 
 /** Shared derivation so live and archived views cannot drift apart. */
@@ -82,11 +93,10 @@ export function useMatchState(matchId: string | undefined): MatchView {
 
   const scrubbing = isScrubbing(cursorMinute)
 
-  // Do not redirect home when an archive exists: a finished match is legitimately absent
-  // from the live feed but fully present in the archive, and useMatchDetail's own redirect
-  // would fire before the archive query resolves. The demo build has no archive, so there
-  // the pre-v2.0 redirect is still the right behaviour for an unknown match.
-  const live = useMatchDetail(matchId, { redirectOnMissing: IS_DEMO, paused: scrubbing })
+  // A finished match is legitimately absent from the live feed but fully present in the
+  // archive, so "not in the feed" is only ever half an answer. It is reported as a flag and
+  // resolved below, once the archive has spoken too.
+  const live = useMatchDetail(matchId, { paused: scrubbing })
   const isLiveMatch = live.match !== undefined && live.match.game_state !== 6
   const timelineQuery = useMatchTimeline(matchId, isLiveMatch)
   const timeline = timelineQuery.data
@@ -136,6 +146,21 @@ export function useMatchState(matchId: string | undefined): MatchView {
       ? Math.floor(match.duration / 60)
       : null
 
+  /**
+   * Nothing to draw — and which kind of nothing, because the two have different remedies.
+   *
+   * Every source has to have settled first. The archive queries are DISABLED in the demo
+   * build, and a disabled TanStack query is pending-but-not-fetching, so `isLoading` is
+   * false for them there — which is exactly right: in a demo there is no archive to wait on.
+   */
+  const hasArchiveRows = (timeline?.timeline.length ?? 0) > 0 || (timeline?.events.length ?? 0) > 0
+  const nothingToShow =
+    match === undefined &&
+    !hasArchiveRows &&
+    live.isMissing &&
+    !timelineQuery.isLoading &&
+    !snapshot.isLoading
+
   return {
     match,
     ...derived,
@@ -157,5 +182,7 @@ export function useMatchState(matchId: string | undefined): MatchView {
     reconstructed: match !== undefined && snapshot.data?.reconstructed === true,
     itemsAreFinal: match !== undefined && snapshot.data?.itemsAreFinal === true,
     assistsKnown: match !== undefined && snapshot.data?.assistsKnown === true,
+    notFound: nothingToShow && !IS_DEMO,
+    notInRecording: nothingToShow && IS_DEMO,
   }
 }

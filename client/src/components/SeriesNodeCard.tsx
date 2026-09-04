@@ -56,15 +56,15 @@ function TeamSlot({
         className={
           'truncate ' +
           (team
-            ? 'text-[12px] ' + (isWinner ? 'text-text font-semibold' : 'text-text-muted')
+            ? 'text-body ' + (isWinner ? 'text-text font-bold' : 'text-text-muted')
             : // A step down, because the whole width is needed for "Winner of UB Final".
-              'text-[11px] text-text-dim italic')
+              'text-label text-text-dim italic')
         }
       >
         {team?.name ?? placeholder ?? 'TBD'}
       </span>
       {showScore && (
-        <span className="ml-auto font-mono text-[12px] tabular-nums text-text-dim shrink-0">{wins ?? 0}</span>
+        <span className="ml-auto font-mono text-body tabular-nums text-text-dim shrink-0">{wins ?? 0}</span>
       )}
     </div>
   )
@@ -77,7 +77,7 @@ export default function SeriesNodeCard({ node, teamNames, slotLabels, title, cla
   const t2Won = decided && (node.team2Wins ?? 0) > (node.team1Wins ?? 0)
 
   const cls =
-    'rounded-[10px] border p-2 flex flex-col justify-center transition-colors ' +
+    'rounded-sm border p-2 flex flex-col justify-center transition-colors ' +
     (live ? 'border-radiant bg-[var(--color-radiant-soft)]' : decided ? 'border-border bg-surface' : 'border-border bg-bg-elev') +
     (node.seriesId ? ' hover:border-primary' : '') +
     (className ? ` ${className}` : '')
@@ -85,16 +85,16 @@ export default function SeriesNodeCard({ node, teamNames, slotLabels, title, cla
   const body = (
     <>
       <div className="flex items-center gap-2 mb-1">
-        <span className="text-[9px] uppercase tracking-[0.12em] text-text-dim truncate">
+        <span className="text-label uppercase tracking-label text-text-dim truncate">
           {node.name?.trim() || title || `Match ${node.nodeId}`}
         </span>
         {/* Group-stage cards carry a kick-off time; bracket nodes are unseeded and do not. */}
         {node.scheduledTime ? (
-          <span className="font-mono text-[9px] tabular-nums text-text-dim shrink-0 ml-auto">
+          <span className="font-mono text-label tabular-nums text-text-dim shrink-0 ml-auto">
             {format(new Date(node.scheduledTime * 1000), 'd MMM HH:mm')}
           </span>
         ) : null}
-        <span className={'text-[9px] text-text-dim shrink-0' + (node.scheduledTime ? '' : ' ml-auto')}>
+        <span className={'text-label text-text-dim shrink-0' + (node.scheduledTime ? '' : ' ml-auto')}>
           {live && <span className="text-radiant mr-1.5">●</span>}
           {node.bestOf ? `Bo${node.bestOf}` : ''}
         </span>

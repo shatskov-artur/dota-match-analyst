@@ -1,7 +1,8 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router'
 import HomePage from './pages/HomePage'
-import { BentoErrorBoundary } from './components/BentoErrorBoundary'
+import NotFoundPage from './pages/NotFoundPage'
+import { PageErrorBoundary } from './components/PageErrorBoundary'
 
 /**
  * Everything except the home page is loaded on demand.
@@ -32,14 +33,16 @@ export default function App() {
   return (
     <Suspense fallback={<RouteFallback />}>
     <Routes>
-      <Route path="/" element={<BentoErrorBoundary><HomePage /></BentoErrorBoundary>} />
-      <Route path="/match/:matchId" element={<BentoErrorBoundary><MatchPage /></BentoErrorBoundary>} />
+      <Route path="/" element={<PageErrorBoundary><HomePage /></PageErrorBoundary>} />
+      <Route path="/match/:matchId" element={<PageErrorBoundary><MatchPage /></PageErrorBoundary>} />
       {/* v2.0 archive routes. In a demo build the archive endpoints do not exist, so the
           pages render their empty states rather than 404ing the whole app. */}
-      <Route path="/tournament/:leagueId" element={<BentoErrorBoundary><TournamentPage /></BentoErrorBoundary>} />
+      <Route path="/tournament/:leagueId" element={<PageErrorBoundary><TournamentPage /></PageErrorBoundary>} />
       {/* A scheduled series has no match id yet, so it is addressed by bracket node. */}
-      <Route path="/tournament/:leagueId/node/:nodeId" element={<BentoErrorBoundary><PrematchPage /></BentoErrorBoundary>} />
-      <Route path="/series/:seriesId" element={<BentoErrorBoundary><SeriesPage /></BentoErrorBoundary>} />
+      <Route path="/tournament/:leagueId/node/:nodeId" element={<PageErrorBoundary><PrematchPage /></PageErrorBoundary>} />
+      <Route path="/series/:seriesId" element={<PageErrorBoundary><SeriesPage /></PageErrorBoundary>} />
+      {/* Last, and it must stay last: an unmatched URL used to render nothing at all. */}
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
     </Suspense>
   )

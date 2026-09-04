@@ -157,7 +157,7 @@ export default function CooldownsBlock({ players, gameDuration }: CooldownsBlock
 
   return (
     <div className="flex flex-col flex-1 min-h-0 overflow-y-auto scroll-slim">
-      <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-4 text-text-dim">
+      <p className="text-label uppercase tracking-micro font-bold mb-4 text-text-dim">
         Cooldowns
       </p>
 
@@ -188,7 +188,7 @@ export default function CooldownsBlock({ players, gameDuration }: CooldownsBlock
               <UltSlot heroId={p.hero_id} team={p.team} />
 
               {p._status.kind === 'cooldown' && (
-                <div className="font-mono" style={{ fontSize: 15, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: 'var(--color-accent)' }}>
+                <div className="font-mono tabular-nums" style={{ fontSize: 15, fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: 'var(--color-accent)' }}>
                   {Math.round(p._status.remaining)}
                   <span className="text-text-dim" style={{ fontSize: 12 }}>s</span>
                 </div>
@@ -201,7 +201,7 @@ export default function CooldownsBlock({ players, gameDuration }: CooldownsBlock
               {p._status.kind === 'locked' && (
                 // No ultimate yet — how far off it is beats a green "ready" that is a lie.
                 <div
-                  className="font-mono text-text-dim"
+                  className="font-mono tabular-nums text-text-dim"
                   style={{ fontSize: 12, fontVariantNumeric: 'tabular-nums' }}
                   title="Estimated XP still needed for level 6, when the ultimate unlocks"
                 >

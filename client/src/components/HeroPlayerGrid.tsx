@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import PlayerRow from './PlayerRow'
 import SkeletonPlayerRow from './SkeletonPlayerRow'
 import { COL, NAME_MIN_PX, SHOW_GPM, SHOW_XPM, SHOW_LHDN, STAT_CELL } from './playerColumns'
@@ -26,29 +27,29 @@ function ColHeaders({ hasGpm, hasXpm, hasLhDn }: { hasGpm: boolean; hasXpm: bool
     <div className="flex items-center gap-2 px-0 mb-1">
       <div className="shrink-0" style={{ width: COL.portrait }} />
       <div className="flex-1 min-w-0" style={{ minWidth: NAME_MIN_PX }} />
-      <span className={`text-[10px] uppercase tracking-[0.1em] text-text-dim ${STAT_CELL}`}
+      <span className={`text-label uppercase tracking-label text-text-dim ${STAT_CELL}`}
             style={{ width: COL.lvl }}>LVL</span>
-      <span className={`text-[10px] uppercase tracking-[0.1em] text-text-dim ${STAT_CELL}`}
+      <span className={`text-label uppercase tracking-label text-text-dim ${STAT_CELL}`}
             style={{ width: COL.kda }}>K/D/A</span>
-      <span className={`text-[10px] uppercase tracking-[0.1em] text-text-dim ${STAT_CELL}`}
+      <span className={`text-label uppercase tracking-label text-text-dim ${STAT_CELL}`}
             style={{ width: COL.nw }}>NW</span>
       {hasGpm && (
-        <span className={`text-[10px] uppercase tracking-[0.1em] text-text-dim ${STAT_CELL} ${SHOW_GPM}`}
+        <span className={`text-label uppercase tracking-label text-text-dim ${STAT_CELL} ${SHOW_GPM}`}
               style={{ width: COL.gpm }}>GPM</span>
       )}
       {hasXpm && (
-        <span className={`text-[10px] uppercase tracking-[0.1em] text-text-dim ${STAT_CELL} ${SHOW_XPM}`}
+        <span className={`text-label uppercase tracking-label text-text-dim ${STAT_CELL} ${SHOW_XPM}`}
               style={{ width: COL.xpm }}>XPM</span>
       )}
       {hasLhDn && (
-        <span className={`text-[9px] uppercase tracking-[0.05em] text-text-dim ${STAT_CELL} ${SHOW_LHDN}`}
+        <span className={`text-label uppercase tracking-label text-text-dim ${STAT_CELL} ${SHOW_LHDN}`}
               style={{ width: COL.lhdn }}>LH/DN</span>
       )}
     </div>
   )
 }
 
-export default function HeroPlayerGrid({ radiantPlayers, direPlayers, isLoading, matchOver = false, playerIntelMap }: HeroPlayerGridProps) {
+function HeroPlayerGrid({ radiantPlayers, direPlayers, isLoading, matchOver = false, playerIntelMap }: HeroPlayerGridProps) {
   const allPlayers = [...radiantPlayers, ...direPlayers]
   const hasGpm = allPlayers.some((p) => p.gpm !== undefined)
   const hasXpm = allPlayers.some((p) => p.xpm !== undefined)
@@ -70,7 +71,7 @@ export default function HeroPlayerGrid({ radiantPlayers, direPlayers, isLoading,
   return (
     <div className="@container">
       {/* Radiant group */}
-      <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-2 text-radiant">Radiant</p>
+      <p className="text-label uppercase tracking-label font-bold mb-2 text-radiant">Radiant</p>
       <ColHeaders hasGpm={hasGpm} hasXpm={hasXpm} hasLhDn={hasLhDn} />
       {radiantPlayers.map((p) => (
         <PlayerRow key={p.account_id ?? p.hero_id ?? p.name} player={p} hasGpm={hasGpm} hasXpm={hasXpm} hasLhDn={hasLhDn} playerIntel={p.hero_id !== undefined ? playerIntelMap?.[p.hero_id] : undefined}
@@ -78,7 +79,7 @@ export default function HeroPlayerGrid({ radiantPlayers, direPlayers, isLoading,
       ))}
 
       {/* Dire group */}
-      <p className="text-[10px] uppercase tracking-[0.3em] font-bold mb-2 mt-8 text-dire">Dire</p>
+      <p className="text-label uppercase tracking-label font-bold mb-2 mt-8 text-dire">Dire</p>
       <ColHeaders hasGpm={hasGpm} hasXpm={hasXpm} hasLhDn={hasLhDn} />
       {direPlayers.map((p) => (
         <PlayerRow key={p.account_id ?? p.hero_id ?? p.name} player={p} hasGpm={hasGpm} hasXpm={hasXpm} hasLhDn={hasLhDn} playerIntel={p.hero_id !== undefined ? playerIntelMap?.[p.hero_id] : undefined}
@@ -87,3 +88,7 @@ export default function HeroPlayerGrid({ radiantPlayers, direPlayers, isLoading,
     </div>
   )
 }
+
+// Ten player rows, each with a portrait and a hover card. The draft, win-probability and
+// intel pollers all tick against a roster that only changes when the match payload does.
+export default memo(HeroPlayerGrid)

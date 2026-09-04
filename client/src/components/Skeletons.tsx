@@ -79,7 +79,7 @@ export function SkeletonBracket({ columns = 4, perColumn = 4 }: { columns?: numb
         <div key={c} className="w-[240px] shrink-0 flex flex-col gap-3">
           <SkeletonLine w="w-20" />
           {Array.from({ length: Math.max(1, perColumn >> c) }).map((_, i) => (
-            <div key={i} className="rounded-[12px] border border-border bg-bg-elev p-2.5 flex flex-col gap-2">
+            <div key={i} className="rounded-md border border-border bg-bg-elev p-2.5 flex flex-col gap-2">
               <SkeletonLine w="w-16" h="h-2" />
               <div className="flex items-center gap-2">
                 <SkeletonDot size="w-4 h-4" />

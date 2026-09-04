@@ -5,13 +5,14 @@ import MatchBentoGrid from '../components/MatchBentoGrid'
 import MatchRail from '../components/MatchRail'
 import SkeletonRow from '../components/SkeletonRow'
 import ErrorBanner from '../components/ErrorBanner'
+import PrimaryButton from '../components/PrimaryButton'
 import PageShell, { LiveCount } from '../components/PageShell'
 import ScheduleList from '../components/ScheduleList'
 import { useArchiveStatus, useScheduleRange } from '../hooks/useArchive'
 import { useLiveGames } from '../hooks/useLiveGames'
 import { useStarredLeagues } from '../hooks/useStarredLeagues'
 import { IS_DEMO } from '../lib/apiFetch'
-import { dayBounds, dayKey, dayMode, bucketByDay, monthBounds } from '../utils/day'
+import { dayBounds, dayKey, dayMode, bucketByDay, isValidDayParam, monthBounds } from '../utils/day'
 import {
   applyEntryFilters,
   applyFilters,
@@ -55,23 +56,43 @@ export default function HomePage() {
     setParams(next, { replace: true })
   }
 
-  const day = params.get('day')
+  /*
+   * A day the page cannot read is treated as no day at all, exactly like the status and
+   * tier params below. `?day=abc` used to reach `format()` on an Invalid Date, which
+   * date-fns v4 answers with a thrown RangeError — one junk character in a shared link
+   * blanked the entire match list.
+   */
+  const rawDay = params.get('day')
+  const day = isValidDayParam(rawDay) ? rawDay : null
   const urlStatus = params.get('show') as StatusFilter | null
   const status = urlStatus && STATUS_VALUES.includes(urlStatus) ? urlStatus : DEFAULT_FILTERS.status
   const urlTier = params.get('tier') as TierFilter | null
   const tier = urlTier && TIER_VALUES.includes(urlTier) ? urlTier : DEFAULT_FILTERS.tier
+  /*
+   * Keyed on the raw parameter rather than on the params object, which is a fresh instance
+   * after every write — so the array below survives a status chip being touched.
+   */
+  const leagueParam = params.get('league') ?? ''
   const leagueIds = useMemo(
     () =>
-      (params.get('league') ?? '')
+      leagueParam
         .split(',')
         .map(Number)
         .filter((n) => Number.isFinite(n) && n > 0),
-    [params],
+    [leagueParam],
   )
   // Search stays local: it changes on every keystroke and a history entry per letter is
   // not a view anybody wants to return to.
   const [search, setSearch] = useState('')
-  const filters: MatchFilterState = { status, tier, leagueIds, search }
+  /*
+   * Memoised because it is the dependency of the filtering and sorting below. Rebuilt every
+   * render, it made those memos permanently cold: the whole live list was refiltered and
+   * resorted on every 30-second poll AND on every keystroke in the search box.
+   */
+  const filters: MatchFilterState = useMemo(
+    () => ({ status, tier, leagueIds, search }),
+    [status, tier, leagueIds, search],
+  )
 
   const mode = dayMode(day)
   const setFilters = (next: MatchFilterState) => {
@@ -152,7 +173,7 @@ export default function HomePage() {
       status={
         <>
           <LiveCount count={liveCount} />
-          {lastUpdatedLabel && <span className="text-text-dim text-[11px]">{lastUpdatedLabel}</span>}
+          {lastUpdatedLabel && <span className="text-text-dim text-label">{lastUpdatedLabel}</span>}
         </>
       }
     >
@@ -182,14 +203,15 @@ export default function HomePage() {
               at the top, because it explains the whole right-hand column at a glance. */}
           {!IS_DEMO && (monthQuery.isError || dayQuery.isError) && (
             <div
-              className="p-4 border rounded-md text-sm"
+              className="p-4 border rounded-md text-body-lg"
               style={{
                 background: 'var(--color-dire-soft)',
+                // Border stays --color-danger (non-text, 3:1); the copy needs 4.5:1.
                 borderColor: 'var(--color-danger)',
-                color: 'var(--color-danger)',
+                color: 'var(--color-danger-text)',
               }}
             >
-              <p className="font-semibold">Couldn't reach the match archive.</p>
+              <p className="font-bold">Couldn't reach the match archive.</p>
               <p className="mt-1">
                 Calendar dots and the schedule below are incomplete — this is not a statement that
                 nothing was played. Live matches above are unaffected.
@@ -216,8 +238,8 @@ export default function HomePage() {
           {/* Empty state: fetch succeeded but no live games at all */}
           {showGrid && !isLoading && !isError && !hasData && (
             <div className="py-16 text-center">
-              <h2 className="text-text text-xl font-bold">No live matches right now</h2>
-              <p className="mt-2 text-text-muted text-sm font-normal">
+              <h2 className="text-text text-heading font-bold">No live matches right now</h2>
+              <p className="mt-2 text-text-muted text-body-lg">
                 Pro tournament games appear here as they go live. This page refreshes every 30 seconds.
               </p>
             </div>
@@ -228,18 +250,13 @@ export default function HomePage() {
               <MatchBentoGrid matches={visible} trackedLeagueIds={trackedLeagueIds} />
             ) : (
               <div className="py-16 text-center">
-                <h2 className="text-text text-lg font-bold">No matches match your filters</h2>
-                <p className="mt-2 text-text-muted text-sm">
+                <h2 className="text-text text-heading font-bold">No matches match your filters</h2>
+                <p className="mt-2 text-text-muted text-body-lg">
                   Try clearing the search or switching the status filter.
                 </p>
-                <button
-                  type="button"
-                  onClick={() => setFilters(DEFAULT_FILTERS)}
-                  className="mt-5 inline-flex items-center px-5 py-2.5 rounded-full bg-primary text-white
-                             text-sm font-semibold cursor-pointer hover:shadow-[0_0_22px_var(--color-primary-soft)] transition-shadow"
-                >
+                <PrimaryButton className="mt-5" onClick={() => setFilters(DEFAULT_FILTERS)}>
                   Reset filters
-                </button>
+                </PrimaryButton>
               </div>
             )
           )}

@@ -37,8 +37,8 @@ export default function MatchCard({ game, featured = false }: MatchCardProps) {
   const seriesStarted = radiantWins + direWins > 0
 
   const logoSize = featured ? 32 : 24
-  const killSize = featured ? 'text-4xl' : 'text-xl'
-  const nameSize = featured ? 'text-lg' : 'text-sm'
+  const killSize = featured ? 'text-4xl' : 'text-heading'
+  const nameSize = featured ? 'text-heading' : 'text-body-lg'
 
   // Featured tile only: the kill score no longer needs a stat strip repeating it, so the extra
   // room goes to the one signal the tile does not already carry — the net-worth lead.
@@ -61,12 +61,12 @@ export default function MatchCard({ game, featured = false }: MatchCardProps) {
       {/* League + format. The format belongs here rather than beside the score: it describes the
           match, not its state, and it keeps the score column to a single number per team. */}
       <div className="flex items-baseline gap-2 mb-2.5">
-        <span className="text-[11px] font-bold uppercase tracking-label text-text-muted truncate">
+        <span className="text-label font-bold uppercase tracking-label text-text-muted truncate">
           {featured && <span className="text-primary">★ </span>}
           {game.league_name}
         </span>
         {seriesLabel && (
-          <span className="ml-auto shrink-0 text-[10px] font-bold uppercase tracking-label text-text-dim">
+          <span className="ml-auto shrink-0 text-label font-bold uppercase tracking-label text-text-dim">
             {seriesLabel}
           </span>
         )}
@@ -90,7 +90,7 @@ export default function MatchCard({ game, featured = false }: MatchCardProps) {
         {seriesStarted && (
           <div className="flex items-center gap-2 my-1.5">
             <span className="h-px flex-1 bg-border" />
-            <span className="text-[10px] uppercase tracking-label text-text-dim tabular-nums shrink-0">
+            <span className="text-label uppercase tracking-label text-text-dim tabular-nums shrink-0">
               Series {radiantWins}–{direWins}
             </span>
             <span className="h-px flex-1 bg-border" />
@@ -112,9 +112,9 @@ export default function MatchCard({ game, featured = false }: MatchCardProps) {
 
       {showGoldLead && (
         <div className="mt-4 pt-4 border-t border-border flex items-baseline gap-2">
-          <span className="text-[10px] uppercase tracking-label text-text-dim">Net worth</span>
+          <span className="text-label uppercase tracking-label text-text-dim">Net worth</span>
           <span
-            className="font-mono font-bold tabular-nums text-lg ml-auto"
+            className="font-mono font-bold tabular-nums text-heading ml-auto"
             style={{ color: 'var(--color-gold)' }}
           >
             {goldDiff.text}
@@ -126,7 +126,7 @@ export default function MatchCard({ game, featured = false }: MatchCardProps) {
       <div className="flex items-center gap-3 mt-4">
         <StatusTag status={statusLabel} />
         {game.duration !== undefined && (
-          <span className="text-text-dim text-[11px] tabular-nums font-mono tracking-wide ml-auto">
+          <span className="text-text-dim text-label tabular-nums font-mono ml-auto">
             {formatDuration(game.duration)}
           </span>
         )}

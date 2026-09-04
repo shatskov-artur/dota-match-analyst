@@ -108,12 +108,12 @@ export default function SeriesTabs({
 
   return (
     <div className="bento-card flex flex-wrap items-center gap-3" data-testid="series-tabs">
-      <span className="text-[11px] uppercase tracking-[0.12em] text-text-dim">
+      <span className="text-label uppercase tracking-label text-text-dim">
         {bestOf ? `Best of ${bestOf}` : 'Series'}
       </span>
 
       {score && (
-        <span className="font-mono text-[13px] text-text tabular-nums">
+        <span className="font-mono text-body text-text tabular-nums">
           {nameA} <span className="text-accent">{score.a}</span>
           <span className="text-text-dim"> : </span>
           <span className="text-accent">{score.b}</span> {nameB}
@@ -127,7 +127,8 @@ export default function SeriesTabs({
             onClick={extraTab.onClick}
             aria-pressed={extraTab.active}
             className={
-              'px-3 py-1.5 rounded-[7px] border text-[12px] transition-colors ' +
+              // D-9: 33px tall; the strip wraps, so the extra height costs no width.
+              'px-3 py-1.5 max-sm:min-h-11 inline-flex items-center rounded-sm border text-body transition-colors ' +
               (extraTab.active
                 ? 'border-primary text-text bg-[var(--color-primary-soft)]'
                 : 'border-border text-text-muted hover:border-primary hover:text-text')
@@ -147,7 +148,8 @@ export default function SeriesTabs({
               to={`/match/${g.matchId}`}
               aria-current={isCurrent ? 'page' : undefined}
               className={
-                'px-3 py-1.5 rounded-[7px] border text-[12px] transition-colors ' +
+                // D-9: 33px tall; the strip wraps, so the extra height costs no width.
+              'px-3 py-1.5 max-sm:min-h-11 inline-flex items-center rounded-sm border text-body transition-colors ' +
                 (isCurrent
                   ? 'border-primary text-text bg-[var(--color-primary-soft)]'
                   : 'border-border text-text-muted hover:border-primary hover:text-text')

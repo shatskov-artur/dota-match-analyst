@@ -36,6 +36,23 @@ function jsonResponse(body: unknown, status: number): Response {
 }
 
 /**
+ * Shared secret for the BFF, when one is configured.
+ *
+ * The server requires API_TOKEN under NODE_ENV=production because an anonymous BFF is an
+ * open tap on someone's Valve and Stratz quota. Vite inlines VITE_* at build time, so this
+ * value ships inside the bundle and is NOT a secret from anyone who opens the network tab —
+ * it stops crawlers and accidental discovery, and the server's rate limiter bounds what any
+ * one client can spend. Per-user auth would be a different feature.
+ *
+ * Unset in dev and in the demo build, where it is simply not sent.
+ */
+const API_TOKEN = import.meta.env.VITE_API_TOKEN as string | undefined
+
+const authHeaders: HeadersInit | undefined = API_TOKEN
+  ? { Authorization: `Bearer ${API_TOKEN}` }
+  : undefined
+
+/**
  * @param path BFF path beginning with `/api/`, e.g. `/api/live/games`.
  */
 export async function apiFetch(path: string): Promise<Response> {
@@ -45,9 +62,10 @@ export async function apiFetch(path: string): Promise<Response> {
     const payload = resolveDemoResponse(path, currentSlice())
     // Nothing captured for this path at this point in the replay. 404 mirrors what the live
     // BFF answered for a match that was not in the live list at that moment — the hooks
-    // already handle it (useMatchDetail redirects home, the rest degrade quietly).
+    // already handle it (MatchPage says the match is not in the recording here, the rest
+    // degrade quietly).
     if (payload === null) return jsonResponse({ error: 'Not in demo snapshot' }, 404)
     return jsonResponse(payload, 200)
   }
-  return fetch(`${API_BASE}${path}`)
+  return fetch(`${API_BASE}${path}`, authHeaders ? { headers: authHeaders } : undefined)
 }

@@ -54,13 +54,13 @@ export default function DraftTurnIndicator({
     return (
       <div className="text-center mb-2">
         <p
-          className="text-[10px] uppercase tracking-[0.25em] font-bold"
+          className="text-label uppercase tracking-label font-bold"
           style={{ color: 'var(--color-text-dim)' }}
         >
           Draft in progress
         </p>
         <p
-          className="text-[10px] uppercase tracking-[0.2em]"
+          className="text-label uppercase tracking-label"
           style={{ color: 'var(--color-text-dim)', marginTop: 2 }}
         >
           {phaseName}
@@ -81,13 +81,13 @@ export default function DraftTurnIndicator({
       style={{ opacity: tentative ? 0.6 : 1, transition: 'opacity 160ms ease' }}
     >
       <p
-        className="text-[10px] uppercase tracking-[0.25em] font-bold"
+        className="text-label uppercase tracking-label font-bold"
         style={{ color }}
       >
         {label}
       </p>
       <p
-        className="text-[10px] uppercase tracking-[0.2em]"
+        className="text-label uppercase tracking-label"
         style={{ color: 'var(--color-text-dim)', marginTop: 2 }}
       >
         {phaseName}

@@ -6,7 +6,7 @@ import PlayoffBracket from '../components/PlayoffBracket'
 import StandingsTable from '../components/StandingsTable'
 import SwissFlow, { teamPairKey } from '../components/SwissFlow'
 import MatchCalendar from '../components/MatchCalendar'
-import { bucketByDay, dayKey } from '../utils/day'
+import { bucketByDay, dayKey, isValidDayParam } from '../utils/day'
 import { useLiveGames } from '../hooks/useLiveGames'
 import { BentoErrorBoundary } from '../components/BentoErrorBoundary'
 import { SkeletonBracket, SkeletonSchedule, SkeletonStandings } from '../components/Skeletons'
@@ -34,6 +34,10 @@ const TABS: Array<{ id: Tab; label: string }> = [
 
 /** Group whose nodes form the playoff tree. Everything else is a group stage. */
 const PLAYOFF_GROUP = 'playoff'
+
+/** Shared empties, so an absent value is not a new prop identity on every render. */
+const NO_NODES: BracketNode[] = []
+const NO_STANDINGS = new Map<number, number>()
 
 /**
  * A published bracket is mostly empty slots: TI 2026 announces 8 dated Swiss games and 19
@@ -81,7 +85,7 @@ function ScheduleFreshness({ at }: { at: string | null }) {
 
   return (
     <span
-      className="inline-flex items-center gap-1.5 text-[11px] tabular-nums"
+      className="inline-flex items-center gap-1.5 text-label tabular-nums"
       style={{ color: stale ? 'var(--color-danger)' : 'var(--color-text-dim)' }}
       title={
         stale
@@ -106,7 +110,7 @@ function TeamCell({ team, align = 'left' }: { team: ScheduleEntry['team1']; alig
   return (
     <span className={'flex items-center gap-2 min-w-0 ' + (align === 'right' ? 'flex-row-reverse text-right' : '')}>
       {logo}
-      <span className="text-[13px] text-text truncate">{team.name ?? 'TBD'}</span>
+      <span className="text-body text-text truncate">{team.name ?? 'TBD'}</span>
     </span>
   )
 }
@@ -123,7 +127,7 @@ function SeriesRow({ entry, leagueId, compact = false }: { entry: ScheduleEntry;
       <span
         className={
           // 124px is what "Sat 15 Aug, 10:00" needs; below it the line wraps in two.
-          'font-mono text-[12px] text-text-dim tabular-nums shrink-0 whitespace-nowrap ' +
+          'font-mono text-body text-text-dim tabular-nums shrink-0 whitespace-nowrap ' +
           (compact ? 'w-[84px]' : 'w-[124px]')
         }
       >
@@ -131,7 +135,7 @@ function SeriesRow({ entry, leagueId, compact = false }: { entry: ScheduleEntry;
       </span>
       {!compact && (
         <span
-          className="text-[10px] uppercase tracking-[0.12em] text-text-dim w-[76px] shrink-0 truncate"
+          className="text-label uppercase tracking-label text-text-dim w-[76px] shrink-0 truncate"
           title={entry.nodeGroupName ?? undefined}
         >
           {entry.nodeGroupName || '—'}
@@ -145,23 +149,23 @@ function SeriesRow({ entry, leagueId, compact = false }: { entry: ScheduleEntry;
         <TeamCell team={entry.team1} />
         {/* An unplayed series has no score; "0:0" reads as a result that happened. */}
         {started ? (
-          <span className="font-mono text-[13px] tabular-nums shrink-0 text-text">
+          <span className="font-mono text-body tabular-nums shrink-0 text-text">
             {entry.team1.wins ?? 0}
             <span className="text-text-dim">:</span>
             {entry.team2.wins ?? 0}
           </span>
         ) : (
-          <span className="text-[11px] uppercase tracking-[0.12em] text-text-dim shrink-0">vs</span>
+          <span className="text-label uppercase tracking-label text-text-dim shrink-0">vs</span>
         )}
         <TeamCell team={entry.team2} align="right" />
       </span>
 
       <span className="flex items-center gap-2.5 shrink-0 justify-end">
-        {entry.status === 'live' && <span className="text-[11px] text-radiant whitespace-nowrap">● live</span>}
+        {entry.status === 'live' && <span className="text-label text-radiant whitespace-nowrap">● live</span>}
         {entry.bestOf && entry.status !== 'live' && (
-          <span className="text-[11px] text-text-dim">Bo{entry.bestOf}</span>
+          <span className="text-label text-text-dim">Bo{entry.bestOf}</span>
         )}
-        {hasGames && <span className="text-[11px] text-primary">→</span>}
+        {hasGames && <span className="text-label text-primary">→</span>}
       </span>
     </div>
   )
@@ -177,7 +181,41 @@ function SeriesRow({ entry, leagueId, compact = false }: { entry: ScheduleEntry;
 }
 
 function EmptyNote({ children }: { children: React.ReactNode }) {
-  return <p className="bento-card text-[13px] text-text-dim">{children}</p>
+  return <p className="bento-card text-body text-text-dim">{children}</p>
+}
+
+/**
+ * A tab that could not be loaded, said out loud.
+ *
+ * The three tabs used to fall straight through to their empty note when a request failed,
+ * so an unreachable archive announced "No bracket published for this tournament yet" — a
+ * confident statement about a tournament nobody had managed to ask about. Same shape as
+ * the home page's ErrorBanner, so the two read as one product.
+ */
+function LoadError({ what, onRetry }: { what: string; onRetry: () => void }) {
+  return (
+    <div
+      className="p-4 border rounded-md text-body-lg"
+      style={{
+        background: 'var(--color-dire-soft)',
+        // Border stays --color-danger (non-text, 3:1); the copy needs 4.5:1.
+        borderColor: 'var(--color-danger)',
+        color: 'var(--color-danger-text)',
+      }}
+    >
+      <p className="font-bold">Couldn't load {what} — the archive may be unavailable.</p>
+      <p className="mt-1">This is not a statement that there is nothing to show.</p>
+      <button
+        type="button"
+        onClick={onRetry}
+        /* D-9: bare text button, own line in a block error card — height is free. */
+        className="mt-3 text-label uppercase tracking-label cursor-pointer hover:underline
+                   max-sm:inline-flex max-sm:items-center max-sm:min-h-11 max-sm:min-w-11"
+      >
+        Retry
+      </button>
+    </div>
+  )
 }
 
 export default function TournamentPage() {
@@ -186,7 +224,14 @@ export default function TournamentPage() {
   const [params, setParams] = useSearchParams()
   const raw = params.get('tab')
   const tab: Tab = TABS.some((t) => t.id === raw) ? (raw as Tab) : 'overview'
-  const setTab = (next: Tab) => setParams(next === 'overview' ? {} : { tab: next }, { replace: true })
+  // Over a COPY of the current params, never a fresh object: writing one wiped every other
+  // parameter, so picking a tab silently threw away the day the schedule was filtered to.
+  const setTab = (next: Tab) => {
+    const p = new URLSearchParams(params)
+    if (next === 'overview') p.delete('tab')
+    else p.set('tab', next)
+    setParams(p, { replace: true })
+  }
 
   const tournaments = useTournaments()
   const schedule = useSchedule(leagueId)
@@ -241,13 +286,20 @@ export default function TournamentPage() {
     return map
   }, [bracket.data, schedule.data])
 
-  const entries = schedule.data?.schedule ?? []
+  // Memoised because three memos below take it as a dependency; the `?? []` fallback alone
+  // was a fresh array on every render, which kept all three permanently cold.
+  const entries = useMemo(() => schedule.data?.schedule ?? [], [schedule.data])
 
   /**
    * Which day the schedule is showing, in the URL beside the tab so a link carries it and
    * a reload keeps it. Null means every day.
+   *
+   * A value this page cannot read is ignored rather than passed on: MatchCalendar seeds its
+   * month from the selected key, and date-fns throws on the Invalid Date that `?day=abc`
+   * produces — taking the whole tournament page down.
    */
-  const day = params.get('day')
+  const rawDay = params.get('day')
+  const day = isValidDayParam(rawDay) ? rawDay : null
   const setDay = (next: string | null) => {
     const p = new URLSearchParams(params)
     p.set('tab', 'schedule')
@@ -274,21 +326,33 @@ export default function TournamentPage() {
     finished: entries.filter((e) => e.status === 'finished').length,
   }
 
-  const nodes = bracket.data?.nodes ?? []
-  const playoffNodes = nodes.filter((n) => (n.nodeGroupName ?? '').toLowerCase().includes(PLAYOFF_GROUP))
-  const otherGroups = useMemo(() => {
+  const nodes = useMemo(() => bracket.data?.nodes ?? [], [bracket.data])
+  /**
+   * The playoff tree and the group stages, split in one pass.
+   *
+   * Both used to be computed apart, and the group pass asked `playoffNodes.includes(n)` for
+   * every node — a linear scan inside a loop over the same list. Splitting them together
+   * makes the question a branch instead of a search, and lets the whole thing hang off
+   * `nodes` alone with no dependency the linter has to be told to ignore.
+   */
+  const { playoffNodes, otherGroups } = useMemo(() => {
+    const playoff: BracketNode[] = []
     const map = new Map<number, { id: number; name: string; nodes: BracketNode[] }>()
     for (const n of nodes) {
-      if (playoffNodes.includes(n)) continue
+      if ((n.nodeGroupName ?? '').toLowerCase().includes(PLAYOFF_GROUP)) {
+        playoff.push(n)
+        continue
+      }
       const id = n.nodeGroupId ?? -1
       if (!map.has(id)) map.set(id, { id, name: n.nodeGroupName || 'Stage', nodes: [] })
       map.get(id)!.nodes.push(n)
     }
     // Valve numbers groups in the order they are played, so this is the running order:
     // Swiss (2) → Elimination Round (3) → Playoff (5), which is rendered separately.
-    return [...map.entries()].sort((a, b) => a[0] - b[0]).map(([, g]) => g)
-    // playoffNodes is derived from nodes; nodes alone is the real dependency.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return {
+      playoffNodes: playoff,
+      otherGroups: [...map.entries()].sort((a, b) => a[0] - b[0]).map(([, g]) => g),
+    }
   }, [nodes])
 
   // Standings are published per group; the biggest one is the group stage worth showing.
@@ -322,6 +386,29 @@ export default function TournamentPage() {
     return { name: groupName || 'Standings', rows: best.rows, groupId: best.groupId }
   }, [bracket.data, nodes])
 
+  /**
+   * Props of memoised children, so they are built here rather than in the JSX: a fresh
+   * array or Map on every render is a changed prop, and the memo never holds.
+   */
+  const mainStandingsNodes = useMemo(
+    () => (mainStandings ? nodes.filter((n) => n.nodeGroupId === mainStandings.groupId) : NO_NODES),
+    [nodes, mainStandings],
+  )
+  /** Valve ranks each stage group separately, so the rows are indexed by group. */
+  const standingsByGroup = useMemo(() => {
+    const out = new Map<number, Map<number, number>>()
+    for (const s of bracket.data?.standings ?? []) {
+      if (!s.teamId || !s.standing) continue
+      let group = out.get(s.nodeGroupId)
+      if (!group) {
+        group = new Map<number, number>()
+        out.set(s.nodeGroupId, group)
+      }
+      group.set(s.teamId, s.standing)
+    }
+    return out
+  }, [bracket.data])
+
   // "Next up" means next: an undecided slot with no date is not next, it is unscheduled.
   const nextUp = entries.filter((e) => e.status === 'live' || (e.status === 'upcoming' && e.scheduledTime)).slice(0, 6)
   const loadingOverview = bracket.isLoading || schedule.isLoading
@@ -333,12 +420,12 @@ export default function TournamentPage() {
       meta={
         <>
           {league?.startTimestamp && (
-            <span className="text-[12px] text-text-muted tabular-nums">
+            <span className="text-body text-text-muted tabular-nums">
               {when(league.startTimestamp)} — {when(league.endTimestamp)}
             </span>
           )}
           {league?.totalPrizePool ? (
-            <span className="text-[13px] font-mono tabular-nums text-accent">
+            <span className="text-body font-mono tabular-nums text-accent">
               ${league.totalPrizePool.toLocaleString('en-US')}
             </span>
           ) : null}
@@ -347,7 +434,7 @@ export default function TournamentPage() {
       status={
         <>
           {counts.live > 0 && (
-            <span className="inline-flex items-center gap-1.5 text-[11px] uppercase tracking-[0.12em] text-text-muted">
+            <span className="inline-flex items-center gap-1.5 text-label uppercase tracking-label text-text-muted">
               <span className="w-[5px] h-[5px] rounded-full bg-dire animate-pulse" />
               {counts.live} live
             </span>
@@ -364,7 +451,8 @@ export default function TournamentPage() {
               onClick={() => setTab(t.id)}
               aria-current={tab === t.id ? 'true' : undefined}
               className={
-                'px-3.5 py-1.5 rounded-full border text-[12px] transition-colors ' +
+                // D-9: the toolbar is flex-wrap, so the taller tab costs no width.
+                'px-3 py-1.5 max-sm:min-h-11 inline-flex items-center rounded-full border text-body transition-colors ' +
                 (tab === t.id
                   ? 'border-primary text-text bg-[var(--color-primary-soft)]'
                   : 'border-border text-text-muted hover:border-primary hover:text-text')
@@ -381,7 +469,8 @@ export default function TournamentPage() {
                   href={s.stream_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="px-2.5 py-1 rounded-full border border-border text-[11px] text-text-muted transition-colors hover:border-accent hover:text-accent"
+                  /* D-9: 23px tall; the stream strip wraps, so height is free. */
+                  className="px-2.5 py-1 max-sm:min-h-11 inline-flex items-center rounded-full border border-border text-label text-text-muted transition-colors hover:border-accent hover:text-accent"
                 >
                   {s.name ?? 'Stream'}
                 </a>
@@ -400,13 +489,17 @@ export default function TournamentPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 stack:grid-cols-[1.35fr_1fr] gap-6 items-start">
-              {mainStandings ? (
+              {/* Failure first, emptiness second — the two are different answers and only
+                  one of them is about this tournament. */}
+              {bracket.isError ? (
+                <LoadError what="the standings" onRetry={() => void bracket.refetch()} />
+              ) : mainStandings ? (
                 <StandingsTable
                   standings={mainStandings.rows}
                   title={mainStandings.name}
                   // The bracket the table is describing — hovering a row shows that
                   // team's results and links through to them.
-                  nodes={nodes.filter((n) => n.nodeGroupId === mainStandings.groupId)}
+                  nodes={mainStandingsNodes}
                   teamNames={teamNames}
                 />
               ) : (
@@ -417,7 +510,9 @@ export default function TournamentPage() {
                 <SectionTitle aside={counts.upcoming > nextUp.length ? `${counts.upcoming} upcoming` : undefined}>
                   Next up
                 </SectionTitle>
-                {nextUp.length === 0 ? (
+                {schedule.isError ? (
+                  <LoadError what="the schedule" onRetry={() => void schedule.refetch()} />
+                ) : nextUp.length === 0 ? (
                   <EmptyNote>Nothing scheduled.</EmptyNote>
                 ) : (
                   <div className="flex flex-col gap-3">
@@ -434,6 +529,8 @@ export default function TournamentPage() {
         {tab === 'schedule' && (
           schedule.isLoading ? (
             <SkeletonSchedule rows={8} />
+          ) : schedule.isError ? (
+            <LoadError what="the schedule" onRetry={() => void schedule.refetch()} />
           ) : entries.length === 0 ? (
             <EmptyNote>No series published for this tournament yet.</EmptyNote>
           ) : (
@@ -476,7 +573,7 @@ export default function TournamentPage() {
                 return collapsed ? (
                   <details key={id} className="group">
                     <summary className="cursor-pointer list-none marker:content-none flex items-center gap-2">
-                      <span className="text-[10px] text-text-dim transition-transform group-open:rotate-90">▶</span>
+                      <span className="text-label text-text-dim transition-transform group-open:rotate-90">▶</span>
                       <span className="flex-1">
                         <SectionTitle aside={`${rows.length}`}>{label}</SectionTitle>
                       </span>
@@ -501,6 +598,8 @@ export default function TournamentPage() {
         {tab === 'bracket' && (
           bracket.isLoading ? (
             <SkeletonBracket />
+          ) : bracket.isError ? (
+            <LoadError what="the bracket" onRetry={() => void bracket.refetch()} />
           ) : nodes.length === 0 ? (
             <EmptyNote>No bracket published for this tournament yet.</EmptyNote>
           ) : (
@@ -520,13 +619,7 @@ export default function TournamentPage() {
                     livePairs={livePairs}
                     seriesWins={seriesWins}
                     // Valve ranks each stage group separately, so take the rows for this one.
-                    standings={
-                      new Map(
-                        (bracket.data?.standings ?? [])
-                          .filter((s) => s.nodeGroupId === g.id && s.teamId && s.standing)
-                          .map((s) => [s.teamId as number, s.standing as number]),
-                      )
-                    }
+                    standings={standingsByGroup.get(g.id) ?? NO_STANDINGS}
                   />
                 </section>
               ))}

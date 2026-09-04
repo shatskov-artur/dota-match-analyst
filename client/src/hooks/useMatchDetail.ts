@@ -1,6 +1,4 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useEffect } from 'react'
-import { useNavigate } from 'react-router'
 import { buildingDecoder } from '@shared/buildingDecoder'
 import { apiFetch } from '../lib/apiFetch'
 import type { LiveGamesResponse } from './useLiveGames'
@@ -37,27 +35,23 @@ export function shouldPollLiveFeed(hasFetched: boolean, matchPresent: boolean): 
  *   1. Synchronous cache read via getQueryData — no network on cache hit.
  *   2. useQuery with queryKey ['live-games'] always enabled — triggers fetch on cache miss.
  *   3. refetchInterval: false when game_state === 6 (post-game) — stops quota drain.
- *   4. useEffect redirect: fires only after isFetched === true AND match still absent.
+ *   4. `isMissing` reports "the feed has answered and this match is not in it" — the caller
+ *      decides what that means. It used to navigate('/') from inside this hook, which in the
+ *      demo build closed the match page the moment the replay cursor moved behind the match.
+ *      A page that removes itself is not a state anyone can read or recover from.
  *
  * CRITICAL (TQ v5): refetchInterval is a plain number. Draft-speed 5s polling lives in useDraftDetail (Phase 4 D-12/D-13).
  * CRITICAL (TQ v5): onSuccess removed — derive all state from query.data reactively.
  * CRITICAL: Do NOT set enabled: !!matchFromCache — that prevents refetch on cache miss (breaks D-15).
  */
 export interface UseMatchDetailOptions {
-  /**
-   * v2.0: useMatchState needs the live probe WITHOUT the redirect, because a finished
-   * match is legitimately absent from the live feed while still fully archived.
-   * Defaults to true so every pre-existing caller behaves exactly as before.
-   */
-  redirectOnMissing?: boolean
   /** Stop polling while the viewer is scrubbing the past — the live payload is unused then. */
   paused?: boolean
 }
 
 export function useMatchDetail(matchId: string | undefined, options: UseMatchDetailOptions = {}) {
-  const { redirectOnMissing = true, paused = false } = options
+  const { paused = false } = options
   const queryClient = useQueryClient()
-  const navigate = useNavigate()
 
   // Synchronous cache read — does NOT trigger a network fetch (TQ v5: getQueryData is read-only).
   // Used only to compute refetchInterval before query.data is available.
@@ -85,14 +79,10 @@ export function useMatchDetail(matchId: string | undefined, options: UseMatchDet
 
   const match = query.data?.games?.find((g) => String(g.match_id) === matchId)
 
-  // D-15: redirect to home if match absent after fetch completes.
-  // isFetched guard prevents premature redirect before the network call settles.
-  useEffect(() => {
-    if (!redirectOnMissing) return
-    if (!query.isFetching && query.isSuccess && !match) {
-      navigate('/')
-    }
-  }, [query.isFetching, query.isSuccess, match, navigate, redirectOnMissing])
+  // D-15, restated as a fact rather than an action: the feed has answered, and this match is
+  // not in it. The isFetching guard keeps it false while a response is still in flight, so a
+  // caller cannot mistake "not yet" for "not there".
+  const isMissing = query.isSuccess && !query.isFetching && !match
 
   // Filter strictly to team === 0 (Radiant) and team === 1 (Dire).
   // Exclude team === 2 (Broadcaster) and team === 4 (Unassigned).
@@ -109,6 +99,7 @@ export function useMatchDetail(matchId: string | undefined, options: UseMatchDet
     buildings,
     history: match?.history ?? [],
     isLoading: query.isLoading,
+    isMissing,
     gameState: match?.game_state,
   }
 }

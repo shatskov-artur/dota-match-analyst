@@ -28,10 +28,14 @@ export default function DraftTimeline({ slots, gameState, heroStatsMap, playerIn
     <div className="flex items-start min-w-0">
       {/* Row labels */}
       <div className="flex flex-col shrink-0 mr-2" style={{ paddingTop: 10 }}>
-        <div className="flex items-center text-[8px] font-bold uppercase tracking-widest"
-          style={{ height: 48, color: 'var(--color-radiant)' }}>R</div>
-        <div className="flex items-center text-[8px] font-bold uppercase tracking-widest"
-          style={{ height: 48, color: 'var(--color-dire)' }}>D</div>
+        {/* UI-SPEC 10.5 §4.2: the R/D row markers are decorative glyphs — the row's team is
+            already carried by its color and by each slot's own labelling — so they stay at glyph
+            size (§3) off the prose scale and are hidden from assistive tech rather than read out
+            as two stray letters before 24 draft slots. */}
+        <div aria-hidden="true" className="flex items-center font-bold uppercase tracking-label"
+          style={{ height: 48, fontSize: 8, color: 'var(--color-radiant)' }}>R</div>
+        <div aria-hidden="true" className="flex items-center font-bold uppercase tracking-label"
+          style={{ height: 48, fontSize: 8, color: 'var(--color-dire)' }}>D</div>
       </div>
 
       {/* 24 columns — one per CM step. Horizontal scroll on narrow screens (UX: overflow-x-auto
@@ -62,7 +66,7 @@ export default function DraftTimeline({ slots, gameState, heroStatsMap, playerIn
                   <img src={heroInfo.portrait} alt={heroInfo.name} className="w-full h-full object-cover" />
                   {slot.action === 'ban' && (
                     <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 24 24" aria-hidden="true"
-                      style={{ color: 'var(--color-dire)', opacity: 0.75, filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.7))' }}>
+                      style={{ color: 'var(--color-dire)', opacity: 0.75, filter: 'drop-shadow(0 0 2px var(--scrim-soft))' }}>
                       <path d="M4 4 L20 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
                       <path d="M20 4 L4 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
                     </svg>
@@ -70,7 +74,7 @@ export default function DraftTimeline({ slots, gameState, heroStatsMap, playerIn
                   {showBadge && heroStats && (
                     <div aria-hidden="true" style={{
                       position: 'absolute', bottom: 0, left: 0, right: 0,
-                      background: 'rgba(0,0,0,0.72)', padding: '3px',
+                      background: 'var(--scrim-heavy)', padding: '3px',
                       textAlign: 'center', fontSize: 9, fontVariantNumeric: 'tabular-nums',
                     }}>
                       <span style={{ color: winrateColor(heroStats.win_rate) }}>

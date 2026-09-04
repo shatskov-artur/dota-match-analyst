@@ -92,19 +92,23 @@ function LeagueList({
   return (
     <div className="flex flex-col gap-1">
       <div className="flex items-center justify-between px-1">
-        <span className="text-[10px] uppercase tracking-[0.12em] text-text-dim">Tournaments</span>
+        <span className="text-label uppercase tracking-label text-text-dim">Tournaments</span>
         {picked.length > 0 && (
           <button
             type="button"
             onClick={() => onPick([])}
-            className="text-[11px] text-primary hover:underline cursor-pointer"
+            /* D-9 (§6.3): an 11px text button is a ~32×13 tap target. A ::before expander
+               here would reach 16px down into the first league row, so the button itself
+               takes the 44px box and keeps its label flush right. */
+            className="text-label text-primary hover:underline cursor-pointer
+                       max-sm:inline-flex max-sm:items-center max-sm:justify-end max-sm:min-h-11 max-sm:min-w-11"
           >
             Clear
           </button>
         )}
       </div>
 
-      {ordered.length === 0 && <p className="px-1 py-1 text-[12px] text-text-dim">Nothing on this day.</p>}
+      {ordered.length === 0 && <p className="px-1 py-1 text-body text-text-dim">Nothing on this day.</p>}
 
       <div className="max-h-[280px] overflow-y-auto scroll-slim flex flex-col">
         {ordered.map((l) => {
@@ -114,18 +118,20 @@ function LeagueList({
             <div
               key={l.id}
               className={
-                'flex items-center gap-2 px-1.5 py-1.5 rounded-[7px] transition-colors ' +
+                'flex items-center gap-2 px-1.5 py-1.5 rounded-sm transition-colors ' +
                 (on ? 'bg-[var(--color-primary-soft)]' : 'hover:bg-surface-2')
               }
             >
-              <label className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer">
+              {/* D-9: the label is the checkbox's hit area, so it carries the 44px floor
+                  rather than the 13px native box inside it. */}
+              <label className="flex items-center gap-2 min-w-0 flex-1 cursor-pointer max-sm:min-h-11">
                 <input
                   type="checkbox"
                   checked={on}
                   onChange={() => toggle(l.id)}
                   className="accent-[var(--color-primary)] cursor-pointer shrink-0"
                 />
-                <span className="text-[12px] text-text truncate" title={l.name}>
+                <span className="text-body text-text truncate" title={l.name}>
                   {l.name}
                 </span>
                 {/* Only for the tiers worth pointing at. Badging "Other" would put a label
@@ -133,7 +139,7 @@ function LeagueList({
                 {(l.tier === 'tier1' || l.tier === 'tier23') && (
                   <span
                     className={
-                      'shrink-0 rounded-full px-1.5 py-[1px] text-[9px] font-bold uppercase tracking-[0.08em] border ' +
+                      'shrink-0 rounded-full px-1.5 py-0.5 text-label font-bold uppercase tracking-label border ' +
                       (l.tier === 'tier1'
                         ? 'text-accent border-accent'
                         : 'text-text-muted border-border')
@@ -143,7 +149,7 @@ function LeagueList({
                     {l.tier === 'tier1' ? 'T1' : 'T2'}
                   </span>
                 )}
-                <span className="ml-auto font-mono text-[11px] tabular-nums text-text-dim shrink-0">
+                <span className="ml-auto font-mono text-label tabular-nums text-text-dim shrink-0">
                   {l.count}
                 </span>
               </label>
@@ -153,7 +159,12 @@ function LeagueList({
                 aria-pressed={starred}
                 aria-label={starred ? `Unstar ${l.name}` : `Star ${l.name}`}
                 className={
-                  'shrink-0 transition-colors cursor-pointer ' +
+                  /* D-9 (§6.3): the star glyph stays 13px, but the rows sit flush against
+                     each other with no gap, so a ::before expander would spill into the
+                     rows above and below and collide with their stars. Padding grows the
+                     button — and with it the row — instead, which is the trade the spec
+                     asks for when invisible zones would overlap. Phone only. */
+                  'shrink-0 inline-grid place-items-center transition-colors cursor-pointer max-sm:p-4 ' +
                   (starred ? 'text-accent' : 'text-text-dim hover:text-accent')
                 }
               >
@@ -170,7 +181,7 @@ function LeagueList({
             type="button"
             onClick={() => setShowAll(!showAll)}
             aria-expanded={showAll}
-            className="px-1.5 py-1 text-left text-[11px] text-text-dim hover:text-text transition-colors cursor-pointer"
+            className="px-1.5 py-1 text-left text-label text-text-dim hover:text-text transition-colors cursor-pointer max-sm:min-h-11"
           >
             {showAll ? '▾' : '▸'} all tournaments ({others.length})
           </button>
@@ -180,10 +191,13 @@ function LeagueList({
                 <Link
                   key={t.leagueId}
                   to={`/tournament/${t.leagueId}`}
-                  className="truncate rounded-[7px] px-1.5 py-1 text-[12px] text-text-muted hover:bg-surface-2 hover:text-text transition-colors"
+                  /* D-9: these links stack flush, so the row grows rather than overlapping.
+                     `truncate` moves onto an inner span because the anchor is now a flex
+                     container and text-overflow only ellipsises its own block box. */
+                  className="flex items-center rounded-sm px-1.5 py-1 text-body text-text-muted hover:bg-surface-2 hover:text-text transition-colors max-sm:min-h-11"
                   title={t.name ?? undefined}
                 >
-                  {t.name ?? `League #${t.leagueId}`}
+                  <span className="truncate">{t.name ?? `League #${t.leagueId}`}</span>
                 </Link>
               ))}
             </div>
@@ -260,7 +274,8 @@ export default function MatchRail({
               title={usable ? undefined : 'Nothing on this day is in that state'}
               onClick={() => set({ status: c.value })}
               className={[
-                'px-3 py-1 rounded-full text-[12px] font-semibold transition-colors duration-150 border',
+                // D-9: 27px tall as shipped; the pills wrap, so growing them costs no width.
+                'px-3 py-1 rounded-full text-body font-bold transition-colors duration-150 border max-sm:min-h-11',
                 active && usable
                   ? 'bg-primary text-white border-primary shadow-[0_0_18px_var(--color-primary-soft)] cursor-pointer'
                   : usable
@@ -287,7 +302,8 @@ export default function MatchRail({
               title={c.hint}
               onClick={() => set({ tier: c.value })}
               className={[
-                'px-3 py-1 rounded-full text-[12px] font-semibold transition-colors duration-150 border cursor-pointer',
+                // D-9, same as the status row above.
+                'px-3 py-1 rounded-full text-body font-bold transition-colors duration-150 border cursor-pointer max-sm:min-h-11',
                 active
                   ? 'bg-primary text-white border-primary shadow-[0_0_18px_var(--color-primary-soft)]'
                   : 'bg-surface text-text-muted border-border hover:text-text hover:border-primary',
@@ -307,8 +323,10 @@ export default function MatchRail({
           value={filters.search}
           onChange={(e) => set({ search: e.target.value })}
           placeholder="Search team…"
-          className="w-full h-[36px] rounded-full bg-surface border border-border pl-9 pr-3 text-sm text-text
-                     placeholder:text-text-dim focus:outline-none focus:border-primary
+          /* D-9: §3 locks the search field at 36px, which is below the 44px touch floor.
+             The locked height keeps the dense desktop rail; phone gets the tappable one. */
+          className="w-full h-[36px] max-sm:h-11 rounded-full bg-surface border border-border pl-9 pr-3 text-body-lg text-text
+                     placeholder:text-text-dim focus:border-primary
                      focus:shadow-[0_0_0_1px_var(--color-primary)] transition-colors"
         />
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-text-dim pointer-events-none" aria-hidden="true">⌕</span>
@@ -325,14 +343,16 @@ export default function MatchRail({
       {/* The header already carries the live count. This line only earns its place once a
           filter has made the two numbers different. */}
       {dirty && (
-        <div className="flex items-center gap-3 text-[11px] text-text-dim">
+        <div className="flex items-center gap-3 text-label text-text-dim">
           <span className="tabular-nums">
             {resultCount} of {totalCount}
           </span>
           <button
             type="button"
             onClick={() => onChange({ ...DEFAULT_FILTERS })}
-            className="ml-auto text-primary hover:underline cursor-pointer"
+            /* D-9, same treatment as "Clear" above. */
+            className="ml-auto text-primary hover:underline cursor-pointer
+                       max-sm:inline-flex max-sm:items-center max-sm:justify-end max-sm:min-h-11 max-sm:min-w-11"
           >
             Reset
           </button>

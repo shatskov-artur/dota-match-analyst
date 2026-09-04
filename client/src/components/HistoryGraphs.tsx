@@ -1,5 +1,5 @@
-import { useEffect, useId, useRef, useState } from 'react'
-import type { CSSProperties } from 'react'
+import { memo, useEffect, useId, useRef, useState } from 'react'
+import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, MouseEvent as ReactMouseEvent } from 'react'
 
 // Gold / XP lead over match time — two small multiples in one panel.
 // NO chart library (D-25). Pure SVG primitives.
@@ -54,6 +54,10 @@ const FALLBACK_W = 560  // pre-measure and jsdom width
 // Y domain steps. The first entry is the floor: leads smaller than this render as a flat ripple
 // instead of a dramatic wedge, which is the honest reading of "nobody is ahead".
 const DOMAIN_STEPS = [2_000, 3_000, 5_000, 8_000, 12_000, 16_000, 20_000, 25_000, 30_000, 40_000, 50_000]
+
+// PageUp/PageDown jump. Five minutes because that is the gridline interval — the coarse step
+// lands the cursor on a mark the reader can already see, rather than an arbitrary offset.
+const SCRUB_PAGE_STEP = 5
 
 export interface HistoryGraphsProps {
   history: Array<{ t: number; gold: number; xp: number }>
@@ -256,6 +260,48 @@ function ChartSection({
     color: SECONDARY_FG,
   }
 
+  // ── Scrub control (UI-SPEC 10.5 §6.1/§6.2) ────────────────────────────────
+  // The chart's minute range, in the same unit onScrub speaks: whole minutes.
+  const minMinute = Math.max(0, Math.round(tMin / 60))
+  const maxMinute = Math.max(minMinute, Math.round(tMax / 60))
+  const cursorMinute = cursorT !== null && cursorT !== undefined ? Math.round(cursorT / 60) : null
+  // While following live there is no parked cursor, but a slider still has to report a position.
+  // The endpoint is the honest one — it is the sample the headline and the "now" dot describe.
+  const scrubMinute = Math.min(maxMinute, Math.max(minMinute, cursorMinute ?? maxMinute))
+
+  const scrubTo = (minute: number) => {
+    if (!onScrub) return
+    onScrub(Math.min(maxMinute, Math.max(minMinute, minute)))
+  }
+
+  const onScrubClick = (e: ReactMouseEvent<HTMLDivElement>) => {
+    // The overlay is inset to the plot box, so its own left edge IS x=plotLeft — no gutter
+    // subtraction, unlike the full-width <rect> this replaced.
+    const box = e.currentTarget.getBoundingClientRect()
+    const ratio = (e.clientX - box.left) / plotW
+    const t = tMin + Math.min(1, Math.max(0, ratio)) * span
+    scrubTo(Math.max(0, Math.round(t / 60)))
+  }
+
+  const onScrubKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    let next: number
+    switch (e.key) {
+      case 'ArrowLeft':
+      case 'ArrowDown':  next = scrubMinute - 1; break
+      case 'ArrowRight':
+      case 'ArrowUp':    next = scrubMinute + 1; break
+      case 'PageDown':   next = scrubMinute - SCRUB_PAGE_STEP; break
+      case 'PageUp':     next = scrubMinute + SCRUB_PAGE_STEP; break
+      case 'Home':       next = minMinute; break
+      case 'End':        next = maxMinute; break
+      default: return
+    }
+    // Every key this handles also scrolls the page by default, which would yank the chart
+    // out from under the reader on the same keystroke that moves the cursor.
+    e.preventDefault()
+    scrubTo(next)
+  }
+
   return (
     <div ref={hostRef} style={{ marginTop: 18 }}>
       {/* Header row — real HTML at real px. Previously these were absolutely positioned over the
@@ -282,207 +328,220 @@ function ChartSection({
         </span>
       </div>
 
-      <svg
-        width={W}
-        height={SVG_H}
-        viewBox={`0 0 ${W} ${SVG_H}`}
-        style={{ display: 'block' }}
-        role="img"
-        aria-label={`${label}: currently ${headlineText}. Peak Radiant lead ${fmtVal(rPeak.v)}, peak Dire lead ${fmtVal(dPeak.v)}.`}
-      >
-        {/* 1. Vertical gridlines — solid hairlines. Dashed grid reads as a threshold, not a grid. */}
-        {ticks.map(t => (
-          <line
-            key={`grid-${t}`}
-            data-testid="gridline"
-            x1={xOf(t)}
-            x2={xOf(t)}
-            y1={0}
-            y2={PLOT_H}
-            stroke={GRID_LINE}
-            strokeWidth={1}
-          />
-        ))}
+      {/* The SVG stays role="img" — its aria-label is the whole read-out for a screen reader, and
+          role="img" makes every descendant presentational. So the scrub control cannot live inside
+          it; it is a sibling laid over the plot box instead. */}
+      <div style={{ position: 'relative' }}>
+        <svg
+          width={W}
+          height={SVG_H}
+          viewBox={`0 0 ${W} ${SVG_H}`}
+          style={{ display: 'block' }}
+          role="img"
+          aria-label={`${label}: currently ${headlineText}. Peak Radiant lead ${fmtVal(rPeak.v)}, peak Dire lead ${fmtVal(dPeak.v)}.`}
+        >
+          {/* 1. Vertical gridlines — solid hairlines. Dashed grid reads as a threshold, not a grid. */}
+          {ticks.map(t => (
+            <line
+              key={`grid-${t}`}
+              data-testid="gridline"
+              x1={xOf(t)}
+              x2={xOf(t)}
+              y1={0}
+              y2={PLOT_H}
+              stroke={GRID_LINE}
+              strokeWidth={1}
+            />
+          ))}
 
-        {/* 2. Y scale — the top and bottom of the domain, so the amplitude is readable at all. */}
-        {[
-          { v: domain, y: yOf(domain) },
-          { v: -domain, y: yOf(-domain) },
-        ].map(({ v, y }) => (
-          <g key={`yaxis-${v}`}>
-            <line x1={plotLeft} x2={plotRight} y1={y} y2={y} stroke={GRID_LINE} strokeWidth={1} />
+          {/* 2. Y scale — the top and bottom of the domain, so the amplitude is readable at all. */}
+          {[
+            { v: domain, y: yOf(domain) },
+            { v: -domain, y: yOf(-domain) },
+          ].map(({ v, y }) => (
+            <g key={`yaxis-${v}`}>
+              <line x1={plotLeft} x2={plotRight} y1={y} y2={y} stroke={GRID_LINE} strokeWidth={1} />
+              <text
+                x={plotLeft - 8}
+                y={y + 3}
+                fontSize={10}
+                fill={TERTIARY_FG}
+                textAnchor="end"
+                style={{ fontVariantNumeric: 'tabular-nums' }}
+              >
+                {fmtAxis(v)}
+              </text>
+            </g>
+          ))}
+
+          {/* 3. Zero line — the reference every value is read against, so it outranks the grid. */}
+          <line x1={plotLeft} x2={plotRight} y1={midY} y2={midY} stroke={ZERO_AXIS} strokeWidth={1} />
+          <text x={plotLeft - 8} y={midY + 3} fontSize={10} fill={TERTIARY_FG} textAnchor="end">
+            0
+          </text>
+
+          {/* 4 + 5. Fills — 0.15 alpha floor: present enough to read at a glance, never a block. */}
+          <path d={areaPath(positive)} fill={RADIANT_GREEN} fillOpacity={0.15} />
+          <path d={areaPath(negative)} fill={DIRE_RED} fillOpacity={0.15} />
+
+          {/* 6 + 7. Outline — the same curve, clipped to each half-plane so it changes colour exactly
+              where the lead changes hands. */}
+          <defs>
+            <clipPath id={`${uid}-above`}>
+              <rect x={plotLeft} y={0} width={plotW} height={midY} />
+            </clipPath>
+            <clipPath id={`${uid}-below`}>
+              <rect x={plotLeft} y={midY} width={plotW} height={PLOT_H - midY} />
+            </clipPath>
+          </defs>
+          <polyline
+            points={trueOutline}
+            fill="none"
+            stroke={RADIANT_GREEN}
+            strokeWidth={2}
+            strokeLinejoin="round"
+            clipPath={`url(#${uid}-above)`}
+          />
+          <polyline
+            points={trueOutline}
+            fill="none"
+            stroke={DIRE_RED}
+            strokeWidth={2}
+            strokeLinejoin="round"
+            clipPath={`url(#${uid}-below)`}
+          />
+
+          {/* 8. Radiant peak */}
+          {rPeak.v > 0 && (() => {
+            const px = xOf(rPeak.t)
+            const py = yOf(rPeak.v)
+            return (
+              <g key="r-peak">
+                <circle cx={px} cy={py} r={3.5} fill={RADIANT_GREEN} stroke={SURFACE} strokeWidth={2} />
+                <text
+                  x={px}
+                  y={Math.max(11, py - 9)}
+                  fontSize={11}
+                  fontWeight={600}
+                  fill={RADIANT_GREEN}
+                  textAnchor={anchorFor(px)}
+                  style={{ fontVariantNumeric: 'tabular-nums' }}
+                >
+                  {`${fmtVal(rPeak.v)} @ ${fmtMmSs(rPeak.t)}`}
+                </text>
+              </g>
+            )
+          })()}
+
+          {/* 9. Dire peak */}
+          {dPeak.v < 0 && (() => {
+            const px = xOf(dPeak.t)
+            const py = yOf(dPeak.v)
+            return (
+              <g key="d-peak">
+                <circle cx={px} cy={py} r={3.5} fill={DIRE_RED} stroke={SURFACE} strokeWidth={2} />
+                <text
+                  x={px}
+                  y={Math.min(PLOT_H - 3, py + 14)}
+                  fontSize={11}
+                  fontWeight={600}
+                  fill={DIRE_RED}
+                  textAnchor={anchorFor(px)}
+                  style={{ fontVariantNumeric: 'tabular-nums' }}
+                >
+                  {`${fmtVal(dPeak.v)} @ ${fmtMmSs(dPeak.t)}`}
+                </text>
+              </g>
+            )
+          })()}
+
+          {/* 10. Now marker — the endpoint is the value the headline names, so it gets an anchor. */}
+          <circle
+            cx={xOf(tMax)}
+            cy={yOf(last)}
+            r={3}
+            fill={headlineColor}
+            stroke={SURFACE}
+            strokeWidth={2}
+          />
+
+          {/* 11. X axis band — inside the SVG height, so it can never be clipped by the card. */}
+          {ticks.map(t => (
             <text
-              x={plotLeft - 8}
-              y={y + 3}
+              key={`xlabel-${t}`}
+              x={xOf(t)}
+              y={PLOT_H + 14}
               fontSize={10}
               fill={TERTIARY_FG}
-              textAnchor="end"
+              textAnchor="middle"
               style={{ fontVariantNumeric: 'tabular-nums' }}
             >
-              {fmtAxis(v)}
+              {`${Math.round(t / 60)}m`}
             </text>
-          </g>
-        ))}
+          ))}
 
-        {/* 3. Zero line — the reference every value is read against, so it outranks the grid. */}
-        <line x1={plotLeft} x2={plotRight} y1={midY} y2={midY} stroke={ZERO_AXIS} strokeWidth={1} />
-        <text x={plotLeft - 8} y={midY + 3} fontSize={10} fill={TERTIARY_FG} textAnchor="end">
-          0
-        </text>
+          {/* 12. Timeline cursor (v2.0) — where the scrubber is parked, with the value there.
+              Only drawn while scrubbing; the live view keeps the untouched chart. */}
+          {cursorT !== null && cursorT !== undefined && cursorT >= tMin && cursorT <= tMax && (() => {
+            // Nearest recorded sample, not an interpolation: the chart must never show a
+            // number the match did not actually produce.
+            let nearest = samples[0]
+            for (const s of samples) {
+              if (Math.abs(s.t - cursorT) < Math.abs(nearest.t - cursorT)) nearest = s
+            }
+            const cx = xOf(nearest.t)
+            return (
+              <g data-testid="timeline-cursor" pointerEvents="none">
+                <line x1={cx} x2={cx} y1={0} y2={PLOT_H} stroke={ACCENT} strokeWidth={1} opacity={0.9} />
+                <circle cx={cx} cy={yOf(nearest[pick])} r={3.5} fill={ACCENT} stroke={SURFACE} strokeWidth={2} />
+                <text
+                  x={cx}
+                  y={PLOT_H + 14}
+                  fontSize={10}
+                  fill={ACCENT}
+                  textAnchor={anchorFor(cx)}
+                  style={{ fontVariantNumeric: 'tabular-nums' }}
+                >
+                  {fmtVal(nearest[pick])}
+                </text>
+              </g>
+            )
+          })()}
+        </svg>
 
-        {/* 4 + 5. Fills — 0.15 alpha floor: present enough to read at a glance, never a block. */}
-        <path d={areaPath(positive)} fill={RADIANT_GREEN} fillOpacity={0.15} />
-        <path d={areaPath(negative)} fill={DIRE_RED} fillOpacity={0.15} />
-
-        {/* 6 + 7. Outline — the same curve, clipped to each half-plane so it changes colour exactly
-            where the lead changes hands. */}
-        <defs>
-          <clipPath id={`${uid}-above`}>
-            <rect x={plotLeft} y={0} width={plotW} height={midY} />
-          </clipPath>
-          <clipPath id={`${uid}-below`}>
-            <rect x={plotLeft} y={midY} width={plotW} height={PLOT_H - midY} />
-          </clipPath>
-        </defs>
-        <polyline
-          points={trueOutline}
-          fill="none"
-          stroke={RADIANT_GREEN}
-          strokeWidth={2}
-          strokeLinejoin="round"
-          clipPath={`url(#${uid}-above)`}
-        />
-        <polyline
-          points={trueOutline}
-          fill="none"
-          stroke={DIRE_RED}
-          strokeWidth={2}
-          strokeLinejoin="round"
-          clipPath={`url(#${uid}-below)`}
-        />
-
-        {/* 8. Radiant peak */}
-        {rPeak.v > 0 && (() => {
-          const px = xOf(rPeak.t)
-          const py = yOf(rPeak.v)
-          return (
-            <g key="r-peak">
-              <circle cx={px} cy={py} r={3.5} fill={RADIANT_GREEN} stroke={SURFACE} strokeWidth={2} />
-              <text
-                x={px}
-                y={Math.max(11, py - 9)}
-                fontSize={11}
-                fontWeight={600}
-                fill={RADIANT_GREEN}
-                textAnchor={anchorFor(px)}
-                style={{ fontVariantNumeric: 'tabular-nums' }}
-              >
-                {`${fmtVal(rPeak.v)} @ ${fmtMmSs(rPeak.t)}`}
-              </text>
-            </g>
-          )
-        })()}
-
-        {/* 9. Dire peak */}
-        {dPeak.v < 0 && (() => {
-          const px = xOf(dPeak.t)
-          const py = yOf(dPeak.v)
-          return (
-            <g key="d-peak">
-              <circle cx={px} cy={py} r={3.5} fill={DIRE_RED} stroke={SURFACE} strokeWidth={2} />
-              <text
-                x={px}
-                y={Math.min(PLOT_H - 3, py + 14)}
-                fontSize={11}
-                fontWeight={600}
-                fill={DIRE_RED}
-                textAnchor={anchorFor(px)}
-                style={{ fontVariantNumeric: 'tabular-nums' }}
-              >
-                {`${fmtVal(dPeak.v)} @ ${fmtMmSs(dPeak.t)}`}
-              </text>
-            </g>
-          )
-        })()}
-
-        {/* 10. Now marker — the endpoint is the value the headline names, so it gets an anchor. */}
-        <circle
-          cx={xOf(tMax)}
-          cy={yOf(last)}
-          r={3}
-          fill={headlineColor}
-          stroke={SURFACE}
-          strokeWidth={2}
-        />
-
-        {/* 11. X axis band — inside the SVG height, so it can never be clipped by the card. */}
-        {ticks.map(t => (
-          <text
-            key={`xlabel-${t}`}
-            x={xOf(t)}
-            y={PLOT_H + 14}
-            fontSize={10}
-            fill={TERTIARY_FG}
-            textAnchor="middle"
-            style={{ fontVariantNumeric: 'tabular-nums' }}
-          >
-            {`${Math.round(t / 60)}m`}
-          </text>
-        ))}
-
-        {/* 12. Timeline cursor (v2.0) — where the scrubber is parked, with the value there.
-            Only drawn while scrubbing; the live view keeps the untouched chart. */}
-        {cursorT !== null && cursorT !== undefined && cursorT >= tMin && cursorT <= tMax && (() => {
-          // Nearest recorded sample, not an interpolation: the chart must never show a
-          // number the match did not actually produce.
-          let nearest = samples[0]
-          for (const s of samples) {
-            if (Math.abs(s.t - cursorT) < Math.abs(nearest.t - cursorT)) nearest = s
-          }
-          const cx = xOf(nearest.t)
-          return (
-            <g data-testid="timeline-cursor" pointerEvents="none">
-              <line x1={cx} x2={cx} y1={0} y2={PLOT_H} stroke={ACCENT} strokeWidth={1} opacity={0.9} />
-              <circle cx={cx} cy={yOf(nearest[pick])} r={3.5} fill={ACCENT} stroke={SURFACE} strokeWidth={2} />
-              <text
-                x={cx}
-                y={PLOT_H + 14}
-                fontSize={10}
-                fill={ACCENT}
-                textAnchor={anchorFor(cx)}
-                style={{ fontVariantNumeric: 'tabular-nums' }}
-              >
-                {fmtVal(nearest[pick])}
-              </text>
-            </g>
-          )
-        })()}
-
-        {/* 13. Click target for scrubbing. Last child so it sits above the marks, and
-            fill="transparent" rather than opacity:0 so it still receives pointer events. */}
+        {/* 13. Scrub target. Covers exactly the plot box the old in-SVG <rect> did, so a click or a
+            tap lands on the same minute as before — but as a real ARIA slider it is also a tab stop,
+            picks up the global :focus-visible ring (§6.1), and answers the arrow keys (§6.2: an
+            affordance that only pointers can reach is a defect). */}
         {onScrub && (
-          <rect
+          <div
             data-testid="scrub-overlay"
-            x={plotLeft}
-            y={0}
-            width={plotW}
-            height={PLOT_H}
-            fill="transparent"
-            style={{ cursor: 'col-resize' }}
-            onClick={(e) => {
-              const box = (e.currentTarget.ownerSVGElement ?? e.currentTarget).getBoundingClientRect()
-              const ratio = (e.clientX - box.left - plotLeft) / plotW
-              const t = tMin + Math.min(1, Math.max(0, ratio)) * span
-              onScrub(Math.max(0, Math.round(t / 60)))
+            role="slider"
+            tabIndex={0}
+            aria-label={`Scrub match timeline — ${label} chart`}
+            aria-valuemin={minMinute}
+            aria-valuemax={maxMinute}
+            aria-valuenow={scrubMinute}
+            aria-valuetext={`minute ${scrubMinute}`}
+            onClick={onScrubClick}
+            onKeyDown={onScrubKeyDown}
+            style={{
+              position: 'absolute',
+              left: plotLeft,
+              top: 0,
+              width: plotW,
+              height: PLOT_H,
+              cursor: 'col-resize',
+              touchAction: 'manipulation',
             }}
           />
         )}
-      </svg>
+      </div>
     </div>
   )
 }
 
-export default function HistoryGraphs({
+function HistoryGraphs({
   history,
   gameDuration,
   gameState: _gameState,
@@ -508,3 +567,7 @@ export default function HistoryGraphs({
     </section>
   )
 }
+
+// Two charts, each rebuilding a path over the whole match from scratch. Nothing here moves
+// between minutes, so a 30-second poller has no business redrawing them.
+export default memo(HistoryGraphs)

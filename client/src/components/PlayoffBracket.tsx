@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { memo, useMemo } from 'react'
 import type { BracketNode } from '../hooks/useArchive'
 import SeriesNodeCard, { NODE_CARD_H, NODE_CARD_W, type TeamLookup } from './SeriesNodeCard'
 
@@ -215,7 +215,7 @@ function BracketSection({
 
   return (
     <section>
-      <h3 className="text-[11px] uppercase tracking-[0.12em] text-text-dim mb-3">{label}</h3>
+      <h3 className="text-label uppercase tracking-label text-text-dim mb-3">{label}</h3>
       <div className="relative" style={{ width, height }}>
         {/* Connectors first so cards paint over the line ends. */}
         <svg className="absolute inset-0 pointer-events-none" width={width} height={height} aria-hidden="true">
@@ -257,7 +257,7 @@ function BracketSection({
   )
 }
 
-export default function PlayoffBracket({ nodes, teamNames }: PlayoffBracketProps) {
+function PlayoffBracket({ nodes, teamNames }: PlayoffBracketProps) {
   const placed = useMemo(() => (nodes.length > 0 ? place(nodes) : []), [nodes])
   if (placed.length === 0) return null
 
@@ -286,3 +286,7 @@ export default function PlayoffBracket({ nodes, teamNames }: PlayoffBracketProps
     </div>
   )
 }
+
+// Lays out the whole tree and draws its connectors. The tournament page shares the
+// 30-second ['live-games'] poll, which has nothing to say about a bracket.
+export default memo(PlayoffBracket)

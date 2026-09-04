@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import type { BuildingState } from '@shared/buildingDecoder'
 import { heroMapper } from '../utils/heroMapper'
 import { normalizeMapCoords } from '../utils/mapCoords'
@@ -62,7 +63,7 @@ function Ancient({ p, alive, team }: { p: Point; alive: boolean; team: Side }) {
   )
 }
 
-export default function DotaMapView({ buildings: b, heroPositions, size = 420 }: Props) {
+function DotaMapView({ buildings: b, heroPositions, size = 420 }: Props) {
   const r = b.radiant
   const d = b.dire
 
@@ -166,3 +167,7 @@ export default function DotaMapView({ buildings: b, heroPositions, size = 420 }:
     </svg>
   )
 }
+
+// ~80 SVG nodes redrawn by every poller on the match page, four to five of them, whether
+// or not a building or a hero had actually moved.
+export default memo(DotaMapView)

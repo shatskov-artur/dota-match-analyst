@@ -24,9 +24,11 @@ export default function SkeletonRow({ featured = false }: SkeletonRowProps) {
           <div className={`bg-surface-2 rounded animate-pulse ${featured ? 'h-8 w-8' : 'h-5 w-5'}`} />
         </div>
 
-        {/* Featured stat strip placeholder */}
+        {/* Featured stat strip placeholder. 16px, not the 18px this shipped with:
+            MatchCard's real stat strip is `mt-4 pt-4`, so an off-scale skeleton was also
+            an off-by-2px layout jump on arrival. */}
         {featured && (
-          <div className="grid grid-cols-3 gap-2.5 mt-[18px] pt-[18px] border-t border-border">
+          <div className="grid grid-cols-3 gap-2.5 mt-4 pt-4 border-t border-border">
             <div className="h-8 bg-surface-2 rounded animate-pulse" />
             <div className="h-8 bg-surface-2 rounded animate-pulse" />
             <div className="h-8 bg-surface-2 rounded animate-pulse" />

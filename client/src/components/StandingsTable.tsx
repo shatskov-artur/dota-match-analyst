@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import type { BracketNode, Standing } from '../hooks/useArchive'
 import TeamLogo from './TeamLogo'
@@ -85,8 +85,8 @@ function ResultsCard({
        * break the hover: the pointer left the row, landed on the row BELOW for an
        * instant, and the card unmounted before it could be clicked.
        */
-      className="absolute right-0 top-full z-30 w-[280px] rounded-[10px] border border-primary
-                 bg-bg-elev p-2 shadow-[0_14px_36px_rgba(0,0,0,0.6)]"
+      className="absolute right-0 top-full z-30 w-[280px] rounded-sm border border-primary
+                 bg-bg-elev p-2 shadow-[0_14px_36px_var(--scrim-soft)]"
       data-testid="standings-results"
     >
       {series.map((m) => {
@@ -96,18 +96,19 @@ function ResultsCard({
         const body = (
           <span className="flex items-center gap-2 min-w-0">
             <TeamLogo src={opp?.logoUrl} name={opp?.name ?? undefined} size={18} />
-            <span className="truncate text-[12px] text-text-muted">{opp?.name ?? 'TBD'}</span>
-            <span className="ml-auto font-mono text-[12px] tabular-nums shrink-0">
+            <span className="truncate text-body text-text-muted">{opp?.name ?? 'TBD'}</span>
+            <span className="ml-auto font-mono text-body tabular-nums shrink-0">
               <span className={win ? 'text-radiant' : loss ? 'text-dire' : 'text-text'}>{m.won}</span>
               <span className="text-text-dim">:</span>
               <span className="text-text-dim">{m.lost}</span>
             </span>
             {/* A series with no id has not produced a match to open yet. */}
-            {m.seriesId && <span className="text-[11px] text-primary shrink-0">→</span>}
-            {!m.decided && <span className="text-[10px] text-radiant shrink-0">live</span>}
+            {m.seriesId && <span className="text-label text-primary shrink-0">→</span>}
+            {!m.decided && <span className="text-label text-radiant shrink-0">live</span>}
           </span>
         )
-        const cls = 'block rounded-[7px] px-2 py-1.5 transition-colors'
+        // D-9: 31px rows in a vertical popover list — height is free here.
+        const cls = 'grid items-center rounded-sm px-2 py-1.5 max-sm:min-h-11 transition-colors'
         return m.seriesId ? (
           <Link key={m.nodeId} to={`/series/${m.seriesId}`} className={`${cls} hover:bg-surface`}>
             {body}
@@ -122,7 +123,7 @@ function ResultsCard({
   )
 }
 
-export default function StandingsTable({
+function StandingsTable({
   standings,
   advancing,
   eliminated,
@@ -193,18 +194,18 @@ export default function StandingsTable({
   return (
     <section className="bento-card">
       <div className="flex items-baseline gap-3 mb-4">
-        <h2 className="text-[11px] uppercase tracking-[0.12em] text-text-dim">{title}</h2>
-        <span className="text-[11px] text-text-dim">{total} teams</span>
-        {!played && <span className="ml-auto text-[11px] text-text-dim">not started</span>}
+        <h2 className="text-label uppercase tracking-label text-text-dim">{title}</h2>
+        <span className="text-label text-text-dim">{total} teams</span>
+        {!played && <span className="ml-auto text-label text-text-dim">not started</span>}
       </div>
 
       <table className="w-full border-collapse">
         <thead>
-          <tr className="text-[10px] uppercase tracking-[0.12em] text-text-dim">
-            <th className="text-left font-normal pb-2 w-8">#</th>
-            <th className="text-left font-normal pb-2">Team</th>
-            <th className="text-right font-normal pb-2 w-14">W</th>
-            <th className="text-right font-normal pb-2 w-14">L</th>
+          <tr className="text-label uppercase tracking-label text-text-dim">
+            <th className="text-left font-bold pb-2 w-8">#</th>
+            <th className="text-left font-bold pb-2">Team</th>
+            <th className="text-right font-bold pb-2 w-14">W</th>
+            <th className="text-right font-bold pb-2 w-14">L</th>
           </tr>
         </thead>
         <tbody>
@@ -219,6 +220,8 @@ export default function StandingsTable({
                 onMouseEnter={() => open(s.teamId)}
                 onMouseLeave={closeSoon}
                 // Keyboard and touch reach it too: the row is focusable and toggles.
+                // D-9 (§6.3): the focusable row is the hit target, and `py-2` around a
+                // 24px logo leaves it at 40px — the cells take `max-sm:py-2.5` to reach 44.
                 tabIndex={results.length > 0 ? 0 : undefined}
                 onFocus={() => open(s.teamId)}
                 onBlur={closeSoon}
@@ -230,17 +233,17 @@ export default function StandingsTable({
                       : undefined
                 }
               >
-                <td className="py-2 pl-2.5 text-[12px] tabular-nums text-text-dim">{i + 1}</td>
-                <td className="py-2">
+                <td className="py-2 max-sm:py-2.5 pl-2.5 text-body tabular-nums text-text-dim">{i + 1}</td>
+                <td className="py-2 max-sm:py-2.5">
                   <span className="flex items-center gap-2.5 min-w-0">
                     <TeamLogo src={s.logoUrl} name={s.name ?? undefined} size={24} />
-                    <span className="truncate text-[13px] text-text">{s.name ?? `#${s.teamId}`}</span>
-                    {s.tag && <span className="text-[11px] text-text-dim shrink-0">{s.tag}</span>}
+                    <span className="truncate text-body text-text">{s.name ?? `#${s.teamId}`}</span>
+                    {s.tag && <span className="text-label text-text-dim shrink-0">{s.tag}</span>}
                   </span>
                 </td>
-                <td className="py-2 text-right font-mono text-[13px] tabular-nums text-radiant">{s.wins ?? 0}</td>
+                <td className="py-2 max-sm:py-2.5 text-right font-mono text-body tabular-nums text-radiant">{s.wins ?? 0}</td>
                 {/* The card hangs off the last cell, which is `relative` so it can. */}
-                <td className="relative py-2 text-right font-mono text-[13px] tabular-nums text-text-dim">
+                <td className="relative py-2 max-sm:py-2.5 text-right font-mono text-body tabular-nums text-text-dim">
                   {s.losses ?? 0}
                   {isOpen && (
                     <ResultsCard
@@ -261,7 +264,7 @@ export default function StandingsTable({
       </table>
 
       {played && (advancing || eliminated) && (
-        <div className="mt-3 flex flex-wrap gap-4 text-[10px] uppercase tracking-[0.12em] text-text-dim">
+        <div className="mt-3 flex flex-wrap gap-4 text-label uppercase tracking-label text-text-dim">
           {advancing ? (
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-[3px] rounded-full bg-radiant" /> advances
@@ -277,3 +280,6 @@ export default function StandingsTable({
     </section>
   )
 }
+
+// Sixteen rows, each carrying a results card built from the whole bracket.
+export default memo(StandingsTable)

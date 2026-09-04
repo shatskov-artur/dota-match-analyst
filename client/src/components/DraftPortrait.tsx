@@ -1,8 +1,9 @@
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { heroMapper } from '../utils/heroMapper'
 // CRITICAL per 04-PATTERNS.md: import from client/src/utils/heroMapper — NOT '@shared/heroMapper'.
 // The @shared version uses Node.js createRequire and breaks Vite bundling.
 import { winrateColor } from '../utils/winrateColor'
+import { useIntelTrigger } from '../hooks/useIntelTrigger'
 import IntelTooltip from './IntelTooltip'
 import type { PlayerIntel } from '../hooks/useMatchIntel'
 import type { HeroStatsEntry } from '../hooks/useHeroStats'
@@ -47,11 +48,11 @@ export default function DraftPortrait({
   playerIntel,
 }: DraftPortraitProps) {
   const heroInfo = heroId !== undefined ? heroMapper(heroId) : null
-  const anchorRef = useRef<HTMLDivElement>(null)
-  const [showTooltip, setShowTooltip] = useState(false)
+  const anchorRef = useRef<HTMLButtonElement>(null)
 
   // Tooltip is only triggered on filled pick slots with playerIntel data
   const canShowTooltip = kind === 'pick' && heroId !== undefined && !!heroInfo && !!playerIntel
+  const { open: showTooltip, tooltipId, triggerProps } = useIntelTrigger(canShowTooltip)
 
   if (!heroInfo) {
     // Empty placeholder — D-02 + D-05.
@@ -69,13 +70,8 @@ export default function DraftPortrait({
 
   // Filled slot — outer wrapper: relative WITHOUT overflow-hidden (Pitfall 4 fix).
   // overflow-hidden only on inner portrait div to clip the image + overlays.
-  return (
-    <div
-      ref={anchorRef}
-      className="relative w-14 h-14 shrink-0"
-      onMouseEnter={() => canShowTooltip && setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
-    >
+  const portrait = (
+    <>
       {/* Inner portrait div — overflow-hidden for image + ban X + badge strip */}
       <div className="absolute inset-0 rounded-sm overflow-hidden">
         <img
@@ -92,7 +88,7 @@ export default function DraftPortrait({
             style={{
               color: 'var(--color-dire)',
               opacity: 0.75,
-              filter: 'drop-shadow(0 0 2px rgba(0,0,0,0.7))',
+              filter: 'drop-shadow(0 0 2px var(--scrim-soft))',
             }}
           >
             <path d="M4 4 L20 20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" fill="none" />
@@ -111,7 +107,7 @@ export default function DraftPortrait({
               bottom: 0,
               left: 0,
               right: 0,
-              background: 'rgba(0,0,0,0.72)',
+              background: 'var(--scrim-heavy)',
               padding: '4px 4px',
               textAlign: 'center',
               fontSize: 10,
@@ -143,24 +139,40 @@ export default function DraftPortrait({
             fontWeight: 700,
             color: 'var(--color-text-muted)',
             letterSpacing: '0.05em',
-            textShadow: '0 1px 2px rgba(0,0,0,0.8)',
+            textShadow: '0 1px 2px var(--scrim-heavy)',
             fontVariantNumeric: 'tabular-nums',
           }}
         >
           {ordinal}
         </span>
       )}
+    </>
+  )
 
-      {/* DRAFT-04: IntelTooltip — sibling to portrait div (outside overflow-hidden — Pitfall 4 fix).
-          Only rendered on pick slots with playerIntel data when user hovers. */}
-      {showTooltip && canShowTooltip && (
+  const wrapperClass = 'relative w-14 h-14 shrink-0'
+
+  // A slot with nothing to reveal stays a plain div: turning all twelve into buttons would
+  // put ten dead stops in the tab order between the draft and whatever follows it.
+  if (!canShowTooltip) return <div className={wrapperClass}>{portrait}</div>
+
+  /*
+   * DRAFT-04 (D-2): a real button, not a div listening for a pointer. Hover was the only
+   * way in, which meant the counterpick panel did not exist for a keyboard or a phone.
+   * As a button it focuses, taps and takes the global focus ring for free.
+   */
+  return (
+    <button type="button" ref={anchorRef} className={wrapperClass} {...triggerProps}>
+      {portrait}
+      {/* Sibling to the portrait div, outside overflow-hidden (Pitfall 4 fix). */}
+      {showTooltip && (
         <IntelTooltip
+          id={tooltipId}
           playerIntel={playerIntel}
           heroName={heroInfo.name}
           anchorRef={anchorRef}
           isLoading={false}
         />
       )}
-    </div>
+    </button>
   )
 }

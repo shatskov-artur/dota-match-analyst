@@ -25,7 +25,7 @@ export default function NotRecordedNotice({ leagueId, leagueName, hasArchive }: 
 
   if (!status.data.configured) {
     return (
-      <p className="bento-card text-[12px] text-text-dim">
+      <p className="bento-card text-body text-text-dim">
         No archive database configured — timeline, event log and post-match analysis are unavailable.
         Set <code className="text-text-muted">DATABASE_URL</code> in <code className="text-text-muted">server/.env</code>.
       </p>
@@ -35,7 +35,7 @@ export default function NotRecordedNotice({ leagueId, leagueName, hasArchive }: 
   const isTracked = tracked.length === 0 || (leagueId !== undefined && tracked.includes(leagueId))
 
   return (
-    <p className="bento-card text-[12px] text-text-dim">
+    <p className="bento-card text-body text-text-dim">
       {isTracked ? (
         <>
           Nothing recorded for this match yet — the recorder writes a snapshot every 30 seconds, so the

@@ -51,7 +51,7 @@ function Row({ entry }: { entry: ScheduleRangeEntry }) {
 
   const body = (
     <div className="flex items-center gap-3">
-      <span className="font-mono text-[13px] text-text tabular-nums w-[52px] shrink-0">
+      <span className="font-mono text-body text-text tabular-nums w-[52px] shrink-0">
         {format(new Date(entry.time * 1000), 'HH:mm')}
       </span>
 
@@ -59,7 +59,7 @@ function Row({ entry }: { entry: ScheduleRangeEntry }) {
           spare, and a title for the genuinely long ones — "Ultras Dota Pro League
           2025-26" will never fit a column this list can afford. */}
       <span
-        className="text-[10px] uppercase tracking-[0.12em] text-text-dim w-[190px] shrink-0 truncate"
+        className="text-label uppercase tracking-label text-text-dim w-[190px] shrink-0 truncate"
         title={entry.leagueName ?? undefined}
       >
         {entry.leagueName ?? `League #${entry.leagueId}`}
@@ -68,30 +68,30 @@ function Row({ entry }: { entry: ScheduleRangeEntry }) {
       <span className="flex-1 min-w-0 grid grid-cols-[1fr_auto_1fr] items-center gap-2">
         <span className="flex items-center gap-2 min-w-0">
           <TeamLogo src={entry.team1.logoUrl} name={entry.team1.name ?? undefined} size={24} />
-          <span className="text-[13px] text-text truncate">{entry.team1.name ?? 'TBD'}</span>
+          <span className="text-body text-text truncate">{entry.team1.name ?? 'TBD'}</span>
         </span>
         <span
           className={
             'shrink-0 tabular-nums ' +
             (score
-              ? 'font-mono text-[13px] text-text'
-              : 'text-[11px] uppercase tracking-[0.12em] text-text-dim')
+              ? 'font-mono text-body text-text'
+              : 'text-label uppercase tracking-label text-text-dim')
           }
         >
           {score ?? (finished ? '—' : 'vs')}
         </span>
         <span className="flex items-center gap-2 min-w-0 flex-row-reverse text-right">
           <TeamLogo src={entry.team2.logoUrl} name={entry.team2.name ?? undefined} size={24} />
-          <span className="text-[13px] text-text truncate">{entry.team2.name ?? 'TBD'}</span>
+          <span className="text-body text-text truncate">{entry.team2.name ?? 'TBD'}</span>
         </span>
       </span>
 
       <span className="flex items-center gap-2.5 shrink-0 justify-end">
-        {live && <span className="text-[11px] text-radiant whitespace-nowrap">● live</span>}
+        {live && <span className="text-label text-radiant whitespace-nowrap">● live</span>}
         {entry.bestOf && !live && !finished && (
-          <span className="text-[11px] text-text-dim">Bo{entry.bestOf}</span>
+          <span className="text-label text-text-dim">Bo{entry.bestOf}</span>
         )}
-        {href && <span className="text-[11px] text-primary">→</span>}
+        {href && <span className="text-label text-primary">→</span>}
       </span>
     </div>
   )
@@ -116,7 +116,7 @@ export default function ScheduleList({ entries, title, limit, emptyNote, error =
       <section>
         {title && <SectionTitle>{title}</SectionTitle>}
         <div className="bento-card" style={error ? { borderColor: 'var(--color-danger)' } : undefined}>
-          <p className={error ? 'text-[13px] text-danger' : 'text-[13px] text-text-dim'}>{emptyNote}</p>
+          <p className={error ? 'text-body text-danger' : 'text-body text-text-dim'}>{emptyNote}</p>
         </div>
       </section>
     )

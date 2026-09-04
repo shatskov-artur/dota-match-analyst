@@ -8,10 +8,12 @@ function BentoFallback({ resetErrorBoundary }: FallbackProps) {
   return (
     <div className="bento-card flex flex-col items-center justify-center gap-2 text-center">
       <span aria-hidden className="text-text-dim">⚠</span>
-      <p className="text-sm text-text">Couldn't load this panel.</p>
+      <p className="text-body-lg text-text">Couldn't load this panel.</p>
       <button
         onClick={resetErrorBoundary}
-        className="text-[11px] uppercase tracking-[0.2em] text-text-dim hover:text-primary"
+        /* D-9 (§6.3): a bare 11px text button is a ~38×13 tap target. */
+        className="text-label uppercase tracking-label text-text-dim hover:text-primary
+                   max-sm:inline-flex max-sm:items-center max-sm:justify-center max-sm:min-h-11 max-sm:min-w-11"
       >
         Retry
       </button>

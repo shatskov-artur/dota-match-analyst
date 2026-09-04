@@ -25,13 +25,13 @@ function TeamColumn({ team, align = 'left' }: { team: TeamRef & { roster: Roster
       <div className={'flex items-center gap-3 mb-4 ' + (right ? 'flex-row-reverse' : '')}>
         <TeamLogo src={team.logoUrl} name={team.name ?? undefined} size={44} />
         <div className={right ? 'text-right' : ''}>
-          <div className="text-[18px] font-bold text-text leading-tight">{team.name ?? 'TBD'}</div>
-          {team.tag && <div className="text-[11px] uppercase tracking-[0.12em] text-text-dim">{team.tag}</div>}
+          <div className="text-heading font-bold text-text leading-tight">{team.name ?? 'TBD'}</div>
+          {team.tag && <div className="text-label uppercase tracking-label text-text-dim">{team.tag}</div>}
         </div>
       </div>
 
       {team.roster.length === 0 ? (
-        <p className="text-[12px] text-text-dim">Roster not published.</p>
+        <p className="text-body text-text-dim">Roster not published.</p>
       ) : (
         <ul className="flex flex-col gap-1.5">
           {team.roster.map((p) => {
@@ -41,8 +41,8 @@ function TeamColumn({ team, align = 'left' }: { team: TeamRef & { roster: Roster
                 key={p.accountId ?? p.name}
                 className={'flex items-center gap-3 ' + (right ? 'flex-row-reverse' : '')}
               >
-                <span className="text-[13px] text-text truncate">{p.name ?? 'Unknown'}</span>
-                <span className="text-[11px] text-text-dim tabular-nums whitespace-nowrap">
+                <span className="text-body text-text truncate">{p.name ?? 'Unknown'}</span>
+                <span className="text-label text-text-dim tabular-nums whitespace-nowrap">
                   {p.gamesPlayed} games
                   {winRate !== null && <span className="text-text-muted"> · {winRate}%</span>}
                 </span>
@@ -104,16 +104,16 @@ export default function PrematchPage() {
       meta={
         <>
           {scheduled ? (
-            <span className="text-[13px] text-text-muted tabular-nums">
+            <span className="text-body text-text-muted tabular-nums">
               {format(new Date(scheduled * 1000), 'EEE d MMM, HH:mm')}
             </span>
           ) : (
             // Not a gap in our data: many organisers publish a bracket with every
             // scheduled_time still 0. Saying so beats an empty header.
-            data && <span className="text-[13px] text-text-dim">Start time not announced</span>
+            data && <span className="text-body text-text-dim">Start time not announced</span>
           )}
-          {startsIn && <span className="text-[13px] text-accent">{startsIn}</span>}
-          {data?.node.bestOf && <span className="text-[12px] text-text-dim">Bo{data.node.bestOf}</span>}
+          {startsIn && <span className="text-body text-accent">{startsIn}</span>}
+          {data?.node.bestOf && <span className="text-body text-text-dim">Bo{data.node.bestOf}</span>}
         </>
       }
     >
@@ -124,7 +124,7 @@ export default function PrematchPage() {
             <SkeletonPanel lines={6} />
           </div>
         ) : query.isError || !data ? (
-          <p className="bento-card text-[13px] text-text-dim">
+          <p className="bento-card text-body text-text-dim">
             This series is not in the archive. Only tournaments the recorder syncs have a schedule —{' '}
             <Link to="/" className="text-primary">
               back to live matches
@@ -140,7 +140,7 @@ export default function PrematchPage() {
                 <div className="hidden stack:block w-px self-stretch bg-border" aria-hidden="true" />
                 <TeamColumn team={t2!} align="right" />
               </div>
-              <p className="mt-4 text-[11px] text-text-dim">
+              <p className="mt-4 text-label text-text-dim">
                 Rosters and game counts come from OpenDota's team history, so they reflect the
                 registered squad rather than who is confirmed to play this series.
               </p>

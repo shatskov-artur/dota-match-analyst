@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Navigate, useParams } from 'react-router'
+import { Link, Navigate, useParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { seriesWinsBySide } from '../utils/seriesWins'
 import { findLiveGameForSeries, shouldArmSeriesFollow } from '../utils/liveSeries'
@@ -51,6 +51,8 @@ export default function MatchPage() {
     assistsKnown,
     inexact,
     shownMinute,
+    notFound,
+    notInRecording,
   } = useMatchState(matchId)
   const setCursorMinute = useTimelineCursor((s) => s.setMinute)
   // Head-to-head sits behind a pill next to the map tabs: reachable in one click, and
@@ -210,14 +212,114 @@ export default function MatchPage() {
     return map
   }, [series.data, match, radiantPlayers, direPlayers])
 
-  const hasCooldowns = [...radiantPlayers, ...direPlayers].some((p) => p.ultimate_state != null)
+  /**
+   * The rosters as the item and cooldown panels want them, built once per roster change.
+   *
+   * These are props of memoised panels, and this page carries four to five pollers — a
+   * fresh array literal in the JSX made every panel below re-render on every tick of every
+   * one of them, whether or not anything it draws had moved.
+   */
+  const sidedPlayers = useMemo(
+    () => [
+      ...radiantPlayers.map((p) => ({ ...p, team: 'radiant' as const })),
+      ...direPlayers.map((p) => ({ ...p, team: 'dire' as const })),
+    ],
+    [radiantPlayers, direPlayers],
+  )
+  // Copied before sorting: the shared array is handed to the cooldown panel unsorted.
+  const playersByNetWorth = useMemo(
+    () =>
+      [...sidedPlayers].sort((a, b) => (b.net_worth ?? 0) - (a.net_worth ?? 0)),
+    [sidedPlayers],
+  )
+  /*
+   * Read off the raw rosters rather than off `sidedPlayers`: Valve's extra fields reach us
+   * through PlayerDetail's index signature, and an object spread does not carry that
+   * signature into the spread type, so `position_x` and friends are only visible here.
+   */
+  const hasCooldowns = useMemo(
+    () =>
+      radiantPlayers.some((p) => p.ultimate_state != null) ||
+      direPlayers.some((p) => p.ultimate_state != null),
+    [radiantPlayers, direPlayers],
+  )
 
-  const playerIntelMap = intel.data
-    ? Object.fromEntries(intel.data.players.map(p => [p.heroId, p]))
-    : undefined
+  /** Everyone the map can draw: a hero id and a position both have to be known. */
+  const heroPositions = useMemo(
+    () =>
+      ([[radiantPlayers, 'radiant'], [direPlayers, 'dire']] as const).flatMap(([list, team]) =>
+        list
+          .filter(
+            (p) =>
+              typeof p.position_x === 'number' &&
+              typeof p.position_y === 'number' &&
+              typeof p.hero_id === 'number',
+          )
+          .map((p) => ({
+            hero_id: p.hero_id as number,
+            team,
+            position_x: p.position_x as number,
+            position_y: p.position_y as number,
+          })),
+      ),
+    [radiantPlayers, direPlayers],
+  )
+
+  const playerIntelMap = useMemo(
+    () =>
+      intel.data
+        ? Object.fromEntries(intel.data.players.map((p) => [p.heroId, p]))
+        : undefined,
+    [intel.data],
+  )
 
   // replace, so Back does not land on the finished map and bounce forward again.
   if (followTo !== null) return <Navigate to={`/match/${followTo}`} replace />
+
+  /**
+   * The demo is a recording being replayed, and the scrubber can stand before this match
+   * began. That used to navigate('/') from inside useMatchDetail — the page closed itself,
+   * with no explanation and nothing to undo. Say where the match went instead; dragging
+   * forward brings it back.
+   */
+  if (notInRecording) {
+    return (
+      <PageShell backTo={{ to: '/', label: 'Matches' }} eyebrow="Demo replay" title="Not in the recording here">
+        <p className="bento-card text-body text-text-dim">
+          This match isn't in the recording at this point — move the scrubber forward to reach
+          the moment it was captured. The demo replays one fixed capture, so games appear and
+          disappear as the cursor moves through it.
+        </p>
+      </PageShell>
+    )
+  }
+
+  /**
+   * Nothing anywhere for this id. Falling through to the normal page drew a "TBD vs TBD"
+   * header over a NotRecordedNotice that blamed an untracked league — a confident wrong
+   * reason, because `leagueId` was undefined for the same reason everything else was.
+   */
+  if (notFound) {
+    return (
+      <PageShell backTo={{ to: '/', label: 'Matches' }} title="Match not found">
+        <p className="bento-card text-body text-text-dim">
+          Nothing is held under match{' '}
+          <span className="font-mono tabular-nums text-text-muted">{matchId}</span>. It is not in Valve's
+          live feed and the archive returned no snapshot of it — the game may never have been
+          recorded, the id may be wrong, or the archive may be unavailable right now.
+        </p>
+        <p className="mt-4 text-body">
+          {/* D-9: sole content of its own paragraph, so the 44px box has room. */}
+          <Link
+            to="/"
+            className="text-primary hover:underline max-sm:inline-flex max-sm:items-center max-sm:min-h-11"
+          >
+            Back to live matches
+          </Link>
+        </p>
+      </PageShell>
+    )
+  }
 
   return (
     <PageShell
@@ -275,7 +377,7 @@ export default function MatchPage() {
       )}
 
       {scrubbing && (
-        <p className="mt-3 text-[11px] uppercase tracking-[0.12em] text-accent">
+        <p className="mt-3 text-label uppercase tracking-label text-accent">
           {/* Say which minute is actually on screen. The archive answers with the nearest
               minute it holds, so dragging past the recorder — routine on a live match —
               used to label someone else's board with the minute you asked for. */}
@@ -289,7 +391,7 @@ export default function MatchPage() {
           Nobody watched this game as it happened, so there is no live detail to show —
           that is a property of the recording, not a fault in the page. */}
       {reconstructed && (
-        <p className="mt-3 text-[11px] text-text-dim">
+        <p className="mt-3 text-label text-text-dim">
           Rebuilt from the parsed replay — no live recording of this game exists, so ability
           cooldowns and hero positions are unavailable
           {itemsAreFinal
@@ -422,12 +524,7 @@ export default function MatchPage() {
             {/* Items needs room for six 32px slots plus rank, portrait and net worth. */}
             <div className="bento-card min-w-0 stack:flex-[1.15] flex flex-col">
               <BentoErrorBoundary resetKeys={[matchId]}>
-                <ItemsBlock
-                  players={[
-                    ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
-                    ...direPlayers.map(p => ({ ...p, team: 'dire' as const })),
-                  ].sort((a, b) => ((b.net_worth as number | undefined) ?? 0) - ((a.net_worth as number | undefined) ?? 0))}
-                />
+                <ItemsBlock players={playersByNetWorth} />
               </BentoErrorBoundary>
             </div>
             {/* Cooldowns is two icons and a word — it can give width to its denser neighbours.
@@ -437,13 +534,7 @@ export default function MatchPage() {
             {hasCooldowns && (
               <div className="bento-card min-w-0 stack:flex-[0.75] flex flex-col">
                 <BentoErrorBoundary resetKeys={[matchId]}>
-                  <CooldownsBlock
-                    players={[
-                      ...radiantPlayers.map(p => ({ ...p, team: 'radiant' as const })),
-                      ...direPlayers.map(p => ({ ...p, team: 'dire' as const })),
-                    ]}
-                    gameDuration={match?.duration}
-                  />
+                  <CooldownsBlock players={sidedPlayers} gameDuration={match?.duration} />
                 </BentoErrorBoundary>
               </div>
             )}
@@ -471,28 +562,7 @@ export default function MatchPage() {
             </div>
             <div className="bento-card w-full stack:w-auto stack:shrink-0 flex justify-center">
               <BentoErrorBoundary resetKeys={[matchId]}>
-                <DotaMapView
-                  size={420}
-                  buildings={buildings}
-                  heroPositions={[
-                  ...radiantPlayers
-                    .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
-                    .map(p => ({
-                      hero_id: p.hero_id as number,
-                      team: 'radiant' as const,
-                      position_x: p.position_x as number,
-                      position_y: p.position_y as number,
-                    })),
-                  ...direPlayers
-                    .filter(p => typeof p.position_x === 'number' && typeof p.position_y === 'number' && typeof p.hero_id === 'number')
-                    .map(p => ({
-                      hero_id: p.hero_id as number,
-                      team: 'dire' as const,
-                      position_x: p.position_x as number,
-                      position_y: p.position_y as number,
-                    })),
-                ]}
-                />
+                <DotaMapView size={420} buildings={buildings} heroPositions={heroPositions} />
               </BentoErrorBoundary>
             </div>
           </div>

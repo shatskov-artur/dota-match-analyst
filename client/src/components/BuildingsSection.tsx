@@ -25,7 +25,7 @@ function BuildingDot({ standing, team }: { standing: boolean; team: 'radiant' | 
 export default function BuildingsSection({ buildings }: BuildingsSectionProps) {
   return (
     <div className="py-4">
-      <p className="text-[10px] uppercase tracking-[0.3em] mb-4" style={{ color: 'var(--color-text-dim)' }}>
+      <p className="text-label uppercase tracking-micro mb-4" style={{ color: 'var(--color-text-dim)' }}>
         Buildings
       </p>
       <div className="flex gap-12 justify-center">
@@ -33,7 +33,7 @@ export default function BuildingsSection({ buildings }: BuildingsSectionProps) {
         <div className="flex flex-col gap-2">
           {LANES.map((lane) => (
             <div key={lane} className="flex items-center gap-3">
-              <span className="text-[10px] uppercase tracking-[0.2em] w-8" style={{ color: 'var(--color-text-dim)' }}>
+              <span className="text-label uppercase tracking-label w-8" style={{ color: 'var(--color-text-dim)' }}>
                 {lane}
               </span>
               <div className="flex items-center gap-1">
@@ -65,7 +65,7 @@ export default function BuildingsSection({ buildings }: BuildingsSectionProps) {
                   />
                 ))}
               </div>
-              <span className="text-[10px] uppercase tracking-[0.2em] w-8" style={{ color: 'var(--color-text-dim)' }}>
+              <span className="text-label uppercase tracking-label w-8" style={{ color: 'var(--color-text-dim)' }}>
                 {lane}
               </span>
             </div>

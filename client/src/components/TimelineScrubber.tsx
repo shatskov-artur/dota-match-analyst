@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react'
 import { useTimelineCursor } from '../store/timelineCursor'
+import { EVENT_CATEGORY_STYLE } from '../utils/eventCategoryColors'
 import type { MatchEvent } from '../hooks/useArchive'
 
 /**
@@ -30,14 +31,16 @@ export interface TimelineScrubberProps {
   snapshotRange?: { minMinute: number | null; maxMinute: number | null }
 }
 
-/** Event classes worth a tick mark, and the colour that reads at 3px wide. */
-const TICK_STYLE: Record<string, { color: string; label: string }> = {
-  tower: { color: 'var(--color-accent)', label: 'Tower' },
-  barracks: { color: 'var(--color-danger)', label: 'Barracks' },
-  roshan: { color: 'var(--color-primary)', label: 'Roshan' },
-  teamfight: { color: 'var(--color-text-muted)', label: 'Teamfight' },
-  first_blood: { color: 'var(--color-dire)', label: 'First blood' },
-}
+/**
+ * Event classes worth a tick mark. A kill or a building is too frequent to be a landmark on
+ * a 3px rail, so the track carries a subset — but the colours and names come from the one
+ * category map the event feed reads, so a tick and its log row can never disagree.
+ */
+const TICK_TYPES = ['tower', 'barracks', 'roshan', 'teamfight', 'first_blood'] as const
+
+const tickStyle = (type: string) => EVENT_CATEGORY_STYLE[type]
+
+const isTickType = (type: string): boolean => (TICK_TYPES as readonly string[]).includes(type)
 
 /** Panel size used to keep it on screen; approximate is fine, it only clamps dragging. */
 const PANEL_W = 460
@@ -49,7 +52,7 @@ function mmss(minute: number): string {
 }
 
 const btn =
-  'px-2.5 py-1 rounded-[7px] border border-border text-[12px] text-text-muted transition-colors ' +
+  'px-2.5 py-1 rounded-sm border border-border text-body text-text-muted transition-colors ' +
   'hover:border-primary hover:text-text disabled:opacity-40 disabled:hover:border-border disabled:hover:text-text-muted'
 
 export default function TimelineScrubber({
@@ -88,7 +91,7 @@ export default function TimelineScrubber({
     if (max <= 0) return []
     const seen = new Set<string>()
     return events
-      .filter((e) => e.t >= 0 && TICK_STYLE[e.type])
+      .filter((e) => e.t >= 0 && isTickType(e.type))
       .map((e) => ({ type: e.type, minute: Math.min(Math.floor(e.t / 60), max) }))
       .filter((e) => {
         const key = `${e.type}:${e.minute}`
@@ -149,7 +152,7 @@ export default function TimelineScrubber({
   const controls = (
     <>
       <div className="flex items-center gap-3 flex-wrap">
-        <span className="text-[11px] uppercase tracking-[0.12em] text-text-dim">Timeline</span>
+        <span className="text-label uppercase tracking-label text-text-dim">Timeline</span>
 
         <button
           type="button"
@@ -170,8 +173,8 @@ export default function TimelineScrubber({
           </button>
         </div>
 
-        <span className="font-mono text-[13px] text-text tabular-nums">{mmss(displayMinute)}</span>
-        <span className="text-[11px] text-text-dim">
+        <span className="font-mono text-body text-text tabular-nums">{mmss(displayMinute)}</span>
+        <span className="text-label text-text-dim">
           {archiveLagging ? `· archived to ${mmss(max)}` : `/ ${mmss(max)}`}
         </span>
 
@@ -181,7 +184,7 @@ export default function TimelineScrubber({
             onClick={goLive}
             disabled={!scrubbing}
             className={
-              'px-3 py-1 rounded-full text-[11px] uppercase tracking-[0.12em] transition-colors ' +
+              'px-3 py-1 rounded-full text-label uppercase tracking-label transition-colors ' +
               (scrubbing
                 ? 'border border-danger text-danger hover:bg-[var(--color-dire-soft)]'
                 : isLiveMatch
@@ -213,11 +216,11 @@ export default function TimelineScrubber({
           {ticks.map((t) => (
             <span
               key={`${t.type}-${t.minute}`}
-              title={`${TICK_STYLE[t.type].label} @ ${mmss(t.minute)}`}
+              title={`${tickStyle(t.type).label} @ ${mmss(t.minute)}`}
               className="absolute top-0 w-[2px] h-2 rounded-full"
               style={{
                 left: `${max > 0 ? (t.minute / max) * 100 : 0}%`,
-                backgroundColor: TICK_STYLE[t.type].color,
+                backgroundColor: tickStyle(t.type).color,
                 opacity: 0.85,
               }}
             />
@@ -226,7 +229,7 @@ export default function TimelineScrubber({
       </div>
 
       {outsideSnapshots && (
-        <p className="text-[11px] text-accent">
+        <p className="text-label text-accent">
           Showing the earliest recorded state — the archive starts at {mmss(snapshotRange!.minMinute!)}.
         </p>
       )}
@@ -245,13 +248,13 @@ export default function TimelineScrubber({
           if (!floatPos) setFloatPos(clamp(r.left, r.bottom + 8))
           setOpen(true)
         }}
-        className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-border
-                   text-[12px] text-text-muted transition-colors hover:border-primary hover:text-text"
+        className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-border
+                   text-body text-text-muted transition-colors hover:border-primary hover:text-text"
         data-testid="timeline-open"
       >
         <span aria-hidden="true">⏱</span>
         Timeline
-        <span className="text-[11px] text-text-dim">{mmss(max)}</span>
+        <span className="text-label text-text-dim">{mmss(max)}</span>
       </button>
     )
   }
@@ -265,8 +268,8 @@ export default function TimelineScrubber({
 
   return (
     <div
-      className="fixed z-50 flex flex-col gap-2 rounded-[12px] border border-primary bg-surface p-3
-                 shadow-[0_18px_48px_rgba(0,0,0,0.6)]"
+      className="fixed z-50 flex flex-col gap-2 rounded-md border border-primary bg-surface p-3
+                 shadow-[0_18px_48px_var(--scrim-soft)]"
       style={{ left: pos.x, top: pos.y, width: PANEL_W, maxWidth: 'calc(100vw - 16px)' }}
       data-testid="timeline-scrubber"
       data-floating="true"

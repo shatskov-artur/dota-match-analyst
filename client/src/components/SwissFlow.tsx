@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { memo, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
 import { format } from 'date-fns'
 import type { BracketNode } from '../hooks/useArchive'
@@ -450,7 +450,7 @@ export function buildSwissModel(
     const lastCount = last ? last.buckets.reduce((n, b) => n + b.nodes.length, 0) : 0
 
     let round = last?.round ?? 0
-    let topUp: BracketNode[] = []
+    const topUp: BracketNode[] = []
     let current: BracketNode[] = []
     const flush = () => {
       if (current.length === 0) return
@@ -625,7 +625,7 @@ function Side({
       // holds two of them.
       onMouseEnter={() => onHover(teamId)}
       className={
-        'flex items-center gap-1.5 min-w-0 flex-1 px-1.5 py-1 rounded-[5px] ' +
+        'flex items-center gap-1.5 min-w-0 flex-1 px-1.5 py-1 rounded-xs ' +
         (align === 'right' ? 'flex-row-reverse ' : '') +
         (won ? 'bg-[var(--color-radiant-soft)]' : '')
       }
@@ -633,8 +633,8 @@ function Side({
       <TeamLogo src={team?.logoUrl} name={team?.name ?? undefined} size={16} />
       <span
         className={
-          'truncate text-[11px] ' +
-          (!team ? 'text-text-dim italic' : won ? 'text-text font-semibold' : decided ? 'text-text-muted' : 'text-text')
+          'truncate text-label ' +
+          (!team ? 'text-text-dim italic' : won ? 'text-text font-bold' : decided ? 'text-text-muted' : 'text-text')
         }
         title={team?.name ?? undefined}
       >
@@ -643,7 +643,7 @@ function Side({
       {score !== null && (
         <span
           className={
-            'font-mono text-[11px] tabular-nums shrink-0 ' + (align === 'right' ? 'mr-auto ' : 'ml-auto ') +
+            'font-mono text-label tabular-nums shrink-0 ' + (align === 'right' ? 'mr-auto ' : 'ml-auto ') +
             (won ? 'text-radiant' : 'text-text-dim')
           }
         >
@@ -687,7 +687,7 @@ function MatchRow({
   const when = seriesTimeLabel(node, Math.floor(Date.now() / 1000), liveNow)
 
   const cls =
-    'block rounded-[7px] border px-1 py-0.5 transition-all ' +
+    'block rounded-sm border px-1 py-0.5 transition-all ' +
     (live ? 'border-radiant bg-[var(--color-radiant-soft)]' : 'border-transparent hover:border-primary') +
     focus
 
@@ -720,7 +720,7 @@ function MatchRow({
         {when && (
           <span
             className={
-              'self-center shrink-0 font-mono text-[9px] tabular-nums px-1 ' +
+              'self-center shrink-0 font-mono text-label tabular-nums px-1 ' +
               (when.late ? 'text-accent' : 'text-text-dim')
             }
           >
@@ -765,7 +765,7 @@ function Chip({
       }
     >
       <TeamLogo src={team?.logoUrl} name={team?.name ?? undefined} size={16} />
-      <span className={'truncate text-[11px] ' + (muted ? 'text-text-muted' : 'text-text')}>
+      <span className={'truncate text-label ' + (muted ? 'text-text-muted' : 'text-text')}>
         {team?.tag || team?.name || teamId}
       </span>
     </span>
@@ -815,14 +815,14 @@ function PoolList({
         <div key={`${a}:${b}:${wins}`} className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 min-w-0">
           <span
             className={
-              'font-mono text-[9px] w-[9px] shrink-0 ' + (wins ? 'text-radiant' : 'text-dire')
+              'font-mono text-label w-[9px] shrink-0 ' + (wins ? 'text-radiant' : 'text-dire')
             }
             title={wins ? 'the winner of a series still being played' : 'the loser of a series still being played'}
           >
             {wins ? 'W' : 'L'}
           </span>
           <Chip teamId={a} teamNames={teamNames} hovered={hovered} onHover={onHover} muted />
-          <span className="text-[9px] text-text-dim shrink-0">or</span>
+          <span className="text-label text-text-dim shrink-0">or</span>
           <Chip teamId={b} teamNames={teamNames} hovered={hovered} onHover={onHover} muted />
         </div>
       ))}
@@ -837,7 +837,7 @@ interface Geom {
   h: number
 }
 
-export default function SwissFlow({ nodes, teamNames, leagueId, livePairs, standings, seriesWins }: SwissFlowProps) {
+function SwissFlow({ nodes, teamNames, leagueId, livePairs, standings, seriesWins }: SwissFlowProps) {
   const model = useMemo(() => buildSwissModel(nodes, standings), [nodes, standings])
   const [hovered, setHovered] = useState<number | null>(null)
 
@@ -924,19 +924,19 @@ export default function SwissFlow({ nodes, teamNames, leagueId, livePairs, stand
             className="flex-1 flex flex-col gap-3"
             style={{ minWidth: COL_MIN, maxWidth: COL_MAX }}
           >
-            <h4 className="text-[11px] uppercase tracking-[0.12em] text-text-dim flex items-baseline gap-2 flex-wrap">
+            <h4 className="text-label uppercase tracking-label text-text-dim flex items-baseline gap-2 flex-wrap">
               Round {round.round}
               {/* Kick-off slots of the round — the only time a projected bucket has, since
                   its contents are a pool of teams rather than scheduled series. */}
               {round.slots.length > 0 && (
-                <span className="font-mono text-[9px] normal-case tracking-normal tabular-nums text-text-dim">
+                <span className="font-mono text-label normal-case tracking-normal tabular-nums text-text-dim">
                   {round.slots.map((t) => format(new Date(t * 1000), 'HH:mm')).join(' · ')}
                 </span>
               )}
               {/* Flagged while any game in the round is still undrawn — whether that is
                   the whole round or only the tail of one already under way. */}
               {(!round.seeded || round.buckets.some((b) => b.nodes.length < (b.seriesCount ?? 0))) && (
-                <span className="text-[9px] normal-case tracking-normal">
+                <span className="text-label normal-case tracking-normal">
                   {round.projected ? 'projected' : 'not seeded'}
                 </span>
               )}
@@ -953,7 +953,7 @@ export default function SwissFlow({ nodes, teamNames, leagueId, livePairs, stand
                 // Dashed while nothing in the bucket has been drawn yet — the outline is
                 // per bucket, not per round, because a round is seeded a few games at a time.
                 className={
-                  'relative rounded-[10px] border bg-surface p-1.5 ' +
+                  'relative rounded-sm border bg-surface p-1.5 ' +
                   (bucket.nodes.length > 0 ? 'border-border' : 'border-dashed border-border')
                 }
               >
@@ -961,11 +961,11 @@ export default function SwissFlow({ nodes, teamNames, leagueId, livePairs, stand
                     where a "0-0" chip says nothing the column header has not said. */}
                 {round.buckets.length > 1 && (
                   <div className="flex items-center gap-2 px-1 pb-1.5">
-                    <span className="font-mono text-[10px] tabular-nums text-text-muted">
+                    <span className="font-mono text-label tabular-nums text-text-muted">
                       {bucket.wins !== null ? `${bucket.wins}-${bucket.losses}` : 'mixed'}
                     </span>
                     <span className="flex-1 h-px bg-border" />
-                    <span className="text-[9px] text-text-dim tabular-nums">
+                    <span className="text-label text-text-dim tabular-nums">
                       {bucket.bye ? 'no game' : (bucket.seriesCount ?? bucket.nodes.length)}
                     </span>
                   </div>
@@ -998,15 +998,15 @@ export default function SwissFlow({ nodes, teamNames, leagueId, livePairs, stand
 
         {model.outcomes.length > 0 && (
           <section className="flex-1 flex flex-col gap-3" style={{ minWidth: COL_MIN, maxWidth: COL_MAX }}>
-            <h4 className="text-[11px] uppercase tracking-[0.12em] text-text-dim flex items-baseline gap-2">
+            <h4 className="text-label uppercase tracking-label text-text-dim flex items-baseline gap-2">
               Stage over
-              <span className="text-[9px] normal-case tracking-normal">no games left</span>
+              <span className="text-label normal-case tracking-normal">no games left</span>
             </h4>
             {/* Green and red only where the stage itself settled it — see
                 decidedThresholds. A record between the two thresholds gets no colour: those
                 teams are through to whatever this stage feeds, and calling 2-3 "eliminated"
                 would have been wrong for exactly the teams it matters most for. */}
-            <div className="rounded-[10px] border border-border bg-surface p-1.5">
+            <div className="rounded-sm border border-border bg-surface p-1.5">
               <div className="flex flex-col gap-0.5">
                 {model.outcomes.map((o) => {
                   const team = teamNames.get(o.teamId)
@@ -1016,7 +1016,7 @@ export default function SwissFlow({ nodes, teamNames, leagueId, livePairs, stand
                     <div
                       key={o.teamId}
                       className={
-                        'flex items-center gap-1.5 px-1.5 py-1 rounded-[5px] transition-opacity ' +
+                        'flex items-center gap-1.5 px-1.5 py-1 rounded-xs transition-opacity ' +
                         (hovered === null || hovered === o.teamId ? '' : 'opacity-30')
                       }
                       style={tone ? { background: `var(--color-${tone}-soft)` } : undefined}
@@ -1028,18 +1028,18 @@ export default function SwissFlow({ nodes, teamNames, leagueId, livePairs, stand
                       }
                     >
                       {o.standing !== null && (
-                        <span className="font-mono text-[10px] tabular-nums text-text-dim w-3 shrink-0">
+                        <span className="font-mono text-label tabular-nums text-text-dim w-3 shrink-0">
                           {o.standing}
                         </span>
                       )}
                       <TeamLogo src={team?.logoUrl} name={team?.name ?? undefined} size={16} />
                       <span
-                        className="truncate text-[11px]"
+                        className="truncate text-label"
                         style={{ color: tone ? `var(--color-${tone})` : 'var(--color-text)' }}
                       >
                         {team?.tag || team?.name || o.teamId}
                       </span>
-                      <span className="ml-auto font-mono text-[11px] tabular-nums text-text-muted">
+                      <span className="ml-auto font-mono text-label tabular-nums text-text-muted">
                         {o.wins}-{o.losses}
                       </span>
                     </div>
@@ -1053,3 +1053,7 @@ export default function SwissFlow({ nodes, teamNames, leagueId, livePairs, stand
     </div>
   )
 }
+
+// Builds the whole Swiss model and measures every card to draw the connectors. The
+// tournament page's 30-second live poll changes none of that.
+export default memo(SwissFlow)

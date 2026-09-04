@@ -59,7 +59,7 @@ export default function DraftColumn({
     >
       {/* Column group label */}
       <p
-        className="text-[10px] uppercase tracking-[0.3em] font-bold mb-2"
+        className="text-label uppercase tracking-label font-bold mb-2"
         style={{ color: labelColor }}
       >
         {labelText}

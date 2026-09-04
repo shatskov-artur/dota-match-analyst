@@ -9,6 +9,10 @@ interface ImportMetaEnv {
   // reads it to pick the snapshot path over the network path, and the bundler drops whichever
   // branch is unreachable.
   readonly VITE_DEMO_MODE?: string
+  // Shared secret sent to the BFF as a bearer token, when the deployment sets one. Must
+  // match the server's API_TOKEN. Inlined into the bundle, so it is not a secret from the
+  // user — see the note in lib/apiFetch.ts.
+  readonly VITE_API_TOKEN?: string
 }
 
 interface ImportMeta {

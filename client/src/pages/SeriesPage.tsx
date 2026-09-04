@@ -1,7 +1,8 @@
-import { Link, Navigate, useParams } from 'react-router'
+import { Navigate, useParams } from 'react-router'
 import { useQuery } from '@tanstack/react-query'
 import { apiFetch } from '../lib/apiFetch'
 import PageShell from '../components/PageShell'
+import { SkeletonSchedule } from '../components/Skeletons'
 import { fetchLiveGames } from '../hooks/useLiveGames'
 import { findLiveGameForSeries } from '../utils/liveSeries'
 import type { ArchivedMatch } from '../hooks/useArchive'
@@ -32,11 +33,17 @@ interface SeriesRow {
   team2Name: string | null
 }
 
-function Waiting({ children }: { children: React.ReactNode }) {
+/**
+ * This page normally exists for a few hundred milliseconds before redirecting, but both of
+ * the lookups it waits on can hang — and while they did, the reader was left on a bare line
+ * of text with no header, no navigation and no way out but the back button. Same shell and
+ * the same skeleton as everywhere else, so a slow answer looks like a slow answer.
+ */
+function Waiting({ label }: { label: string }) {
   return (
-    <div className="min-h-screen bg-bg text-text font-sans px-6 py-8">
-      <p className="text-[13px] text-text-dim">{children}</p>
-    </div>
+    <PageShell eyebrow={label} title="Opening series" backTo={{ to: '/', label: 'Matches' }}>
+      <SkeletonSchedule rows={3} />
+    </PageShell>
   )
 }
 
@@ -70,10 +77,10 @@ export default function SeriesPage() {
     staleTime: 25_000,
   })
 
-  if (query.isLoading) return <Waiting>Loading series…</Waiting>
+  if (query.isLoading) return <Waiting label="Loading series…" />
 
   // On error isLoading drops to false on its own, so a dead feed delays nothing.
-  if (live.isLoading) return <Waiting>Finding the live game…</Waiting>
+  if (live.isLoading) return <Waiting label="Finding the live game…" />
 
   // The feed outranks the archive's own `live` flag. That flag is cleared by a sweep on
   // the ingest tick, so for a few minutes after a map ends it still says "live" — and
@@ -95,7 +102,7 @@ export default function SeriesPage() {
       title={teams ?? `Series #${seriesId}`}
       backTo={series?.leagueId ? { to: `/tournament/${series.leagueId}`, label: 'Tournament' } : { to: '/', label: 'Matches' }}
     >
-      <p className="bento-card text-[13px] text-text-dim">
+      <p className="bento-card text-body text-text-dim">
         {series
           ? 'This series has no playable map yet — Valve has not published a match id for it, and it is not in the live feed. It will open as soon as the first game appears.'
           : 'No such series in the archive.'}

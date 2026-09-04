@@ -30,8 +30,9 @@ function useTrackedFirst(): { primary: Tournament[]; rest: Tournament[] } {
   }
 }
 
+// D-9 (§6.3): 29px tall; the nav row is flex-wrap, so it absorbs the extra height.
 const pill = (active: boolean) =>
-  'px-3 py-1 rounded-full border text-[12px] whitespace-nowrap transition-colors ' +
+  'px-3 py-1 max-sm:min-h-11 inline-flex items-center rounded-full border text-body whitespace-nowrap transition-colors ' +
   (active
     ? 'border-primary text-text bg-[var(--color-primary-soft)]'
     : 'border-border text-text-muted hover:border-primary hover:text-text')
@@ -71,15 +72,24 @@ function OtherTournaments({ leagues }: { leagues: Tournament[] }) {
         className={pill(activeHere || open) + ' inline-flex items-center gap-1.5'}
       >
         Tournaments
-        <span className="text-[9px] text-text-dim">{leagues.length}</span>
-        <span className={'text-[8px] transition-transform ' + (open ? 'rotate-90' : '')}>▶</span>
+        <span className="text-label text-text-dim">{leagues.length}</span>
+        {/* UI-SPEC 10.5 §4.2: a disclosure caret is a decorative glyph, not text — it carries no
+            information the aria-expanded state does not already carry. Its 8px is a glyph
+            dimension (§3), so it stays off the prose scale rather than becoming an 11px label. */}
+        <span
+          aria-hidden="true"
+          className={'transition-transform ' + (open ? 'rotate-90' : '')}
+          style={{ fontSize: 8 }}
+        >
+          ▶
+        </span>
       </button>
 
       {open && (
         <div
           role="menu"
           className="absolute left-0 top-[calc(100%+6px)] z-30 min-w-[240px] max-h-[60vh] overflow-y-auto scroll-slim
-                     rounded-[10px] border border-border bg-bg-elev p-1.5 shadow-[0_12px_32px_rgba(0,0,0,0.55)]"
+                     rounded-sm border border-border bg-bg-elev p-1.5 shadow-[0_12px_32px_var(--scrim-soft)]"
         >
           {leagues.map((t) => (
             <Link
@@ -87,13 +97,16 @@ function OtherTournaments({ leagues }: { leagues: Tournament[] }) {
               to={`/tournament/${t.leagueId}`}
               role="menuitem"
               className={
-                'block truncate rounded-[7px] px-2.5 py-1.5 text-[12px] transition-colors ' +
+                /* D-9: 31px rows in a vertical menu — height is free here. `truncate` moves
+                   to the inner span because the anchor is now a flex box and text-overflow
+                   only ellipsises the block box that owns the text. */
+                'flex items-center rounded-sm px-2.5 py-1.5 max-sm:min-h-11 text-body transition-colors ' +
                 (pathname.startsWith(`/tournament/${t.leagueId}`)
                   ? 'bg-[var(--color-primary-soft)] text-text'
                   : 'text-text-muted hover:bg-surface hover:text-text')
               }
             >
-              {t.name ?? `League #${t.leagueId}`}
+              <span className="truncate">{t.name ?? `League #${t.leagueId}`}</span>
             </Link>
           ))}
         </div>

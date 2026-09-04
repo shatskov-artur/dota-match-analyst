@@ -46,12 +46,12 @@ export default function DemoBanner() {
   return (
     <div className="sticky top-0 z-50 border-b border-border bg-bg/95 backdrop-blur-sm">
       <div className="max-w-[1320px] mx-auto px-4 md:px-6 py-2.5 flex flex-wrap items-center gap-x-4 gap-y-2">
-        <span className="inline-flex items-center gap-1.5 shrink-0 rounded-full border border-primary/50 px-2.5 py-0.5 text-[10px] font-semibold uppercase tracking-label text-primary">
+        <span className="inline-flex items-center gap-1.5 shrink-0 rounded-full border border-primary/50 px-2.5 py-0.5 text-label font-bold uppercase tracking-label text-primary">
           <span className="w-[5px] h-[5px] rounded-full bg-primary" />
           Demo
         </span>
 
-        <p className="min-w-0 text-xs text-text-muted leading-relaxed">
+        <p className="min-w-0 text-body text-text-muted leading-relaxed">
           <span className="text-text">Recorded live data</span>, captured{' '}
           <span className="text-text">{utcLabel(demoMeta.capturedAt)}</span>
           {demoMeta.primaryMatchId !== null && (
@@ -72,7 +72,7 @@ export default function DemoBanner() {
               type="button"
               onClick={togglePlaying}
               aria-label={playing ? 'Pause replay' : 'Play replay'}
-              className="rounded-full border border-border px-3 py-1 text-[11px] font-semibold text-text-dim cursor-pointer transition-colors hover:text-primary hover:border-primary/50"
+              className="rounded-full border border-border px-3 py-1 text-label font-bold text-text-dim cursor-pointer transition-colors hover:text-primary hover:border-primary/50"
             >
               {playing ? 'Pause' : 'Play'}
             </button>
@@ -87,7 +87,7 @@ export default function DemoBanner() {
               className="w-28 md:w-40 cursor-pointer accent-[var(--color-primary)]"
             />
 
-            <span className="tabular-nums text-[11px] text-text-dim whitespace-nowrap">
+            <span className="tabular-nums text-label text-text-dim whitespace-nowrap">
               {slice + 1}/{total}
               {nowShowing && <> · {new Date(nowShowing).toISOString().slice(11, 19)} UTC</>}
             </span>

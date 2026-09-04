@@ -242,3 +242,103 @@ describe('HistoryGraphs — rendered chart', () => {
     expect(container.textContent ?? '').not.toContain(' gold, ')
   })
 })
+
+// UI-SPEC 10.5 §6.1/§6.2 — the scrub target used to be a bare <rect> inside role="img": not a tab
+// stop, presentational to a screen reader, and unreachable without a pointer.
+describe('HistoryGraphs — keyboard scrubbing', () => {
+  // 0..10 min so a 5-minute PageUp/PageDown step has room to move.
+  const history = Array.from({ length: 11 }, (_, i) => ({ t: i * 60, gold: i * 100, xp: i * 80 }))
+
+  const renderScrubbable = (onScrub: () => void, cursorT: number | null = 300) =>
+    render(
+      <HistoryGraphs
+        history={history}
+        gameDuration={600}
+        gameState={5}
+        cursorT={cursorT}
+        onScrub={onScrub}
+      />,
+    )
+
+  it('exposes each chart scrub target as a focusable slider outside the role="img" SVG', () => {
+    const { container } = renderScrubbable(vi.fn())
+    const sliders = screen.getAllByRole('slider')
+    expect(sliders.length).toBe(2) // gold + xp
+    for (const slider of sliders) {
+      expect(slider.getAttribute('tabindex')).toBe('0')
+      expect(slider.getAttribute('aria-valuemin')).toBe('0')
+      expect(slider.getAttribute('aria-valuemax')).toBe('10')
+      expect(slider.getAttribute('aria-valuenow')).toBe('5')
+      expect(slider.getAttribute('aria-valuetext')).toBe('minute 5')
+      // Must NOT be a descendant of the role="img" chart, which makes children presentational.
+      expect(slider.closest('[role="img"]')).toBeNull()
+    }
+    expect(container.querySelectorAll('[role="img"]').length).toBe(2)
+  })
+
+  it('focus + ArrowRight advances one minute, ArrowLeft goes back one (UAT-A11Y)', () => {
+    const onScrub = vi.fn()
+    renderScrubbable(onScrub)
+    const slider = screen.getAllByRole('slider')[0]
+    slider.focus()
+    expect(document.activeElement).toBe(slider)
+
+    fireEvent.keyDown(slider, { key: 'ArrowRight' })
+    expect(onScrub).toHaveBeenLastCalledWith(6)
+
+    fireEvent.keyDown(slider, { key: 'ArrowLeft' })
+    expect(onScrub).toHaveBeenLastCalledWith(4)
+  })
+
+  it('Home/End jump to the ends and PageUp/PageDown take a 5-minute step', () => {
+    const onScrub = vi.fn()
+    renderScrubbable(onScrub)
+    const slider = screen.getAllByRole('slider')[0]
+
+    fireEvent.keyDown(slider, { key: 'Home' })
+    expect(onScrub).toHaveBeenLastCalledWith(0)
+    fireEvent.keyDown(slider, { key: 'End' })
+    expect(onScrub).toHaveBeenLastCalledWith(10)
+    fireEvent.keyDown(slider, { key: 'PageUp' })
+    expect(onScrub).toHaveBeenLastCalledWith(10) // 5 + 5, clamped by the range end
+    fireEvent.keyDown(slider, { key: 'PageDown' })
+    expect(onScrub).toHaveBeenLastCalledWith(0)
+  })
+
+  it('clamps to the chart range and ignores keys it does not own', () => {
+    const onScrub = vi.fn()
+    // Parked on the last minute: ArrowRight must not walk past the end of the match.
+    renderScrubbable(onScrub, 600)
+    const slider = screen.getAllByRole('slider')[0]
+
+    fireEvent.keyDown(slider, { key: 'ArrowRight' })
+    expect(onScrub).toHaveBeenLastCalledWith(10)
+
+    onScrub.mockClear()
+    fireEvent.keyDown(slider, { key: 'a' })
+    fireEvent.keyDown(slider, { key: 'Enter' })
+    expect(onScrub).not.toHaveBeenCalled()
+  })
+
+  it('while following live (cursorT null) the slider reports the last recorded minute', () => {
+    renderScrubbable(vi.fn(), null)
+    const slider = screen.getAllByRole('slider')[0]
+    expect(slider.getAttribute('aria-valuenow')).toBe('10')
+    expect(slider.getAttribute('aria-valuetext')).toBe('minute 10')
+  })
+
+  it('mouse click on the scrub target still scrubs, exactly as before (no regression)', () => {
+    const onScrub = vi.fn()
+    const { container } = renderScrubbable(onScrub)
+    const overlay = container.querySelector('[data-testid="scrub-overlay"]')!
+    fireEvent.click(overlay, { clientX: 0 })
+    // jsdom reports a zero-size box, so the ratio floors to the range start — the point is that
+    // the click path is still wired, and to the same minute-rounding it always used.
+    expect(onScrub).toHaveBeenCalledWith(0)
+  })
+
+  it('renders no scrub target at all when onScrub is not supplied', () => {
+    render(<HistoryGraphs history={history} gameDuration={600} gameState={5} />)
+    expect(screen.queryAllByRole('slider').length).toBe(0)
+  })
+})
