@@ -96,6 +96,19 @@ function connect(wsUrl) {
 // ─── Launch ───────────────────────────────────────────────────────────────────
 
 const userDataDir = join(tmpdir(), `dota-demo-verify-${Date.now()}`)
+/**
+ * CI runs as root inside a container, where Chrome's sandbox cannot initialise and the
+ * browser exits before it ever opens the DevTools port — the failure surfaces here as
+ * "DevTools endpoint never came up", which says nothing about the real cause.
+ *
+ * Both flags are scoped to CI deliberately. --no-sandbox is a real weakening, and it is
+ * only acceptable because this instance is disposable and loads exactly one origin: the
+ * localhost preview of our own static build. On a developer machine the sandbox stays on.
+ * --disable-dev-shm-usage covers the small /dev/shm containers give, which crashes Chrome
+ * on pages of any weight.
+ */
+const CI_FLAGS = process.env.CI ? ['--no-sandbox', '--disable-dev-shm-usage'] : []
+
 const chrome = spawn(
   CHROME,
   [
@@ -103,6 +116,7 @@ const chrome = spawn(
     '--disable-gpu',
     '--no-first-run',
     '--no-default-browser-check',
+    ...CI_FLAGS,
     `--remote-debugging-port=${PORT}`,
     `--user-data-dir=${userDataDir}`,
     '--window-size=1600,1200',
